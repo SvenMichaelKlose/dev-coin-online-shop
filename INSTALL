@@ -1,0 +1,8 @@
+To use the sources in split files insert something like this into your httpd.conf:
+
+<Directory /mywebservers>
+	# php3
+        php3_include_path ".:/usr/local/share/centralservices/local/php"
+	# php4
+	php_value include_path ".:/usr/local/share/centralservices/local/php"
+</Directory>

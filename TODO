@@ -1,0 +1,32 @@
+    Since the shop runs quite stable, the user manual is rewritten and the
+    user interface comes to usability ;) it's time to do a 1.0.0 release
+    and clean up the CMS before working on the next stable branch.
+
+    This are the features suggested for the 1.2.0 release:
+
+    - Merged directory table; a cursor would only contain an integer.
+    - XML style tags (no need for separate list templates and a good way to
+      pass multiple attributes).
+
+    This are the features suggested for any later release:
+
+    Directory objects:
+
+	- Let user the lifetime of objects.
+	- Add resort object to split the shop.
+
+    Cart:
+
+	- Add user defineable form fields.
+
+    Admin-Interface:
+
+	- Let user move records in a list and across lists.
+	- Syntax highlighting for tags.
+	- Fulltext search over objects.
+	- Usermanagement
+
+    Configuration:
+
+        - Use different db users for more security.
+	- Option: don't store customer related data if mail was sent.

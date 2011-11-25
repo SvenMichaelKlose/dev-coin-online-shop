@@ -1,0 +1,1100 @@
+\documentclass{article}
+\usepackage{makeidx}
+\usepackage{graphicx}
+\makeindex
+\title{Referenz Content Management und Bestellsystem}
+\author{sven@devcon.net}
+\frenchspacing
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\pagebreak
+
+\section {Einleitung}
+
+    Dieser Teil der Dokumentation beschreibt recht knapp das System der
+    Datenverwaltung und die darauf aufbauende Seitengenerierung zusammen
+    mit dem HTML-Spracherweiterungen. Die Benutzerschnittstellen sind
+    nicht beschrieben.
+    Interessant ist er vor allem f\"ur fortgeschrittene Anwender
+    und Entwicklern des Shops.
+    Einsteiger seien auf die Schritt-f\"ur-Schritt-Einleitung von Christine
+    Sch\"onfeld verwiesen, welche auch die Bedienung erkl\"art.
+    
+    Haben Sie bereits erste Erfahrungen gesammelt sollten Sie ein wenig
+    weiterschm\"okern und sich z.B. Tags ansehen, die Sie bisher noch nicht
+    benutzt haben.
+
+    M\"ochten Sie Zusatzmodule f\"ur den Shop entwickeln, so finden Sie hier
+    die Grundlagen zum Verst\"andnis der API-Referenz der Bibliotheken,
+    welche Sie ben\"otigen, um sich mit den Quelltexten auseinanderzusetzen
+    \footnote {Wozu allerdings Programmiererfahrung in PHP oder \"ahnlichen
+    Sprachen wie Perl sehr von Nutzen ist.}.
+
+
+\section {Datenbankverwaltung}
+
+    S\"amtliche Daten die der Shop fasst werden in einer Datenbank abgeleget.
+    Damit zwischen Datenbanken verschiedener Hersteller gew\"ahlt werden kann
+    benutzt der Shop nur die einfachsten SQL-Befehle und verwaltet die
+    Struktur des Daten selbst.
+    Es gibt drei grundlegende Datenstrukturen, die der Shop verwaltet:
+
+    \begin{figure}[!h]
+    \begin{center}
+    \includegraphics[width=\textwidth]{de.ref.db.overview.eps}
+    \end{center}
+    \end{figure}
+
+    Dazu z\"ahlt das \emph {Verzeichnissystem} und die \emph {Objektverwaltung}
+    \index{Content Management System}
+    welche ein eigenst\"andiges \emph {Content Management System} (CMS)
+    \index{Data Management System}
+    \footnote{Vor einiger Zeit von vielen noch als Data-Management-System bezeichnet.}
+    bilden und dem \emph {Warenkorb- und Bestellsystem} welches das ganze zu
+    einem \emph {Shop}
+    \footnote{Zur Verwendung als vollwertiges CMS fehlen noch einige wichtige
+    Dinge, so da\ss{} wir beschlossen haben uns nicht allzuweit aus dem
+    Fenster zu lehnen.}
+    werden l\"asst.
+
+\subsection {Verzeichnisdienst}
+
+    Der Verzeichnisdienst ist aufgebaut wie man es von einem modernen
+    \footnote{,,modern'' in dem Sinne, da\ss{} es Verzeichnisse kennt.}
+    Dateisystem her kennt. Er verleiht dem gesamten Datenbankinhalt
+    \footnote{Schimpfen wir ihn \emph {Content}.} eine
+    eindeutige Struktur. Verzeichnisse k\"onnen beliebig viele
+    Unterverzeichnisse beinhalten.  Jedes Verzeichnis tr\"agt
+    einen Namen.
+    Im Gegensatz zum einem \"ublichen Dateisystem gibt es verschiedene
+    ,,Verzeichnistypen'', welche bestimmen, was in einem Verzeichnis
+    \index{Verzeichnistypen}
+    abgelegt werden darf, ob Unterverzeichnisse erlaubt sind, und welche
+    Typen von Unterverzeichnissen es geben darf. Die Verzeichnistypen sind
+    vordefiniert und k\"onnen nicht vom Benutzer beeinflusst werden
+    \footnote{Ausser Sie besitzen den Wagemut eine eigene Version des
+    Programms zu entwickeln. Die M\"oglichkeit der Einrichtung eigener
+    Verzeichnistypen ist tr\"ostlicherweise geplant.}.
+    Verzeichnistypen spielen erst im Zusammenhang mit der dynamischen
+    Seitengenerierung eine Rolle, auf welche wir sp\"ater detailliert
+    eingehen werden.
+
+\subsection {Objektverwaltung}
+
+    Das Verzeichnissystem kennt keine Dateien. Stattdessen k\"onnen
+    sog. \emph {Objekte} in Verzeichnissen abgelegt werden.
+    Im Gegensatz zu normalen Dateien erscheint ein Objekt in allen
+    Unterverzeichnissen des Verzeichnisses in dem es abgelegt wurde.
+    Dieses Verhalten wird als \emph {Vererbung} bezeichnet und
+    l\"asst sich f\"ur einzelne Objekte unterdr\"ucken.
+    Geerbte Objekte eines Verzeichnisses werden durch das ablegen eines 
+    Objekts gleichen Namens ,,\"uberschrieben''.
+
+\subsection {Objektklassen}
+
+    Auch Objekte besitzen, wie Dateien, Namen.
+    Diese Objektnamen d\"urfen jedoch nicht frei gew\"ahlt werden, sondern
+    m\"ussen registriert sein. Objekt-Namen werden als \emph {Objektklassen}
+    bezeichnet.
+    Einige Klassen sind bereits zum Zweck der dynamischen
+    Seitengenerierung reserviert.
+
+    \begin{figure}[!h]
+    \begin{center}
+    \begin{tabular}{|l|l|}
+	\hline
+	l\_index	& Dokument Eingangsseite/Wurzelkategorie \\
+	ll\_category	& Aufz\"ahlung Kategorien einer Kategorie \\
+	l\_category	& Dokument Kategorie \\
+	ll\_page	& Aufz\"ahlung Produktgruppen einer Kategorie \\
+	l\_page		& Dokument Produktgruppe \\
+	ll\_product	& Aufz\"ahlung Produkte einer Produktgruppe \\
+	l\_product	& Dokument Produkt \\
+	l\_cart		& Dokument Warenkorb \\
+	l\_empty\_cart	& Dokument leerer Warenkorb\\
+	ll\_cart	& Aufz\"ahlung bestellter Produkte \\
+	l\_order	& Dokument Addressformular/Bestellungsannahme \\
+	l\_order\_email	& Dokument Email-Bestellung \\
+	l\_order\_confirm & Dokument Email-Best\"atigung f\"ur Kunden \\
+	\hline
+    \end{tabular}
+    \linebreak
+    Reservierte Klassen f\"ur die dynamische Seitengenerierung.
+    \end{center}
+    \end{figure}
+    Weitere Klassen dienen der Konfiguration des Bestellsystems.
+    \begin{figure}[!h]
+    \begin{center}
+    \begin{tabular}{|l|l|}
+	\hline
+	d\_order\_address & Email-Addresse der Bestellungsannahme \\
+	d\_order\_duty	& Pflichtfelder im Addressformular \\
+	d\_order\_extra & Benutzerdefinierte Felder im Addressformular \\
+	\hline
+    \end{tabular}
+    \linebreak
+    Objektklassen zur Konfiguration des Warenkorbes
+    \end{center}
+    \end{figure}
+
+\pagebreak
+\section {Templates}
+
+\subsection {Verzeichnisse und URL-Generierung}
+
+    Wird eine Seite \"uber den Web-Server angefordert, so muss aus der URL
+    eindeutig hervorgehen, welche Information dargestellt werden soll.
+    Dazu wird der Pfad zum Quellverzeichnis an die URL des Skripts
+    angeh\"angt.
+    Je nach Typ des angeforderten Verzeichnisses, die sich aus der
+    Positionsangabe ergibt, wird eine damit assoziierte
+    HTML-Vorlage, ein sogenanntes \emph {Template}, verwendet, in dem
+    Platzhalter, sog. Tags, durch Einzelinformationen der Quelle ersetzt
+    werden.
+    Anschliessend werden Vorlagen an den Client uebermittelt.
+    Die Erstellung von URLs kann komplett dem Shop \"uberlassen werden, indem
+    entsprechende Tags in den Templates verwendet werden.
+
+    \begin{figure}[!h]
+    \begin{center}
+    \includegraphics[width=\textwidth]{de.ref.templates.fig.directories.eps}
+    Beispielverzeichnis mit verschiedenen Verzeichnistypen und
+    Aufz\"ahlungen.
+    \end{center}
+    \end{figure}
+    \index{Verzeichnis}
+
+    Hier eine beispielhafte URL:
+
+    \begin{verbatim}
+	http://www.meinshop.de/mod_shop.php3/Futter/Junior_Food/light/
+    \end{verbatim}
+    Wurde kein Verzeichnis angegeben, so wird das Wurzelverzeichnis zur
+    Darstellung der Eingangsseite verwendet:
+    \begin{verbatim}
+	http://www.meinshop.de/mod_shop.php3
+    \end{verbatim}
+
+\subsection {Verzeichnistypen des Shopsystems}
+
+    Alle Verzeichnisse tragen einen Namen 'name'.
+    Im Falle vom Typ \emph {PRODUCT} gesellt sich eine Bestellnummer 'key'
+    hinzu.
+
+    Die Typen \emph {CATEGORY} und \emph {PRODUCT} d\"urfen Unterverzeichnisse
+    gleichen Typs besitzen. Auf jeden Fall besitzen Verzeichnisse vom Typ
+    \emph {CATEGORY} Unterverzeichnisse vom Type \emph {PAGE}.
+    \emph {PAGE}-Verzeichnisse wiederum besitzen
+    \emph {PRODUCT}-Unterverzeichnisse. Alle Verzeichnisse besitzen ein
+    virtuelles Verzeichnis \emph {CART} und \emph {ORDER}, welches jeweils eine
+    Teilmenge des Mutterverzeichnisses bildet. (Nur Geduld ;)
+    \emph {ROOT} stellt das Wurzelverzeichnis der \emph {CATEGORY}-Typen dar.
+    Das Wurzelverzeichnis wird zur Darstellung der Startseite benutzt.
+
+\subsection {Vererbbare Dateien - Objekte}
+
+    Mit jedem Verzeichnistyp werden, wie bereits zu Beginn festgestellt,
+    Layoutvorlagen assoziiert. Layoutvorlagen werden gerne als
+    \emph {Templates}
+    (dt. Schablonen) bezeichnet.
+
+\subsection {Dokumente, Teildokumente und Aufz\"ahlungen}
+
+    Templates sind unterteilt in Dokumente und Teildokumente. F\"ur
+    ,,Aufz\"ahlungen'' von Unterverzeichnissen, deren Reihenfolge der Benutzer
+    manuell festlegen kann, werden stets Teildokumente verwendet. 
+    F\"ur jeden Verzeichnistyp gibt es eine Objekt-Klasse f\"ur Dokumente,
+    ganze HTML-Seiten z.B., und Aufz\"ahlungen, die jeweils zur Abfrage
+    der Templates benutzt werden.
+    Die Unterteilung der Templates ist rein logischer Natur. Generell
+    k\"onnen beliebige Objekte auch als Templates verwendet werden; selbst,
+    wenn es sich bei dem Objekt um eine Graphik handelt, auch wenn dabei
+    Unsinn herauskommt.
+
+    F\"ur jeden Verzeichnistyp existieren Standard-Klassen f\"ur Templates:
+
+    \begin{figure}[!h]
+    \begin{center}
+    \begin{tabular}{|l|l|l|}
+	\hline
+	CATEGORY, ROOT 	& l\_category 	& Dokument Kategorie \\
+			& ll\_category 	& Aufz\"ahlung Kategorien \\
+			& l\_index 	& Dokument Eingangsseite \\
+	\hline
+	PAGE		& l\_page 	& Dokument Produktgruppe \\
+			& ll\_page 	& Aufz\"ahlung Produktgruppen \\
+	\hline
+	PRODUCT 	& l\_product 	& Dokument Produkte \\
+			& ll\_product 	& Aufz\"ahlung Produkte \\
+	\hline
+	CART	 	& l\_cart 	& Dokument Warenkorb \\
+			& ll\_cart 	& Aufz\"ahlung bestellter Produkte \\
+	\hline
+	ORDER 		& l\_order 	& Dokument Bestellungsannahme \\
+			& l\_order\_email & Dokument Email-Bestellung \\
+			& ll\_order\_confirm & Dokument Email-Best\"atigung f\"ur Kunden \\
+	\hline
+    \end{tabular}
+    \linebreak
+    Verzeichnistypen und damit assoziierte Template-Objektklassen
+    \end{center}
+    \end{figure}
+
+    Der Benutzer kann eigene Objektklassen einf\"uhren und nutzen.
+    Ist ein Objekte als ,,\"offentlich'' gekennzeichnet, so kann der Client
+    es per HTTP abrufen, z.B. ein Produktfoto.
+
+\pagebreak
+\section {Tags}
+
+    Templates enthalten ,,Tags'' um Verzeichnis- oder Objektinformationen
+    einzubinden, oder um Aktionen auszul\"osen.
+    Tags werden durch Zeichenfolgen ersetzt, welche je nach Zweck aus
+    verschiedenen Quellen und auf verschiedene Weisen gewonnen werden.
+
+\subsection {Zeichenketten}
+    Zeichenketten, also folgen beliebieger Buchstaben, Zahlen und Sonderzeichen
+    unterliegen besonderen Formatierungsregeln, damit die Tags eindeutig
+    erkannt werden k\"onnen.
+    Soll die Zeichenkette Leerzeichen die Zeichenkette '!$>$' enthalten, so
+    muss sie in einfache oder doppelte Anf\"uhrungszeichen eingefasst
+    werden. Anf\"uhrungszeichen in der Zeichenkette muss ein Backslash
+    vorangestellt werden, auch, wenn die Zeichenkette selbst nicht in
+    Anf\"uhrungszeichen gefasst ist.
+
+\subsection {Syntax}
+
+    \begin{verbatim}
+	<!QUELLVERZEICHNIS:FUNKTIONSNAME ARGUMENTE!>
+
+	Name der aktuellen Kategorie: <i><!CATEGORY:FIELD name!></i>
+    \end{verbatim}
+
+    Tags beschreiben das Quellverzeichnis der abzurufenden Information, die
+    darauf anzuwendende Funktion und Gegebenenfalls weitere Zusatzinformationen,
+    ,,Argumente'', z.B. der Name einer Tabellenspalte in der Datenbank.
+    Tags werden durch die Zeichenfolge '$<$!' eingeleitet und durch '!$>$'
+    beendet.
+
+    \subsubsection {Quellverzeichnisse spezifizieren}
+    Nach der Einleitung durch '$<!$' kann die Quelle der Daten angegeben werden.
+    Quelle kann ein \"ubergeordneter Verzeichnistyp oder ein ,,virtuelles''
+    Unterverzeichnis sein, welches in allen Verzeichnissen enthalten ist.
+    Dies unterscheidet die \emph {Quelle} von \emph {Verzeichnistypen};
+    durch die Angabe eines Verzeichnistyps als Quelle k\"onnen keine
+    bestimmten Verzeichnisse angesprochen werden. Gibt man als Quelle
+    einen bestimmten Typen an, so ist damit immer das hierarchisch n\"achste
+    Verzeichnis gemeint; dessen Mutterverzeichnis ist nicht erreichbar.
+    In der Praxis kommt mensch damit gut zurecht.
+
+    \subsubsection {Aktuelle, benachbarte und \"ubergeordnete Verzeichnisse}
+    \index{Verzeichnis!aktuelles}
+    Ein Quellverzeichnis wird im folgenden als das
+    \emph {aktuelle Verzeichnis} bezeichnet.
+    \index{Verzeichnis!\"ubergeordnetes Mutterverzeichnis}
+    Das einem Verzeichnis
+    \"ubergeordnete Verzeichnis wird \emph {Mutterverzeichnis}
+    genannt.
+    \index{Verzeichnis!Unterverzeichnis}
+    Unterverzeichnisse liessen sich entsprechend als
+    \emph {Kindverzeichnis} bezeichnen\footnote {Aus humanit\"aren Gr\"unden
+    verzichten wir jedoch darauf und bleiben bei der Bezeichnung
+    \emph {Unterverzeichnis.}}.
+    \index{Verzeichnis!benachbartes}
+    Ausser \"ubergeordneten Verzeichnissen gibt es noch benachbarte
+    Verzeichnisse, welche von demselben Mutterverzeichnis abh\"angen, wie
+    das aktuelle. Diese sind lediglich per Link als eigenes Dokument
+    erreichbar.
+
+    \begin{figure}[!h]
+    \begin{center}
+    \includegraphics[width=0.5\textwidth]{de.ref.templates.fig.siblings.eps}
+    \linebreak
+    Eine Aufz\"ahlung mit Schl\"usselw\"ortern f\"ur benachbarte Verzeichnisse.
+    \end{center}
+    \end{figure}
+
+    \index{Verzeichnis!virtuelles}
+    Ein weiteres Bonbon sind \emph {virtuelle} Verzeichnisse. Sie
+    existieren lediglich einmal, erscheinen jedoch in allen Verzeichnissen
+    als Unterverzeichnis. Der Warenkorb z.B. ist als virtuelles Verzeichnis
+    realisiert. \emph {Alias}-Quellen bezeichnen Verzeichnisse an einem
+    bestimmten Ort, z.B. das Wurzelverzeichnis (\emph {ROOT}), der mit den
+    herk\"ommlichen Quellenangaben nicht erreichbar w\"are.
+
+    \index{Aufz\"ahlungen}
+    F\"ur andere Typen von Unterverzeichnissen k\"onnen Aufz\"ahlungen generiert
+    werden. Innerhalb der Aufz\"ahlungen gilt als aktuelles Verzeichnis stets
+    das Unterverzeichnis. Nur \"uber Aufz\"ahlungen lassen sich entsprechend
+    Unterverzeichnisse verwenden.
+
+    \index{Verzeichnistypen!Schl\"usselw\"orter}
+    Folgende Schl\"usselw\"orter sind zul\"assig:
+
+    \begin{figure}[!h]
+    \begin{center}
+    \begin{tabular}{|l|l|}
+	\hline
+	ROOT		& Wurzelkategorie bzw. Eingangsseite (alias)\\
+	PARENT		& \"Ubergeordneter Datensatz (alias)\\
+	CATEGORY	& Kategorie \\
+	PAGE		& Produktgruppe \\
+	PRODUCT		& Produkt \\
+	CART		& Warenkorb (virtuell)\\
+	ORDER		& Adressformular (virtuell)\\
+	SESSION		& Sitzung (virtuell)\\
+	\hline
+    \end{tabular}
+    \linebreak
+    Schl\"usselw\"orter der Verzeichnistypen zur Quellenangabe.
+    \end{center}
+    \end{figure}
+
+    Die Angabe der Quelle sollte in nicht generischen Templates der
+    \"Ubersichtlichkeit halber immer angegeben werden.
+
+    \subsubsection {Standard-Templates der Verzeichnistypen}
+    Zu jeder Quelle existieren zwei Standardklassen, welche ein
+    Aufz\"ahlungs- und Dokument-Template enthalten. Nach Bedarf k\"onnen
+    auch andere Klassen verwendet werden.
+    Klassennamen von Dokumenten beginnen mit 'l\_', Auz\"ahlungen mit 'll\_'.
+    (§42 Objektreferenz)
+
+    \begin{figure}[h]
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    	\hline
+	ROOT		& l\_root \\
+	CATEGORY	& l\_category \\
+	PAGE		& l\_page \\
+	PRODUCT		& l\_product \\
+	CART		& l\_cart \\
+	ORDER		& l\_order \\
+    	\hline
+    \end{tabular}
+    \linebreak
+    Dokument-Templateklassen
+    \end{center}
+    \end{figure}
+
+    \begin{figure}[h]
+    \begin{center}
+    \begin{tabular}{|l|l|}
+    	\hline
+	CATEGORY	& ll\_category \\
+	PAGE		& ll\_page \\
+	PRODUCT		& ll\_product \\
+	CART		& ll\_cart \\
+    	\hline
+    \end{tabular}
+    \linebreak
+    Aufz\"ahlungs-Templateklassen
+    \end{center}
+    \end{figure}
+
+    Anschliessend muss der Name der auszuf\"uhrenden Informationen
+    angegeben werden. Eine \"uebersich finden Sie in der folgenden
+    Kurzreferenz. Anschliessend werden die Funktionen detailliert
+    beschrieben.
+
+\pagebreak
+\subsection {Kurzreferenz Tags}
+
+    \verb$<!:FIELD Feldname!>$
+
+    \verb$<!:OBJECT Klasse!>$
+
+    \verb$<!:TEMPLATE Klasse!>$
+
+    \verb$<!:OBJECTLINK Klasse!>$
+    
+    \verb$<!:FOUND-OBJECT Klasse!>$
+    
+    \verb$<!:HAS-OBJECT Klasse!>$
+    
+    \verb$<!:LINK [Templateklasse]!>$
+
+    \verb$<!:LIST [Templateklasse] [#size[,offset]]!>$
+
+    \verb+<!:FIRST!> Erster Eintrag+
+
+    \verb+<!:PREV!>  Vorheriger Eintrag+
+
+    \verb+<!:NEXT!>  Nächster Eintrag+
+
+    \verb+<!:LAST!>  Letzter Eintrag+
+
+    \verb+<!:PREV-INDEX!> Index des vorherigen Eintrags+
+
+    \verb+<!:INDEX!> Index des aktuellen Eintrags+
+
+    \verb+<!:NEXT-INDEX!> Index des nächsten Eintrags+
+
+    \verb+<!PRODUCT:KEY!>+
+
+    \verb+<!PRODUCT:QUANTITY!>+
+
+    \verb+<!PRODUCT:FORMQUANTITY!>+
+
+    \verb+<!PRODUCT:QUANTITYNAME!>+
+
+    \verb+<!PRODUCT:PRICE [Waehrung]!>+
+
+    \verb+<!PRODUCT:TOTAL [Waehrung]!>+
+
+    \verb+<!CART:LINK [Menge]!>+
+
+    \verb+<!CART:LIST!>+
+
+    \verb+<!CART:TOTAL [Waehrung]!>+
+
+    \verb+<!CART:QUANTITY [Waehrung]!>+
+
+    \verb+<!CART:IS-EMPTY!>+
+
+    \verb+<!ORDER:SHIPTO-NAME Kurzname!>+
+
+    \verb+<!ORDER:BILLTO-NAME Kurzname!>+
+
+    \verb+<!ORDER:RECEIPTTO-NAME Kurzname!>+
+
+    \verb+<!ORDER:SHIPTO Kurzname!>+
+
+    \verb+<!ORDER:BILLTO Kurzname!>+
+
+    \verb+<!ORDER:RECEIPTTO Kurzname!>+
+
+    \verb+<!SESSION:FORCE!>+
+
+    \verb+<!SESSION:MAGIC-KEYS!>+
+
+\pagebreak
+\section {Tag-Funktionen des Content Management Systems}
+
+    Die Tags des Content Management Systems, bestehend aus Objekt-,
+    Verzeichnisdienst und Template-Parser k\"onnen mit allen Verzeichnistypen,
+    ausgenommen dem Typ $SESSION$, verwendet werden. Manchmal macht die
+    Verwendung bestimmter Typen keinen Sinn, was an entsprechender Stelle
+    begr\"undet wird.
+ 
+\subsection {Abruf von Datenbankinformationen}
+
+    \subsubsection{Verzeichnisattribute}
+    	\verb+<!:FIELD Feldname!>+
+
+	Das folgende Beispiel gibt den Namen einer Kategorie als \"Uberschrift
+	aus:
+	\begin{verbatim}
+    <h3><!CATEGORY:FIELD name</h3>
+	\end{verbatim}
+
+    \subsubsection{Objektabruf}
+    	\verb+<!:OBJECT Objektklasse!>+
+
+	Das folgende Beispiel bindet ein Objekt benutzerdefinierter Klase
+	in das Template ein:
+    	\begin{verbatim}
+    <!-- HTML-Dokument mit Standard-Kopf und -Fuss -->
+    <!:OBJECT html_header!>
+      <h3>Hallo Welt!</h3>
+        <!-- ...Seiteninhalt... -->
+    <!:OBJECT html_footer!>
+	\end{verbatim}
+
+    \subsubsection{Templateabruf}
+    	\verb+<!:TEMPLATE Objektklasse!>+
+
+	Wie $<$!:OBJECT!$>$, jedoch durchl\"auft das Objekt den Parser im
+	Kontext des aufrufenden Templates, falls kein Quellverzeichnistyp
+        angegeben wurde. Anschliessend durchl\"auft das Object den
+	php-Interpreter.
+
+	\begin{verbatim}
+    <!:TEMPLATE u_magic_menu!>
+    	\end{verbatim}
+
+    \subsubsection{Aufz\"ahlung untergeordneter Produktinformationen}
+	\verb+<!:LIST [Template-Name] [#Anzahl[,Offset]]!>+
+
+	Erzeugt eine Aufz\"ahlung von Unterverzeichnissen des angegebenen
+	(Quell-)Typs. Wird keine Template-Klasse angegeben, so wird die
+	mit dem Typen assoziierte Standardklasse verwendet.
+	Nach dem entsprechenden Template wird von jedem Unterverzeichnis
+	aus neu gesucht, so dass sich die Layouts der einzelnen Punkte
+	unterscheiden k\"onnen.
+	Der Parameter `Anzahl' definiert die Anzahl der aufzulistenden
+	Eintr\"age. Der Parameter `Offset' definiert die Nummer des
+	ersten anzuzeigenden Eintrags.
+	Wird keine Anzahl angegeben, so werden alle Eintr\"age aufgelistet.
+	Der Standard-Offset ist der erste Eintrag.
+
+	Hier ein Beispiel, welches die Namen aller Unterkategorien einer
+	Kategorie ausgeben soll (Klasse 'l\_category':
+	\begin{verbatim}
+    <html>
+      <head>
+        <title>Kategorie <!CATEGORY:FIELD name!></title>
+      </head>
+      <body>
+        <h3>Unterkategorien der Kategorie <!CATEGORY:FIELD name!></h3>
+	<!CATEGORY:LIST!>
+      </body>
+    </html>
+ 	\end{verbatim}
+
+	Das verwendete Standard-Template $ll\_category$ k\"onnte so aussehen:
+	\begin{verbatim}
+    <a href="<!CATEGORY:LINK!>"><!CATEGORY:FIELD name!></a><br>
+    	\end{verbatim}
+
+\pagebreak
+\subsection {Navigation/Links zu Dokumenten und Objekten}
+
+    \subsubsection{Link zu Dokument}
+    	\verb+<!:LINK [Template-Name]!>+
+
+	Erzeugt einen Link zu einem \"ubergeordneten Dokument f\"ur
+	Produktinformationen. Wird kein Template angegeben, so wird das
+	entsprechende Standardtemplate verwendet. (§42)
+
+    \subsubsection{Links zu benachbarten Dokumenten}
+    \verb+<!:FIRST!> Erster Eintrag+ \linebreak
+    \verb+<!:PREV!>  Vorheriger Eintrag+ \linebreak
+    \verb+<!:NEXT!>  Nächster Eintrag+ \linebreak
+    \verb+<!:LAST!>  Letzter Eintrag+ \linebreak
+
+    	Diese Tags liefern links zu benachbarten Verzeichnissen, die einem
+	gemeinsamen \"ubergeordnetem Eintrag angeh\"oren.
+
+    \subsubsection{$<$!:OBJECTLINK Objektklasse!$>$ Link zu \"offentlichem Objekt}
+
+    	Die Suche nach dem Objekt beginnt ab der angegebenen Quelle.
+
+\pagebreak
+\subsection {Strukturinformationen}
+    \subsubsection {Indexnummern}
+
+    \verb+<!:PREV-INDEX!> Index des vorherigen Eintrags+ \linebreak
+    \verb+<!:INDEX!> Index des aktuellen Eintrags+ \linebreak
+    \verb+<!:NEXT-INDEX!> Index des nächsten Eintrags+ \linebreak
+    \verb+<!:LAST-INDEX!> Index des letzten Eintrags/Anzahl der Einträge+ \linebreak
+
+	Alle Eintr\"age, die gemeinsam einem \"ubergeordneten Eintrag
+	angeh\"oren, erhalten eine ganzahlige Nummer gr\"osser als 0.
+        $<$!:PREV-INDEX!$>$ und $<$!:LAST-INDEX!$>$ werden durch 0 ersetzt,
+	falls kein vorheriger oder n\"achster Eintrag existiert.
+	\begin{verbatim}
+    <b>Indexnummer der vorherigen Seite: <!:PREV-INDEX!></b>
+    <b>Indexnummer dieser Seite: <!:INDEX!></b>
+    <b>Indexnummer n&auml;chsten Seite: <!:NEXT-INDEX!></b>
+    <b>Anzahl der Seiten im aktuellen Mutterverzeichnis: <!:LAST-INDEX!></b>
+	\end{verbatim}
+
+    \subsubsection{Aktueller Verzeichnistyp}
+    	\verb+<!:TYPE!>+
+
+    	Liefert den Typen des aktuellen Verzeichnisses. M\"ogliche Typen
+	sind $CATEGORY$, $PAGE$, $PRODUCT$, $CART$ und $ORDER$.
+
+    \subsubsection{Anzahl direkter Unterverzeichnisse}
+    	\verb+<!:NUM-SUBDIRS!>+
+
+
+	Liefert die Anzahl der Unterverzeichnisse.
+
+	Beispiel:
+	\begin{verbatim}
+    <b>Anzahl Unterkategorien: <!:NUM-SUBDIRS CATEGORY!>
+	\end{verbatim}
+
+    \subsubsection{$<$!:NUM-TYPE Verzeichnistyp!$>$ Anzahl Unterverzeichnesse und Unterverzeichnisse}
+
+	Liefert die Anzahl der Produkte in einer Kategorie und aller
+	Unterkategorien oder einer Seite. Verwendet man als Quelle ROOT,
+	so wird die Anzahl aller Produkte zur\"uckgegeben.
+	Bei fehlender Angabe des Verzeichnistyps wird der aktuelle verwendet.
+
+	Beispiel:
+	\begin{verbatim}
+    <b>Anzahl Produkte in dieser Kategorie: <!:NUM-TYPE PRODUCT!>
+	\end{verbatim}
+
+    \subsubsection{Gefundene Klassen}
+    	\verb+<!:FOUND-OBJECT Klasse!>+
+
+	Gibt '1' zur\"uck, wenn ein Objekt der \"ubergebenen Klasse
+	gefunden wurde, ansonsten '0'.
+
+	Das folgende Beispiel bindet ein <IMG>-Tag nur dann ein, wenn ein
+	das Objekt 'u\_image' existiert:
+
+	\begin{verbatim}
+    <? if (<!:FOUND-OBJECT u_image!>) { ?>
+    	<img src="<!:OBJECTLINK u_image!>" border="0">
+    <? } ?>
+    	\end{verbatim}
+
+    \subsubsection{Lokale Klassen}
+    	\verb+<!:HAS-OBJECT Klasse!>+
+
+	Gibt '1' zur\"uck, wenn das Quellverzeichnis ein Object der
+	angegebenen Klasse besitzt, ansonsten '0'.
+
+    \subsubsection{$<$!:SELECTED Zeichenkette!$>$ Bedingtes Einf\"ugen einer Zeichenkette}
+
+	Liefert die Zeichenkennte ' selected' oder die als Argument \"ubergebene
+	Zeichenkette zur\"uck, wenn die Quelle der aktuellen entspricht oder
+	letztere der Quelle untergeordnet ist.
+	Die Verwendung der Quelle ROOT ist lediglich in generischen Templates
+	ohne angabe der Quelle sinnvoll, da alle Eintr\"age der Wurzelkategorie
+	untergeordnet sind; die Zeichenkette immer eingef\"ugt wird.
+	
+	Das folgende Beispiel aktiviert die auszugebende Checkbox, falls die
+	wir uns in der entsprechenden Kategorie befinden.
+
+	\begin{verbatim}
+    <!-- Aufzaehlung von Kategorien -->
+    <option type="checkbox" name="kategoriewahl" value="1" <!:SELECT checked!>>
+	\end{verbatim}
+
+\pagebreak
+\section {Tag-Funktionen des Bestellsystems}
+
+	Die Tags des Bestellsystems sind immer auf einen bestimmten
+	Verzeichnistyp bezogen, weshalb der Quelltyp auch immer angegeben
+	ist.
+
+\subsection {Produktmengen}
+
+    \subsubsection{$<$!PRODUCT:QUANTITY!$>$ Gew\"ahlte Menge des Produkts}
+    
+    	Liefert die Bestellmenge des aktuellen Produkts. Befindet sich das
+	Produkt nicht im Warenkorb so wird '0' zur\"uckgegeben.
+
+    \subsubsection{$<$!PRODUCT:QUANTITYNAME!$>$ Name des Mengenfelds zum posten}
+
+    	Name des Formularfeldes des aktuellen Produkts zur \"Ubergabe an
+	den Warenkorb. Der Name spezifiert das aktuelle Produkt.
+
+    \begin{verbatim}
+    <!-- Dokument Seite mit Produkten -->
+    ...
+    <form action="<!CART:LINK!>">
+      <b>Nennen Sie die gew&uuml;nschte Menge:</b>
+        <input type="text"
+          name="<!PRODUCT:QUANTITYNAME!>"
+          value="<!PRODUCT:QUANTITY!>"
+        >
+      <p>
+        <input type="submit" value="In den Warenkorb legen">
+    </form>
+    ...
+    \end{verbatim}
+
+    \subsubsection{$<$!PRODUCT:FORMQUANTITY!$>$ Menge des bestellten Produkts oder '1'}
+
+	Dieses Tag dient zur \"Ubergabe von Produktmengen an den Korb, ohne
+	sie durch eine feste Mengenangabe durcheinanderzubringen.
+	Zur\"uckgegeben wird immer '1', falls das Produkt noch nicht
+	im Warenkorb liegt. $<$!:QUANTITY!$>$ w\"urde in diesem Fall '0'
+	liefern, was zu dem Versuch f\"uhrt ein nicht im Warenkorb abgelegtes
+	Produkt zu l\"oschen, was vom Warenkorb wohlwollend ignoriert wird.
+
+    \begin{verbatim}
+    <input type="checkbox"
+      name="<!PRODUCT:QUANTITYNAME!>"
+      value="<!PRODUCT:FORMQUANTITY!>"
+    >
+    \end{verbatim}
+
+\pagebreak
+\subsection {Preise}
+
+    \subsubsection{$<$!PRODUCT:PRICE Waehrung!$>$}
+
+	Liefert den Preis des aktuellen Produkts in der angegebenen
+	W\"ahrung. Wird keine W\"ahrung angegeben, so wird die W\"ahrung,
+        welche in der Klasse p\_default abgelegt wurde verwendet. Liegt
+	kein Preis in der verwendeten W\"ahrung vor, wird ein Weg zur
+	Umrechnung gesucht. Ist dies nicht m\"oglich, wird das Tag
+	durch den Inhalt des Objekts 'l\_no\_price' zur\"uckgeliefert.
+
+    \subsubsection{$<$!PRODUCT:TOTAL Waehrung!$>$}
+
+	Liefert $<$!PRODUCT:PRICE W\"ahrung!$>$ multipliziert mit
+	$<$!PRODUCT;QUANTITY!$>$.
+	
+    \subsubsection{$<$!CART:TOTAL Waehrung!$>$}
+
+	Summiert den Preis s\"amtlicher bestellten Produkte in der
+	angegebenen W\"ahrnug.
+
+\pagebreak
+\subsection {Der Warenkorb}
+
+    CART ist ein virtuelles Verzeichnis, welches in allen anderen
+    Verzeichnissen enthalten ist.
+
+    \subsubsection{Leerer Warenkorb}
+
+    \verb+<!CART:IS-EMPTY!>+
+
+    Dieses Tag wird durch `1' ersetzt, wenn der Warenkorb keine Produkte
+    enth\"aelt, ansonsten `0'. Das folgende Beispiel erzeugt einen Link zum
+    Warenkorb, falls dieser nicht leer ist.
+
+    \begin{verbatim}
+    	<? if (!<!CART:IS-EMPTY!>) { ?>
+		<a href="<!CART!>">Zum Warenkorb</a>
+	<? } ?>
+    \end{verbatim}
+
+    \subsubsection{$<$!CART:LINK [Produktmenge]!$>$ Link zur Aenderung der Produktmenge}
+
+        Erzeugt einen Link zur \"ubergabe von mehreren Produkten in den
+	Warenkorb, falls keine Menge angegeben wurde.
+	Hier ein Beispiel eines Warenkorb-Dokuments:
+	\begin{verbatim}
+    <html>
+      <head>
+        <title>Warenkorb</title>
+      </head>
+      <body>
+        <h3>Warenkorb</h3>
+        <form action="<!CART:LINK!>" method="post">
+          <!-- Liste bestellter Produkte -->
+	  <!CART:LIST!>
+        </form>
+        <form action="<!ORDER:LINK!>" method="post">
+          <input type="submit" value="bestellen">
+        </form>
+      </body>
+    </html>
+	\end{verbatim}
+	Als Aufz\"ahlungstemplate kann das Beispiel des Warenkorbs
+	\"ubernommen werden.
+
+	Wurde eine Produktmenge \"uebergeben, so wird eine URL erzeugt,
+	deren Aufruf die Menge des aktuellen Produkts im Warenkorb \"andert.
+	Die Menge kann absolut sein, z.B. 1, um das Produkt in den Warenkorb auf
+	zunehmen.
+	Eine vorzeichenbehaftete Anzahl, positiv oder negativ, z.B.
+	'-1' oder '+2', \"andert die Anzahl relativ zur aktuellen.
+	Negative Produktmengen sind nicht m\"oglich.
+
+
+    \subsubsection{$<$!CART:LIST!$>$ Aufz\"ahlung der Produkte im Warenkorb}
+
+	Aufz\"ahlungen werden ausser im Warenkorb-Dokument auch in der
+	Bestellungs- und Best\"atigungsmail verwendet.
+
+\pagebreak
+\subsection {Addressinformationen}
+
+    Verzeichnisse vom Typ ORDER sind virtuell.
+
+    \subsubsection{$<$!ORDER:LINK!$>$ Link zum Bestellformular}
+
+    	Liefert die URL des Dokuments, welches die Addressdaten aufnehmen
+	soll. \"Ubergebene ECML-Informationen werden gespeichert und k\"onnen
+	in das Dokument eingebunden werden.
+	Pflichtfelder werden in Objekten der Klasse 'd\_order\_duty'
+	definiert.
+    
+    	Wurde die Bereitschaft zur Bestellungsaufgabe signalisiert
+	(siehe $<$!ORDER:FINISH!$>$) und das die Pflichtfelder sind vollst\"andig,
+	so wird eine Bestellungsmail an die Email-Adresse im Objekt der
+	Klasse 'xyz' sowie eine Best\"atigungsmail an den Kunden versendet und
+	das Best\"atigungsdokument ausgegeben. Der Sitzungsschl\"ussel wird
+	gesperrt und nicht nochmals verwendet.
+
+	Beispiel eines Addressformulars, welches direkt zur Bestellannahme
+	f\"uhrt:
+	\begin{verbatim}
+    <html>
+      <head><title>Bestellformular</title></head>
+      <body>
+        <form action="<!ORDER!>" method="post">
+          <!-- ECML-Version anzeigen -->
+            <!ORDER:ECML-VERSION!>
+          <!-- Anzeigen, dass eine Bestellungsannahme erfolgen soll, falls
+               alle notwendigen Bestellinformationen bereitliegen -->
+            <!ORDER:FINISH!>
+          <!-- ...Addressfelder... -->
+        </form>
+      </body>
+    </html>
+        \end{verbatim}
+
+    \subsubsection{$<$!ORDER:ECML-VERSION!$>$ Benutzte ECML-Version festlegen}
+
+	Generiert ein verstecktes ECML-Formfeld in HTML-Syntax, welches ein
+	Formular als ECML v1.1-konform deklariert.
+
+    \subsubsection{$<$!ORDER:FINISH!$>$ Ende der Bestellung in ECML-Formularen}
+
+	Generiert ein verstecktes ECML-Formfeld in HTML-Syntax, welches die
+	Bereitschaft zur Bestellungsaufgabe signalisiert. Somit kann sich
+	das Addressformular \"uber mehrere Seiten erstrecken.
+    	Beispielsweise kann man den Kunden auf eine Seite leiten, die
+	lediglich eine Best\"atigung der eingegebenen Informationen verlangt.
+	Manche behaupten, dies w\"urde die R\"ucklauf von Produkten
+	mindern.
+
+    \subsubsection{ECML-Formfeldnamen}
+    \verb+<!ORDER:SHIPTO-NAME Kurzname!>+ \linebreak
+    \verb+<!ORDER:BILLTO-NAME Kurzname!>+ \linebreak
+    \verb+<!ORDER:RECEIPTTO-NAME Kurzname!>+
+    	Liefert den Namen eines der ECML-Addressfelder, die sich eh kein
+	Schwein merken kann.
+
+  	S\"amtliche ECML-Formnamen beginnen mit 'Ecom\_'. Je nach Adresstyp
+  	kommt noch 'ShipTo\_', 'BillTo\_' oder 'ReceiptTo\_' hinzu.
+    \begin{tabular}{|l|l|}
+        \hline
+  	Kurzname	& Formname \\
+  	name\_prefix	& Ecom\_*To\_Postal\_Name\_Prefix \\
+  	name\_first	& Ecom\_*To\_Postal\_Name\_First \\
+  	name\_middle	& Ecom\_*To\_Postal\_Name\_Middle \\
+  	name\_last	& Ecom\_*To\_Postal\_Name\_Last \\
+  	name\_suffix	& Ecom\_*To\_Postal\_Name\_Suffix \\
+  	company		& Ecom\_*To\_Postal\_Company \\
+  	street1		& Ecom\_*To\_Postal\_Street\_Line1 \\
+   	street2		& Ecom\_*To\_Postal\_Street\_Line2 \\
+  	street3		& Ecom\_*To\_Postal\_Street\_Line3 \\
+  	city		& Ecom\_*To\_Postal\_City \\
+  	state		& Ecom\_*To\_Postal\_StateProv \\
+  	postal\_code	& Ecom\_*To\_Postal\_PostalCode \\
+  	country\_code	& Ecom\_*To\_Postal\_CountryCode \\
+  	phone		& Ecom\_*To\_Telecom\_Phone\_Number \\
+  	email		& Ecom\_*To\_Online\_Email \\
+        \hline
+    \end{tabular}
+
+    	Beispiel eines Addressfeldes im Formular:
+    	\begin{verbatim}
+    <!-- ... --->
+    <b>Vorname:</b>
+    <input type="text" name="<!ORDER:SHIPTO-NAME name_first!>"
+                      value="<!ORDER:SHIPTO name_first"><br>
+    <b>Name:</b>
+    <input type="text" name="<!ORDER:SHIPTO-NAME name_last!>"
+                      value="<!ORDER:SHIPTO name_last"><br>
+    <!-- ...etc... --->
+    	\end{verbatim}
+
+    \subsubsection{Abrufen bereits geposteter Bestelldaten}
+    \verb+<!ORDER:SHIPTO Kurzname!>+ \linebreak
+    \verb+<!ORDER:BILLTO Kurzname!>+ \linebreak
+    \verb+<!ORDER:RECEIPTTO Kurzname!>+
+
+	Wurden bereits ECML-Addressinformationen an den Shop gesendet, so
+	stehen diese weiterhin in der Datenbank bereit und k\"onnen mit diesem
+	Tag in das Addressformular eingebunden werden.
+
+    \subsubsection{$<$!ORDER:IS-INCOMPLETE!$>$ Unvollst\"andigkeit des Adressformulars}
+
+	Liefert '1' zur\"uck falls das Adressformular unvollst\"andig
+	ausgef\"ullt abgesendet wurde, ansonsten '0'. Dies vor allem bei
+	Verwendung von php-Code praktisch.
+
+    \subsubsection{$<$!ORDER:ERRORS!$>$ Fehlermeldungen f\"ur unausgef\"ullte Pflichtfelder}
+
+	Liefert die Fehlermeldungen f\"ur unausgef\"ullte Felder in der
+	Reihenfolge, wie sie im Objekt der Klasse l\_order\_duty definiert
+	sind zur\"uck. Ansonsten wird das Tag verworfen.
+
+\pagebreak
+\subsection {Sessions}
+
+    Verzeichnisse vom Typ SESSION sind virtuell.
+
+    \subsubsection{$<$!SESSION:KEY!$>$ Sitzungsschl\"ussel}
+
+	Liefert den Sitzungsschl\"ussel zur\"uck, damit manuell erstellte
+	Links damit versehen werden k\"onnen. Als Formularfeldname wird
+	stets 'SESSION\_KEY' verwendet.
+	\paragraph
+	Erste Versionen des Shops verwendeten $<$? echo sid () ?$>$. Diese
+	M\"oglichkeit wird nicht mehr unterst\"utzt.
+
+    \subsubsection{$<$!SESSION:FORCE!$>$ Erzwingen einer Sitzung}
+
+	Erzwingt den Einsatz eines einmaligen Schl\"ussels in den nachfolgenden
+	Links im Dokument. Dies gilt jedoch nur f\"ur vom Shop-System
+	generierte Links. Dieses Tag sollte m\"oglichst am Anfang eines
+	Dokuments verwendet werden. Zum Beispiel so:
+	\begin{verbatim}
+<!SESSION:FORCE!><html>
+    <head>
+     <!-- ...etc... -->
+</html>
+	\end{verbatim}
+
+    \subsubsection{$<$!SESSION:MAGIC-KEYS!$>$ Statische Links mit Schl\"usseln versehen}
+
+	Versieht vom Benutzer eingetragene Links im Dokument mit einem
+	Session-Key. Da dieser Vorgang relativ zeitaufwendig ist, empfiehlt
+	sich die Verwendung von $<$!SESSION:KEY!$>$.
+	Es ist v\"ollig egal, in welchem Template dieses Tag benutzt wird.
+	Wurde das $<$!SESSION:MAGIC-KEYS!$>$-Tag irgendwo gefunden, werden erst
+	nach Erstellung einer Seite manuell eingegebene Links konvertiert.
+	Gibt es keinen Sitzungsschl\"ussel, geschieht nichts.
+	
+	So wird aus ...
+	\begin{verbatim}
+<!SESSION:MAGIC-KEYS!>
+  <a href="extra-angebote.html">Extra-Angebote hier</a>
+  	\end{verbatim}
+	eine Version mit Sitzungsschl\"usseln:
+	\begin{verbatim}
+  <a href="extra-angebote.html?SESSION-KEY=2a6sd6dgetc">Extra-Angebote hier</a>
+  	\end{verbatim}
+
+	$<$!SESSION:MAGIC-KEYS!$>$ wird durch nichts ersetzt\footnote {
+		Es wird einfach entfernt}.
+	Es ist darauf zu achten, dass in den neuen Seiten der Schl\"uessel in
+	die Links eingetragen ist. Handelt es sich beim Zieldokument um ein
+	Dokument benutzerdefinierter Klasse, so kann auch dort
+	$<$!SESSION:MAGIC-KEYS!$>$ verwendet werden.
+
+\section {Entwicklung}
+
+    Dieser Abschnitt beschreibt die Entwicklungsumgebung des Shop-Systems.
+
+    Damit das Programm mit kleinstm\"oglichem Aufwand und Vorwissen installiert
+    werden kann, wird es vollst\"andig in der Datenbank abgelegt.  Der Benutzer
+    muss lediglich ein $Wrapper$-Skript und eine Konfigurationsdatei installiern
+    und kann Updates per Web-Interface vornehmen.
+
+    In diese Form wird das Programm jedoch nur mit Hilfe eines Shell-Skripts
+    gebracht. Entwickelt wird es wie gewohnt in Dateiform.
+    Es durchsucht das Programm nach $include$ und $require$-Befehle und
+    f\"ugt die angegeben Dateien an entsprechender Stelle ein. Ein solches
+    Image wird vom $Wrapper$ per HTTP oder aus einer Datenbank abgerufen und
+    ausgef\"uhrt, wenn die entsprechenden Parameter in der $.dbi.conf$
+    eingetragen wurden.
+
+    Der Shop selbst in ein Teil der $central services$, einer Sammlung von
+    Webprogrammen und Hilfen zur Installation und Verwaltung.
+    S\"amtliche Versionen sind unter $ftp://devcon.net/centralservices/archive$
+    zu finden. Entpacken die aktuellste Version in ein Verzeichnis.
+    Es enth\"alt die Unterverzeichnisse $local$ und $ports$. $ports$
+    enth\"alt eine Sammlung von $Makefiles$ mit deren Hilfe Skripte per
+    ftp downgeloadet, notfalls kompiliert und installiert werden k\"onnen.
+    Programme welche ein einer Version vorliegen k\"onnen, werden in
+    $local$, nach Sprache sortiert, installiert. Damit dies im Falle von
+    php-Skripten auch funktioniert, muss der $php_include_path$ auf das
+    Verzeichnis local/php zeigen. Die Skripte des Programms, welches hier
+    behandelt wird liegen im Verzeichnis local/php/mod\_shop.
+
+    Das folgende Diagramm zeigt die \"Abh\"angigkeiten der Programmteil in
+    $local/php$ ausgehen von den Teilen in $local/php/mod_shop$.
+
+    \begin{figure}[!h]
+    \begin{center}
+    \includegraphics[width=\textwidth]{de.ref.src.overview.eps}
+    \end{center}
+    \"Ubersicht der Abh\"angigkeiten der wichtigsten Quelldateien.
+    \end{figure}
+
+    $mod_shop.php3$ bindet die n\"otigen Teile des Shops ein, nimmt
+    Verbindung zur Datenbank auf und ruft das CMS dazu auf eine Seite f\"uer
+    die \"ubergebene URL zu generieren.
+    Die Initialisierung der Verzeichnistypen und Tags erfolgen global in
+    den Dateien $cms.php3$ und $cart.php3$. Die in $mod\_shop.php3$ aufgerufene
+    Funktion $process_document$ befindet sich in der Datei $url.php3$.
+    Diese Funktion verfolgt den per URL \"ubergebenen Pfad und liest die
+    Verzeichnisinformationen in den Context-Cache des Parsers auf den sp\"ater
+    mit Hilfe der Template-Tags zugegriffen wird. Im Context-Cache befindet
+    sich jeweils der letzte gelesene Eintrag jedes Verzeichnistyps.
+    \footnote{Als einfaches assoziatives Array in $DBLAYOUT->context[]$
+    realisiert.}
+    Nachdem das Dokument-Template bestimmt und eingelesen wurde, kann es
+    direkt ausgegebenwerden. Andernfalls ruft die
+    Funktion den Parser $DBLAYOUT->parse()$ auf, evaliert die zur\"uckgegebene
+    Seite falls das erw\"unscht ist und kehrt zur\"uck zu $mod_shop.php$,
+    wo das Skript beendet wird.
+
+    $mod_shop.php3$ enth\"alt der 
+\subsection {Datenbankzugriff}
+
+    Datenbankverbindungen werden von der Klasse $DBWrapper$ verwaltet.
+    \"Uber sie werden alle SQL-Anfragen abgewickelt, die bei m\"oglichst
+    vielen Datenbanken verschiedener Hersteller zum gew\"unschten Ziel
+    f\"uhren.
+    Komplexere Operationen mit Spalten, Zeilen, Tabellen oder gesamten
+    Datenbanken sind mit der Klasse $DBI$ m\"oglich, welche von $DBWRapper$
+    abgeleitet ist.
+    Sie ist z.B. in der Lage, eine bestimmte Zeile zu l\"oschen, sondern
+    auch alle von ihr abh\"angigen Zeilen in anderen Tabellen.
+    F\"ur komplexe Operationen m\"ussen einzubeziehnde Tabellen mit dazu
+    bereitgestellten Methoden der Klasse beschrieben werden.
+    Instanzen der Klasse $DBOBJ$ repr\"asentieren einzelne Objekte. Die
+    Hierarchien der Tabellen werden Instanzen der Klasse $DBDEPEND$ bei der
+    Konstruktion \"ubergeben.
+    Der Parser durchsucht ein Template nach Tags und leitet aus ihnen
+    Funktionsnamen ab, die aufgerufen und dessen R\"uckgabewert an Stelle
+    der Tags gesetzt werden. Die aufgerufenen Funktionen, $Tag-$ und
+    $Dokument-Handler$ befinden sich in den Dateien $cart.php3$,
+    $cms.php3$ und $order.php3$. $ecml.php3$ enth\"alt Funktionen zur
+    Verwaltung von ECML-Informationen. $send_order.php3$ versendet Bestellungen
+    per Mail und kann einfach ausgetauscht werden; z.B. zur Fax-Bestellung.
+    $updates.php3$ enth\"alt notfalls Code zum Upgrade von der vorherigen
+    Version auf die aktuelle. $attic.php3$ enth\"alt Code, welche in
+    zuk\"unftigen Versionen des Shops entfernt werden.
+
+    Das Administrationsskript $admin.php3$ enth\"alt eine von
+    $local/php/lib/application.class$ abgeleitete Klasse. $application.class$
+    generiert Links und ruft damit verbundene $View-Funktionen$ auf, welche
+    mit Hilfe der Klasse $admin_panel$ HTML-Code und -Formulare generiert und
+    \"ubergebene Formulare auswertet. Links werden mit Hilfe von Einweg-
+    Schl\"usseln, $Tokens$ bezeichnet, generiert, um eine doppelte Ausf\"uhrung
+    einer Funktion mit denselben Parametern,
+    welche bei der Funktion $\$this->link ()$
+    \"ubergeben wurden zu verhindern. Auch Formularfelder erhalten einmalige
+    Namen.
+    
+\subsection {Sessions}
+ 
+    Sessions werden vom CMS verwendet, um virtuelle Verzeichnisse bestimmten
+    Usern zuzuordnen. Die Klasse $DBSESSION$ verwaltet Schl\"ussel zusammen
+    mit BLOBs.
+
+\subsection {Komplexe Datenbankoperationen}
+
+    Komplexe Datenbankoperationen umfassen das erstellen, ver\"andern, kopieren
+    und l\"oschen von Spalten, Zeilen, Tabellen oder Datenbanken unter
+    Ber\"ucksichtigung von Referenzen.
+
+\subsection {Verzeichnisse und Listen}
+
+    Zur Zeit steht die Klasse $dbtreeview$ zur Darstellung von Verzeichnissen
+    in Administrationsinterfaces bereit.
+
+\subsection {Template-Parser}
+
+    Der Funktion $parse ()$ der Klasse $DBLAYOUT$ durchsucht eine Layoutvorlage
+    nach Tags und ruft die daf\"ur zust\"andigen $Tag-Handler$ auf um sie
+    durch den R\"uckgabewert zu ersetzen. Gegebenfalls durchl\"auft die
+    Vorlage die $eval ()$-Funktion um php-Code auszuf\"uhren.
+    Welche Tags erlaubt sind wird \"uber die Funktionen $globcmd ()$,
+    $tagcmd ()$ und $assoc ()$ eingestellt. $Dokument-Handler$ initialisieren
+    die Ausgabe eines Dokuments.
+
+\subsection {URL-Parser}
+\subsection {Das Shop-Modul}
+\subsection {Userinterface/Form-Interpreter}
+\subsection {Praktische Funktionen}
+
+\section {Glossar}
+
+	\subsection{Vererbung}
+	\subsection{Verzeichnis}
+
+\section {Index}
+\printindex
+\end{document}
