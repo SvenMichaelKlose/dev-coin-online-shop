@@ -1,4 +1,34 @@
-For more information please refer to http://www.devcon.net/software/shop/.
+This is dev/coin, a PHP web shop released under the GPL. It depends
+on the application framework "Caroshi PHP" which can be found here:
 
-Weitere Informationen sind unter http://www.devcon.net/software/shop/ stets
-aktualisiert zu finden.
+    https://github.com/SvenMichaelKlose/Caroshi-PHP
+
+For the lastest version of dev/coin, please see
+
+    https://github.com/SvenMichaelKlose/dev-coin-online-shop
+
+Its properties:
+
+    - doesn't need JavaScript/ECMAScript anywhere
+    - has a very easy to use administration area
+    - can be set up by web designers who know next to nothing
+      about programming
+    - stores all information in a MySQL database
+    - inventory and templates are in the administration area
+    - categories can be nested as much as you like
+
+History
+=======
+
+dev/coin has been developed from 2000 til 2002 by Sven Michael Klose
+at dev/consulting GmbH (Bielefeld, Germany) and it has been released
+under the GNU Public License in 2001. When dev/consulting GmbH was
+sold, dev/coin has been wiped off the servers and was believed to be
+gone forever. In November the 25th, 2011 it has been rediscovered.
+
+Future
+======
+
+Still, it's an interesting piece of software than can be very useful
+and so we're going to get it up and running on PHP5. Also, we need
+to upgrade it use the newest version of Caroshi PHP.
