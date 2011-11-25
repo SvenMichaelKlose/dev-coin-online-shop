@@ -1,18 +1,18 @@
-    Since the shop runs quite stable, the user manual is rewritten and the
-    user interface comes to usability ;) it's time to do a 1.0.0 release
-    and clean up the CMS before working on the next stable branch.
+Current TODO
+============
 
-    This are the features suggested for the 1.2.0 release:
+    - move it from PHP4 to PHP5
+    - update it for use with the newest version of "Caroshi PHP"
+    - apply CSS where appropriate
+    - cleanup code and indentation
 
-    - Merged directory table; a cursor would only contain an integer.
-    - XML style tags (no need for separate list templates and a good way to
-      pass multiple attributes).
 
-    This are the features suggested for any later release:
+Ancient TODO (2001)
+===================
 
     Directory objects:
 
-	- Let user the lifetime of objects.
+	- Let user set the lifetime of objects.
 	- Add resort object to split the shop.
 
     Cart:
