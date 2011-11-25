@@ -80,7 +80,6 @@
     $data = unserialize ($obj->active['data']);
 
     $p->headline ($lang['title edit_duty_fields']);
-    include 'mod_shop/ecml.php';
     $stdtype = ecml_typearray ();
 
     echo '<form method="post" action="' .

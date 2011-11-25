@@ -28,7 +28,7 @@
   				# Note that this options spoils images so they
 				# won't be displayed by any browser.
 
-  $PATH_TO_CAROSHI = ".";
+  $PATH_TO_CAROSHI = '.';
   
   if (!file_exists ('./.dbi.conf.php'))
     die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
@@ -140,6 +140,14 @@
   # Search engine.
   require 'mod_shop/search.php';
 
+  include 'attic.php';
+  include 'cart.php';
+  include 'cms.php';
+  include 'document.php';
+  include 'ecml.php';
+  include 'order.php';
+  include 'search.php';
+  include 'send_order.php';
 
   ###########
   ### Go! ###

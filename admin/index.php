@@ -1,10 +1,8 @@
 <?
-  # $Id: index.php,v 1.39 2001/12/03 10:34:55 sven Exp $
-  #
   # dev/con modular shop administration interface
   #
-  # (c)2000-2001 dev/consulting GmbH
-  #	    	 Sven Klose (sven@devcon.net)
+  # Copyright (c) 2000-2001 dev/consulting GmbH
+  # Copyright (c) 2011 Sven Klose <pixel@copei.de>
   #
   # This program is free software; you can redistribute it and/or modify
   # it under the terms of the GNU General Public License as published by
@@ -28,40 +26,49 @@
   error_reporting (-1);
   
   $debug = 0;
+  $PATH_TO_CAROSHI = '.';
+
+  if (!file_exists ('./.dbi.conf.php'))
+      die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
+  require '.dbi.conf.php';
+
+  if (! isset ($PATH_TO_PUBLIC))
+      die ('$PATH_TO_PUBLIC is not set.');
 
   # Include libraries.
-  require 'lib/application.class';
-  require 'admin_panel/admin_panel.class';
-  require 'admin_panel/ssi/php_array.class';
-  require 'admin_panel/tk/range_edit.php';
-  require 'admin_panel/tk/tree_edit.php';
-  require 'admin_panel/tk/treeview.class';
-  require 'dbi/dbsession.class';
-  require 'dbi/dbobj.class';
-  require 'dbi/dbsort.php';
-  require 'dbi/dbtree.php';
-  require '.dbi.conf.php';
+  require $PATH_TO_CAROSHI . '/lib/application.class';
+  require $PATH_TO_CAROSHI . '/admin_panel/admin_panel.class';
+  require $PATH_TO_CAROSHI . '/admin_panel/ssi/php_array.class';
+  require $PATH_TO_CAROSHI . '/admin_panel/tk/range_edit.php';
+  require $PATH_TO_CAROSHI . '/admin_panel/tk/tree_edit.php';
+  require $PATH_TO_CAROSHI . '/admin_panel/tk/treeview.class';
+  require $PATH_TO_CAROSHI . '/dbi/dbsession.class';
+  require $PATH_TO_CAROSHI . '/dbi/dbobj.class';
+  require $PATH_TO_CAROSHI . '/dbi/dbsort.php';
+  require $PATH_TO_CAROSHI . '/dbi/dbtree.php';
 
   # Load language description.
   if (file_exists ('lang_' . $language . '.inc'))
-    @require 'lang_' . $language . '.inc';
+    require 'lang_' . $language . '.inc';
   else
-    @require 'mod_shop/lang_' . $language . '.inc';
+    require $PATH_TO_PUBLIC . '/lang_' . $language . '.inc';
+
+  require $PATH_TO_PUBLIC . '/lang_' . $language . '.inc';
 
   # Include other views.
-  require 'mod_shop/admin/categories.php';
-  require 'mod_shop/admin/classes.php';
-  require 'mod_shop/admin/config.php';
-  require 'mod_shop/admin/db.php';
-  require 'mod_shop/admin/generic_list.php';
-  require 'mod_shop/admin/navigator.php';
-  require 'mod_shop/admin/obj_order_fields.php';
-  require 'mod_shop/admin/objects.php';
-  require 'mod_shop/admin/orders.php';
-  require 'mod_shop/admin/pages.php';
-  require 'mod_shop/admin/products.php';
-  require 'mod_shop/admin/product_attrib.php';
-  require 'mod_shop/admin/tables.php';
+  require 'categories.php';
+  require 'classes.php';
+  require 'config.php';
+  require 'db.php';
+  require 'generic_list.php';
+  require 'navigator.php';
+  require 'obj_order_fields.php';
+  require 'objects.php';
+  require 'orders.php';
+  require 'pages.php';
+  require 'products.php';
+  require 'product_attrib.php';
+  require 'tables.php';
   
   class shop_admin extends application {
 

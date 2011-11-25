@@ -57,6 +57,7 @@
 
   # HEADSUP: Global definitions end here.
 
+
   #######################
   ### Database access ###
   #######################
@@ -98,6 +99,7 @@
     if ($res->num_rows () > 0)
       return $_CMS_CACHE_DIRS[$table][$id] = $res->fetch_array ();
   }
+
 
   #####################
   ### Link creation ###
@@ -163,6 +165,7 @@
 
     return $url;
   }
+
 
   ########################
   ### Context creation ###
@@ -254,7 +257,7 @@
       }
       dbitree_get_parent ($db, $table, $id);
     }
-$scanner->context_table = $dirtype;
+    $scanner->context_table = $dirtype;
 
     # Panic if there's no parent context.
     if (!isset ($scanner->context['id']))
@@ -263,13 +266,13 @@ $scanner->context_table = $dirtype;
 	   'this bug.');
   }
 
+
   ################
   ### Sessions ###
   ################
 
   $scanner->dirtag ('SESSION', 	'KEY');
 
-  include 'dbi/dbsession.class.php';
   $session =& new DBSESSION ($db);
   if (isset ($SESSION_KEY))
     $session->read_id ($SESSION_KEY);
@@ -278,6 +281,7 @@ $scanner->context_table = $dirtype;
   {
     return cms_variable_tail ();
   }
+
 
   ###################
   ### LIST output ###
@@ -373,6 +377,7 @@ $scanner->context_table = $dirtype;
 
     return $out;
   }
+
 
   #######################
   ### Global CMS tags ###
