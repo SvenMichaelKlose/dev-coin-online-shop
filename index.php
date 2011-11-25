@@ -5,8 +5,8 @@
   #
   # This is the main file of the public script.
   #
-  # (c) 2000-2001 dev/consulting GmbH,
-  #	    	  Sven Klose (sven@devcon.net)
+  # Copyright (c) 2000-2001 dev/consulting GmbH,
+  # Copyright (c) 2011 Sven Klose <pixel@copei.de>
   #
   # This program is free software; you can redistribute it and/or modify
   # it under the terms of the GNU General Public License as published by
@@ -43,20 +43,20 @@
   ##################################
 
   # dbictrl.class provides basic database access.
-  include 'dbi/dbctrl.class';
+  include 'dbi/dbctrl.class.php';
 
   # dbdepend.class holds dependencies between database tables.
-  include 'dbi/dbdepend.class';
+  include 'dbi/dbdepend.class.php';
 
   # dbobj.class manages inheritable objects in the directory tree of
   # categories, pages (aka product groups) and products.
-  include 'dbi/dbobj.class';
+  include 'dbi/dbobj.class.php';
 
   # Tree walking functions.
   include 'dbi/dbtree.php';
 
   # scanner.class is the template scanner.
-  include 'lib/xml_scanner.class';
+  include 'lib/xml_scanner.class.php';
 
   # htmllig2latin.php convert HTML ligatures to latin characters.
   # e.g. &auml; => ae
@@ -65,7 +65,7 @@
   # Call panic() if you want to set alarm and send a mail to the
   # administrator. (Uses the email address in $SERVER_ADMIN which you can
   # override in .dbi.conf.php.
-  include 'lib/panic.class';
+  include 'lib/panic.class.php';
 
   ##############################
   ### Database configuration ###

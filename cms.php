@@ -3,8 +3,8 @@
   #
   # Content management system
   #
-  # (c) 2000-2001 dev/consulting GmbH,
-  #	    	  Sven Klose (sven@@devcon.net)
+  # Copyright (c) 2000-2001 dev/consulting GmbH,
+  # Copyright (c) 2011 Sven Klose <pixel@copei.de>
   #
   # This program is free software; you can redistribute it and/or modify
   # it under the terms of the GNU General Public License as published by
@@ -273,7 +273,7 @@ $scanner->context_table = $dirtype;
 
   $scanner->dirtag ('SESSION', 	'KEY');
 
-  include 'dbi/dbsession.class';
+  include 'dbi/dbsession.class.php';
   $session =& new DBSESSION ($db);
   if (isset ($SESSION_KEY))
     $session->read_id ($SESSION_KEY);
