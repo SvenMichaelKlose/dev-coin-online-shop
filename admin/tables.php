@@ -1,27 +1,14 @@
 <?
-  # $Id: tables.php,v 1.2 2001/11/13 18:48:31 sven Exp $
-  #
-  # dev/con modular shop administration interface
-  #
-  # (c)2000-2001 dev/consulting GmbH
-  #	    	 Sven Klose (sven@devcon.net)
-  #
-  # This program is free software; you can redistribute it and/or modify
-  # it under the terms of the GNU General Public License as published by
-  # the Free Software Foundation; either version 2 of the License, or
-  # (at your option) any later version.
-  #
-  # This program is distributed in the hope that it will be useful,
-  # but WITHOUT ANY WARRANTY; without even the implied warranty of
-  # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  # GNU General Public License for more details.
-  #
-  # You should have received a copy of the GNU General Public License
-  # along with this program; if not, write to the Free Software
-  # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Database table definitions
+#
+# Copyright (c) 2000-2001 dev/consulting GmbH
+# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+#
+# Licensed under the MIT, BSD and GPL licenses.
 
-  function tables_define (&$this)
-  {
+
+function tables_define (&$this)
+{
     $def =& $this->db->def;
 
     dbobj::define_tables ($def);
@@ -70,8 +57,8 @@ $this->db->query ('drop table xrefs');
 ### This is going to be removed! ###
 ####################################
 
-      # Category table.
-      $def->define_table (
+    # Category table.
+    $def->define_table (
   	'categories',
         array (
           array ('n' => 'id',
@@ -98,14 +85,14 @@ $this->db->query ('drop table xrefs');
 		 'i' => true,
                  'd' => 'Category name')
 	)
-      );
-      $def->set_primary ('categories', 'id');
-      $def->set_ref ('categories', 'categories', 'id_parent');
-      $def->set_ref ('categories', 'pages', 'id_category');
-      $def->set_listref ('categories', 'id_last', 'id_next');
+    );
+    $def->set_primary ('categories', 'id');
+    $def->set_ref ('categories', 'categories', 'id_parent');
+    $def->set_ref ('categories', 'pages', 'id_category');
+    $def->set_listref ('categories', 'id_last', 'id_next');
 
-      # Product group table.
-      $def->define_table (
+    # Product group table.
+    $def->define_table (
   	'pages',
         array (
           array ('n' => 'id',
@@ -132,13 +119,13 @@ $this->db->query ('drop table xrefs');
 		 'i' => true,
                  'd' => 'Product group name')
 	)
-      );
-      $def->set_primary ('pages', 'id');
-      $def->set_ref ('pages', 'products', 'id_page');
-      $def->set_listref ('pages', 'id_last', 'id_next');
+    );
+    $def->set_primary ('pages', 'id');
+    $def->set_ref ('pages', 'products', 'id_page');
+    $def->set_listref ('pages', 'id_last', 'id_next');
  
-      # Product table.
-      $def->define_table (
+    # Product table.
+    $def->define_table (
   	'products',
         array (
           array ('n' => 'id',
@@ -177,16 +164,16 @@ $this->db->query ('drop table xrefs');
 		 'i' => true,
                  'd' => 'Price (Euro)')
 	)
-      );
-      $def->set_primary ('products', 'id');
-      $def->set_ref ('products', 'cart', 'id_product');
-      $def->set_listref ('products', 'id_last', 'id_next');
+    );
+    $def->set_primary ('products', 'id');
+    $def->set_ref ('products', 'cart', 'id_product');
+    $def->set_listref ('products', 'id_last', 'id_next');
   
 ############################################################################
 
-      # Cart item table.
-      # TODO: Copy products into own cart set.
-      $def->define_table (
+    # Cart item table.
+    # TODO: Copy products into own cart set.
+    $def->define_table (
   	'cart',
         array (
           array ('n' => 'id',
@@ -209,11 +196,11 @@ $this->db->query ('drop table xrefs');
 		 'i' => true,
                  'd' => 'Product attributes')
 	)
-      );
-      $def->set_primary ('cart', 'id');
+    );
+    $def->set_primary ('cart', 'id');
 
-      # ECML adresses
-      $def->define_table (
+    # ECML adresses
+    $def->define_table (
   	'address',
         array (
           array ('n' => 'id',
@@ -265,11 +252,11 @@ $this->db->query ('drop table xrefs');
                  't' => 'VARCHAR(255) NOT NULL',
                  'd' => '')
 	)
-      );
-      $def->set_primary ('address', 'id');
+    );
+    $def->set_primary ('address', 'id');
   
-      # Order table.
-      $def->define_table (
+    # Order table.
+    $def->define_table (
   	'ecml_order',
         array (
           array ('n' => 'id',
@@ -296,5 +283,5 @@ $this->db->query ('drop table xrefs');
 	)
     );
     $def->set_primary ('ecml_order', 'id');
-  }
+}
 ?>
