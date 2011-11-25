@@ -1,12 +1,8 @@
 <?
-include 'lib/debug_dump.php';
-
-  # $Id: cart.php,v 1.55 2001/12/01 16:17:18 sven Exp $
-  #
   # Product management extension for dev/con cms.
   #
-  # (c) 2000-2001 dev/consulting GmbH,
-  #	    	  Sven Klose (sven@devcon.net)
+  # Copyright (c) 2000-2001 dev/consulting GmbH,
+  # Copyright (c) 2011 Sven Klose <pixel@copei.de>
   #
   # This program is free software; you can redistribute it and/or modify
   # it under the terms of the GNU General Public License as published by

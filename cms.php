@@ -1,7 +1,5 @@
 <?
-  # $Id: cms.php,v 1.82 2001/12/01 16:17:18 sven Exp $
-  #
-  # Content management system
+  # Generic document generation
   #
   # Copyright (c) 2000-2001 dev/consulting GmbH,
   # Copyright (c) 2011 Sven Klose <pixel@copei.de>
@@ -34,8 +32,6 @@
   # be childs of any real directory but can contain no objects.
   # There can also be functions that can only be used with particular
   # directory types.
-
-  include 'lib/strhead.php';
 
   ##########################
   ### Global definitions ###

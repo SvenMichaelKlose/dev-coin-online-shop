@@ -1,8 +1,4 @@
 <?
-  # $Id: index.php,v 1.90 2001/12/01 16:17:18 sven Exp $
-  #
-  # dev/coin shop
-  #
   # This is the main file of the public script.
   #
   # Copyright (c) 2000-2001 dev/consulting GmbH,
@@ -32,48 +28,60 @@
   				# Note that this options spoils images so they
 				# won't be displayed by any browser.
 
+  $PATH_TO_CAROSHI = ".";
+  
+  if (!file_exists ('./.dbi.conf.php'))
+    die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
+  include '.dbi.conf.php';
+
   # Get current time for profiling.
   if ($debug || $page_profiler) {
     $t = gettimeofday ();
     $__start_time = $t['usec'] + $t['sec'] * 1000000;
   }
 
-  ##################################
-  ### Inclusion of external file ###
-  ##################################
 
-  # dbictrl.class provides basic database access.
-  include 'dbi/dbctrl.class.php';
+  #####################
+  ### External file ###
+  #####################
 
-  # dbdepend.class holds dependencies between database tables.
-  include 'dbi/dbdepend.class.php';
-
-  # dbobj.class manages inheritable objects in the directory tree of
-  # categories, pages (aka product groups) and products.
-  include 'dbi/dbobj.class.php';
-
-  # Tree walking functions.
-  include 'dbi/dbtree.php';
+  # Get head of strings.
+  include $PATH_TO_CAROSHI . '/lib/strhead.php';
 
   # scanner.class is the template scanner.
-  include 'lib/xml_scanner.class.php';
+  include $PATH_TO_CAROSHI . '/lib/xml_scanner.class.php';
 
-  # htmllig2latin.php convert HTML ligatures to latin characters.
-  # e.g. &auml; => ae
-  include 'lib/htmllig2latin.php';
+  # Convert HTML ligatures to latin characters. E.g. &auml; => ae
+  include $PATH_TO_CAROSHI . '/lib/htmllig2latin.php';
 
   # Call panic() if you want to set alarm and send a mail to the
   # administrator. (Uses the email address in $SERVER_ADMIN which you can
   # override in .dbi.conf.php.
-  include 'lib/panic.class.php';
+  include $PATH_TO_CAROSHI . '/lib/panic.class.php';
 
-  ##############################
-  ### Database configuration ###
-  ##############################
-  
-  if (!file_exists ('./.dbi.conf.php'))
-    die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
-  include '.dbi.conf.php';
+  # Debug dumps.
+  include $PATH_TO_CAROSHI . '/lib/debug_dump.php';
+
+  # Basic database access.
+  include $PATH_TO_CAROSHI . '/dbi/dbctrl.class.php';
+
+  # Database table relations.
+  include $PATH_TO_CAROSHI . '/dbi/dbdepend.class.php';
+
+  # Inheritable objects in the directory tree of
+  # categories, pages (aka product groups) and products.
+  include $PATH_TO_CAROSHI . '/dbi/dbobj.class.php';
+
+  # Tree walking.
+  include $PATH_TO_CAROSHI . '/dbi/dbtree.php';
+
+  # Sessions.
+  include $PATH_TO_CAROSHI . '/dbi/dbsession.php';
+
+
+  ###############################
+  ### Database initialization ###
+  ###############################
 
   $db =& new DBCtrl ($dbidatabase, $dbiserver, $dbiuser, $dbipwd);
   $tmp = $db->select ('COUNT(id)', 'obj_classes');
@@ -92,6 +100,7 @@
   $scanner =& new XML_SCANNER;
 
   # HEADSUP: End of global variable declarations.
+
 
   ###################################
   ### Inclusion of internal files ###
@@ -131,6 +140,7 @@
   # Search engine.
   require 'mod_shop/search.php';
 
+
   ###########
   ### Go! ###
   ###########
@@ -139,6 +149,7 @@
   # id == 1. Use 'l_index' template for index page.
   # This function is in file 'document.php'.
   document_process ('categories', 1, 'l_index');
+
 
   ##########################
   ### Optional profiling ###
