@@ -29,6 +29,7 @@
 				# won't be displayed by any browser.
 
   $PATH_TO_CAROSHI = '.';
+  $PATH_TO_ADMIN = 'admin/';
   
   if (!file_exists ('./.dbi.conf.php'))
     die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
@@ -107,47 +108,38 @@
   ###################################
 
   # Load CMS configuration.
-  require 'mod_shop/admin/config.php';
+  require $PATH_TO_ADMIN . '/admin/config.php';
 
   # attic.php contains outdated features scheduled for removal but left
   # in for temporary backwards compatibility.
-  require 'mod_shop/attic.php';
+  require 'attic.php';
 
   # cms.php contains the data management system, e.g. context creation
   # and general tag handlers.
-  require 'mod_shop/cms.php';
+  require 'cms.php';
 
   # cart.php contains the trolley functions and all tag handlers for
   # PRODUCT and CART directories.
-  require 'mod_shop/cart.php';
+  require 'cart.php';
 
   # order.php interfaces to ecml.php using tag handlers for ORDER
   # directories.
-  require 'mod_shop/order.php';
+  require 'order.php';
 
   # ecml.php contains cms-independent functions for ECML v1.1 support.
-  require 'mod_shop/ecml.php';
+  require 'ecml.php';
 
   # send_order.php sends orders via mail (invoked by document_order() in
   # in order.php).
-  require 'mod_shop/send_order.php';
+  require 'send_order.php';
 
   # document.php analyses the URL and determines the initial directory as
   # well as the default document template which can be overridden by 
   # the document handlers it calls.
-  require 'mod_shop/document.php';
+  require 'document.php';
 
   # Search engine.
-  require 'mod_shop/search.php';
-
-  include 'attic.php';
-  include 'cart.php';
-  include 'cms.php';
-  include 'document.php';
-  include 'ecml.php';
-  include 'order.php';
-  include 'search.php';
-  include 'send_order.php';
+  require 'search.php';
 
   ###########
   ### Go! ###
