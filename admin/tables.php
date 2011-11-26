@@ -7,9 +7,9 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function tables_define (&$this)
+function tables_define (&$app)
 {
-    $def =& $this->db->def;
+    $def =& $app->db->def;
 
     dbobj::define_tables ($def);
 

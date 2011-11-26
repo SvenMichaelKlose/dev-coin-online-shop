@@ -7,19 +7,19 @@
 # Licensed under the MIT, BSD and GPL licenses.
   
 
-function class_init (&$this)
+function class_init (&$app)
 {
-    $this->add_viewfunc ('view_classes');
-    $this->add_viewfunc ('edit_class');
+    $app->add_function ('view_classes');
+    $app->add_function ('edit_class');
 }
 
 # View classes.
 # No arguments.
-function view_classes (&$this)
+function view_classes (&$app)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
     $p->headline ($lang['title view_classes']);
     $p->link ($lang['title defaultview'], 'defaultview', 0);
     $p->no_update = true;
@@ -45,13 +45,13 @@ function view_classes (&$this)
 
 # Edit class name.
 # id = Key of class in table obj_classes.
-function edit_class (&$this)
+function edit_class (&$app)
 {
     global $lang;
-    $p =& $this->ui;
+    $p =& $app->ui;
     $p->headline ($lang['title edit_class']);
     $p->open_source ('obj_classes');
-    $p->get ('WHERE id=' . $this->args['id']);
+    $p->get ('WHERE id=' . $app->args['id']);
     $p->open_row (array ('ALIGN' => 'LEFT'));
     $p->inputline ('name', 64, $lang['class name']);
     $p->label ('<B>' . _class2tag ($p->value ('name')) . '</B>');
@@ -61,7 +61,7 @@ function edit_class (&$this)
     $p->paragraph ();
     $p->open_row ();
     $p->cmd_delete ($lang['remove'], 'view_classes');
-    $p->submit_button ('Ok', '_update', $this->arg_set_next (0, 'view_classes'));
+    $p->submit_button ('Ok', '_update', $app->arg_set_next (0, 'view_classes'));
     $p->close_row ();
     $p->close_source ();
 }

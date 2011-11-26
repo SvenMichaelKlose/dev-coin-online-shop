@@ -17,34 +17,31 @@ error_reporting (-1);
   
 $debug = 0;
 $PATH_TO_CAROSHI = '.';
+$language = 'de';
 
-if (!file_exists ('./.dbi.conf.php'))
-    die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
-require '.dbi.conf.php';
-
-if (!isset ($PATH_TO_PUBLIC))
-    die ('$PATH_TO_PUBLIC is not set.');
+if (!file_exists ('config.php'))
+    die ('Can\'t find database confiuration file config.php - stop.');
+require_once 'config.php';
 
 # Include libraries.
-require "$PATH_TO_CAROSHI/lib/application.class";
-require "$PATH_TO_CAROSHI/admin_panel/admin_panel.class";
-require "$PATH_TO_CAROSHI/admin_panel/ssi/php_array.class";
-require "$PATH_TO_CAROSHI/admin_panel/tk/range_edit.php";
-require "$PATH_TO_CAROSHI/admin_panel/tk/tree_edit.php";
-require "$PATH_TO_CAROSHI/admin_panel/tk/treeview.class";
-require "$PATH_TO_CAROSHI/dbi/dbsession.class";
-require "$PATH_TO_CAROSHI/dbi/dbobj.class";
-require "$PATH_TO_CAROSHI/dbi/dbsort.php";
-require "$PATH_TO_CAROSHI/dbi/dbtree.php";
+require_once PATH_TO_CAROSHI . '/proc/application.class.php';
+require_once PATH_TO_CAROSHI . '/admin_panel/admin_panel.class.php';
+#require PATH_TO_CAROSHI . '/admin_panel/ssi/php_array.class.php';
+require_once PATH_TO_CAROSHI . '/admin_panel/tk/range_edit/range_edit.php';
+require_once PATH_TO_CAROSHI . '/admin_panel/tk/tree_edit.php';
+require_once PATH_TO_CAROSHI . '/admin_panel/tk/treeview.class.php';
+require_once PATH_TO_CAROSHI . '/dbi/dbsession.class.php';
+require_once PATH_TO_CAROSHI . '/dbi/dbobj.class.php';
+require_once PATH_TO_CAROSHI . '/dbi/dbsort.php';
+require_once PATH_TO_CAROSHI . '/dbi/dbtree.php';
 
 # Load language descriptions.
-require "lang_$language.inc";
-require "$PATH_TO_PUBLIC/lang_$language.inc";
+require "../lang_$language.php";
 
 # Include other views.
 require 'categories.php';
 require 'classes.php';
-require 'config.php';
+require 'cms-config.php';
 require 'db.php';
 require 'generic_list.php';
 require 'navigator.php';
@@ -53,7 +50,7 @@ require 'objects.php';
 require 'orders.php';
 require 'pages.php';
 require 'products.php';
-require 'product_attrib.php';
+#require 'product_attrib.php';
 require 'tables.php';
   
 class shop_admin extends application {
@@ -71,7 +68,9 @@ class shop_admin extends application {
         $p =& $this->ui;
  
         $treeargs = array (
-            'treeview' => $this->view, 'nodeview' => 'view_pages',
+            'source' => 'categories',
+            'id' => '1',
+            'treeview' => $this->event (), 'nodeview' => 'view_pages',
 	    'nodecreator' => 'create_category', 'rootname' => 'shop',
 	    'table' => 'categories', 'name' => 'name', 'id' => 'id',
             'txt_select_node' => $lang['msg choose category to move'],
@@ -86,7 +85,7 @@ class shop_admin extends application {
         $p->headline ($lang['title defaultview']);
   
         # Main menu
-        $p->link ($lang['cmd move_category'], 'tree_edit_move', $treeargs);
+        $p->link ($lang['cmd move_category'], 'tree_edit_move', 0);
         $p->link ($lang['cmd view_classes'], 'view_classes', 0);
         $p->link ($lang['cmd database_menu'], 'database_menu', 0);
         # TODO: Statistics, last orders.
@@ -109,7 +108,7 @@ class shop_admin extends application {
         tables_define ($this);
 
         # Init user interface.
-        $this->ui =& new admin_panel ($this, $lang['administration'] . " $SERVER_NAME dev/coin 0.9.11 ");
+        $this->ui =& new admin_panel ($this, new widget_set);
 
         # Initialise toolkits
         tk_range_edit_init ($this);
@@ -119,7 +118,7 @@ class shop_admin extends application {
         category_init ($this);
         page_init ($this);
         product_init ($this);
-        product_attrib_init ($this);
+#        product_attrib_init ($this);
         object_init ($this);
         class_init ($this);
         db_init ($this);

@@ -7,12 +7,12 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function page_init (&$this)
+function page_init (&$app)
 {
-    $this->add_viewfunc ('view_pages');
+    $app->add_function ('view_pages');
 }
 
-function view_pages (&$this)
+function view_pages (&$app)
 {
     global $lang;
 
@@ -29,14 +29,14 @@ function view_pages (&$this)
     $c->parent_view = 'defaultview';
     $c->child_view = 'view_products';
     $c->have_submit_button = true;
-    generic_list ($this, $c);
+    generic_list ($app, $c);
 }
 
-function record_page (&$this, $idx)
+function record_page (&$app, $idx)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
 
     $nam = trim ($p->value ('name'));
     if ($nam == '')
@@ -58,7 +58,7 @@ function record_page (&$this, $idx)
     $p->checkbox ('marker');
     $p->close_cell ();
     $p->open_cell ();
-    _object_box ($this, 'pages', $p->value ('id'), $this->args, true);
+    _object_box ($app, 'pages', $p->value ('id'), $app->args, true);
     $p->close_cell ();
     $p->close_row ();
     $p->paragraph ();

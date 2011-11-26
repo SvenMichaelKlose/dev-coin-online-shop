@@ -7,16 +7,16 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function order_init (&$this)
+function order_init (&$app)
 {
-    $this->add_viewfunc ('view_orders');
+    $app->add_function ('view_orders');
 }
 
-function view_orders (&$this)
+function view_orders (&$app)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
     $p->headline ('&Uuml;bersicht der Bestellungen');
     $p->link ($lang['cmd defaultview'], 'defaultview');
 

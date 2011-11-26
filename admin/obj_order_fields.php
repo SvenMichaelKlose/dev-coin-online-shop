@@ -8,7 +8,7 @@
 
 
 # Print an order field.
-function print_field_form (&$this, $title, $p, $stdtype, $adrtype, $data)
+function print_field_form (&$app, $title, $p, $stdtype, $adrtype, $data)
 {
     global $lang;
 
@@ -41,31 +41,31 @@ function print_field_form (&$this, $title, $p, $stdtype, $adrtype, $data)
     }
     $p->paragraph ();
     $p->open_row ();
-    $tmp = $this->args;
-    $tmp['__next'] = $this->args['caller'];
+    $tmp = $app->args;
+    $tmp['__next'] = $app->args['caller'];
     $p->link ($lang['remove'], 'remove_object', $tmp);
-    $p->submit_button ('Ok', '_update', $this->arg_set_next (0, $this->view));
+    $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view));
     $p->close_row ();
     $p->close_table ();
     return array ('duty_fields' => $duty_fields, 'duty_msgs' => $duty_msgs);
 }
 
   # Edit duty fields with checkboxes.
-function edit_duty_fields (&$this, &$obj, $class)
+function edit_duty_fields (&$app, &$obj, $class)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
 
     $data = unserialize ($obj->active['data']);
 
     $p->headline ($lang['title edit_duty_fields']);
     $stdtype = ecml_typearray ();
 
-    echo '<form method="post" action="' . $this->link ('edit_data', $this->args) . '">';
-    $ret['shipto'] = print_field_form ($this, 'Lieferadresse:', $p, $stdtype, 'shipto', $data);
-    $ret['receiptto'] = print_field_form ($this, 'Lieferscheinadresse:', $p, $stdtype, 'receiptto', $data);
-    $ret['billto'] = print_field_form ($this, 'Rechnungsadresse:', $p, $stdtype, 'billto', $data);
+    echo '<form method="post" action="' . $app->link ('edit_data', $app->args) . '">';
+    $ret['shipto'] = print_field_form ($app, 'Lieferadresse:', $p, $stdtype, 'shipto', $data);
+    $ret['receiptto'] = print_field_form ($app, 'Lieferscheinadresse:', $p, $stdtype, 'receiptto', $data);
+    $ret['billto'] = print_field_form ($app, 'Rechnungsadresse:', $p, $stdtype, 'billto', $data);
     echo '</FORM>';
 
     # Write config back to object.
@@ -74,11 +74,11 @@ function edit_duty_fields (&$this, &$obj, $class)
 }
 
   # Edit user defined field names and description.
-function edit_user_fields (&$this, &$obj, $class)
+function edit_user_fields (&$app, &$obj, $class)
 {
     global $lang, $name, $desc; # Form fields.
 
-    $p =& $this->ui;
+    $p =& $app->ui;
 
     $data = unserialize ($obj->active['data']);
     if (!is_array ($data))
@@ -92,24 +92,24 @@ function edit_user_fields (&$this, &$obj, $class)
     }
 
     # Remove a field.
-    if (isset ($this->args['removefield'])) {
-        $tmp = $this->args['removefield'];
+    if (isset ($app->args['removefield'])) {
+        $tmp = $app->args['removefield'];
         unset ($data[$tmp]);
-        unset ($this->args['removefield']);
+        unset ($app->args['removefield']);
     }
 
     # Create new field.
-    if ($this->args['newfield']) {
+    if ($app->args['newfield']) {
         $data[] = array ('name' => $lang['unnamed'], 'desc' => '');
-        unset ($this->args['newfield']);
+        unset ($app->args['newfield']);
     }
 
     $p->headline ($lang['title edit_user_fields']);
 
-    echo '<form method="post" action="' . $this->link ('edit_data', $this->args) . '">';
+    echo '<form method="post" action="' . $app->link ('edit_data', $app->args) . '">';
     $p->open_table ();
     $p->table_headers (array ('Name', 'Description'));
-    $args = $this->args;
+    $args = $app->args;
 
     if (is_array ($data)) {
         foreach ($data as $k => $v) {
@@ -123,7 +123,7 @@ function edit_user_fields (&$this, &$obj, $class)
             $p->open_cell ();
             echo '<INPUT TYPE="TEXT" NAME="desc[]" SIZE="60" VALUE="' . $desc . '">';
             $p->close_cell ();
-            $args = $this->args;
+            $args = $app->args;
             $args['removefield'] = $k;
             $p->link ($lang['remove'], 'edit_data', $args);
             $p->close_row ();
@@ -132,14 +132,14 @@ function edit_user_fields (&$this, &$obj, $class)
 
     $p->paragraph ();
     $p->open_row ();
-    $tmp = $this->args;
+    $tmp = $app->args;
     $tmp['class'] = $class;
-    $tmp['__next'] = $this->args['caller'];
+    $tmp['__next'] = $app->args['caller'];
     $p->link ($lang['remove'], 'remove_object', $tmp);
-    $args = $this->args;
+    $args = $app->args;
     $args['newfield'] = true;
     $p->link ($lang['cmd user_field_new'], 'edit_data', $args);
-    $p->submit_button ('Ok', '_update', $this->arg_set_next (0, $this->view));
+    $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view));
     $p->close_row ();
 
     $p->close_table ();

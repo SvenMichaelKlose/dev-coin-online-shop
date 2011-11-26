@@ -7,19 +7,19 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function product_init (&$this)
+function product_init (&$app)
 {
-    $this->add_viewfunc ('view_products');
-    $this->add_viewfunc ('edit_product');
-    $this->add_viewfunc ('products_after_create');
+    $app->add_function ('view_products');
+    $app->add_function ('edit_product');
+    $app->add_function ('products_after_create');
 }
 
 # View products within a product group.
-function view_products (&$this)
+function view_products (&$app)
 {
     global $lang;
 
-    $c = new generic_list_conf {
+    $c = new generic_list_conf;
     $c->table = 'pages';
     $c->parent_table = 'categories';
     $c->child_table = 'products';
@@ -33,12 +33,12 @@ function view_products (&$this)
     $c->parent_view = 'view_pages';
     $c->child_view = 'products_after_create';
     $c->have_submit_button = true;
-    generic_list ($this, $c);
+    generic_list ($app, $c);
 }
 
-function record_product (&$this, $idx)
+function record_product (&$app, $idx)
 {
-    $p =& $this->ui;
+    $p =& $app->ui;
 
     $p->open_row ();
     $p->open_cell (array ('ALIGN' => 'CENTER'));
@@ -52,27 +52,27 @@ function record_product (&$this, $idx)
     $p->close_row ();
 }
 
-function edit_product (&$this)
+function edit_product (&$app)
 {
     global $lang;
 
-    $this->args['table'] = 'products';
-    $id = $this->args['id'];
-    $p =& $this->ui;
+    $app->args['table'] = 'products';
+    $id = $app->args['id'];
+    $p =& $app->ui;
 
     # Navigator
     $p->headline ($lang['title edit_product']);
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
-    show_directory_index ($this, 'products', $id);
+    show_directory_index ($app, 'products', $id);
 
     # Show all objects for this product.
-    _object_box (&$this, 'products', $id, $this->args, false);
+    _object_box ($app, 'products', $id, $app->args, false);
 
     # Get group id.
     $pid = $db->select ('id_page', 'products', "id=$id")->get ('id_page');
 
     # Create form for product fields.
-    $p->open_source ('products', '_update', $this->arg_set_next (0, $this->view, $this->args));
+    $p->open_source ('products', '_update', $app->arg_set_next (0, $app->view, $app->args));
     if ($p->get ("where id=$id")) {
         $p->open_row ();
         $p->label ($lang['description']);
@@ -93,15 +93,15 @@ function edit_product (&$this)
         $p->paragraph ();
         $p->open_row ();
         $p->cmd_delete ($lang['remove'], 'view_products', array ('id' => $pid));
-        $p->submit_button ('Ok', '_update', $this->arg_set_next (0, $this->view, $this->args));
+        $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view, $app->args));
         $p->close_row ();
     }
     $p->close_source ();
 }
 
-function products_after_create (&$this)
+function products_after_create (&$app)
 {
-    $id_page = $this->db->column ('products', 'id_page', $this->arg ('id'));
-    $this->call_view ('view_products', array ('id' => $id_page));
+    $id_page = $app->db->column ('products', 'id_page', $app->arg ('id'));
+    $app->call_view ('view_products', array ('id' => $id_page));
 }
 ?>

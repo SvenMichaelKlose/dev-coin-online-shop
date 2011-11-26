@@ -7,12 +7,12 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function db_init (&$this)
+function db_init (&$app)
 {
-    $this->add_viewfunc ('create_tables');
-    $this->add_viewfunc ('database_menu');
-    $this->add_viewfunc ('db_consistency_check');
-    $this->add_viewfunc ('db_sort_directories');
+    $app->add_function ('create_tables');
+    $app->add_function ('database_menu');
+    $app->add_function ('db_consistency_check');
+    $app->add_function ('db_sort_directories');
 }
 
 # Create a directory type $name and return its id.
@@ -23,11 +23,11 @@ function create_dirtype (&$db, $name)
     return $db->insert_id ();
 }
 
-function copy_o2ndir (&$this, $name, $id_type, &$dir_array)
+function copy_o2ndir (&$app, $name, $id_type, &$dir_array)
 {
-    $db =& $this->db;
+    $db =& $app->db;
     $c = 0;
-    $dep = $this->db->def;
+    $dep = $db->def;
     $res = $db->select ('*', $name);
     while ($res && $row = $res->get ()) {
         if ($c++ % 100 == 0) 
@@ -39,7 +39,7 @@ function copy_o2ndir (&$this, $name, $id_type, &$dir_array)
         $dir_array ['old'][$id_type][$row['id']] = $id_new;
 
         if ($name == 'products') {
-            $obj = new DBOBJ (&$db, 'u_price', $dep, 0, 0);
+            $obj = new DBOBJ ($db, 'u_price', $dep, 0, 0);
             @$obj->active['data'] = array ('val' => $row['price_dm'], 'name' => 'dm');
             $obj->active['mime'] = 'text/plain';
 	    $obj->assoc ($name, $row['id']);
@@ -50,9 +50,9 @@ function copy_o2ndir (&$this, $name, $id_type, &$dir_array)
 # Merge all directories into a single table 'directories'.
 # Table 'xref' contains Links between directories and allows
 # n:n relationships.
-function merge_directories ($this)
+function merge_directories ($app)
 {
-    $db =& $this->db;
+    $db =& $app->db;
 
     # Create directory types.
     $tcategories = create_dirtype ($db, 'categories');
@@ -61,13 +61,13 @@ function merge_directories ($this)
 
     # Copy directories into the directory table and remind the new
     # primary keys and directory type ids.
-    $this->ui->msgbox ('Copying directories...');
+    $app->ui->msgbox ('Copying directories...');
     flush ();
 
     $dirs ='';
-    copy_o2ndir ($this, 'categories', $tcategories, $dirs);
-    copy_o2ndir ($this, 'pages', $tpages, $dirs);
-    copy_o2ndir ($this, 'products', $tproducts, $dirs);
+    copy_o2ndir ($app, 'categories', $tcategories, $dirs);
+    copy_o2ndir ($app, 'pages', $tpages, $dirs);
+    copy_o2ndir ($app, 'products', $tproducts, $dirs);
 
     $rc[$tcategories] = 'id_parent';
     $rc[$tpages] = 'id_category';
@@ -77,7 +77,7 @@ function merge_directories ($this)
     $dt[$tproducts] = $tpages;
 
     # Create xrefs from id arrays.
-    $this->ui->msgbox ('Creating directory links...');
+    $app->ui->msgbox ('Creating directory links...');
     flush ();
 
     foreach ($dirs['new'] as $id_child => $row) {
@@ -93,13 +93,13 @@ function merge_directories ($this)
     }
 }
 
-function create_tables (&$this)
+function create_tables (&$app)
 {
     global $lang, $debug;
 
-    $p =& $this->ui;
-    $db =& $this->db;
-    $TABLE_PREFIX = isset ($this->args['__TABLE_PREFIX']) ? $this->args['__TABLE_PREFIX'] : '';
+    $p =& $app->ui;
+    $db =& $app->db;
+    $TABLE_PREFIX = isset ($app->args['__TABLE_PREFIX']) ? $app->args['__TABLE_PREFIX'] : '';
 
     echo "<HR>\n";
 
@@ -148,16 +148,16 @@ function create_tables (&$this)
         echo "<FONT COLOR=GREEN>erstellt.</FONT><BR>\n";
     }
 
-    #merge_directories ($this);
+    #merge_directories ($app);
     return 'defaultview';
 }
 
 # Menu of database operations.
-function database_menu (&$this)
+function database_menu (&$app)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
     $p->headline ($lang['title database_menu']);
 
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
@@ -171,25 +171,25 @@ function database_menu (&$this)
 }
 
 # Remove invalid object reference from directory type.
-function dbchkdir (&$this, &$objs, $dirname)
+function dbchkdir (&$app, &$objs, $dirname)
 {
     $cnt = '0';
-    $res = $this->db->select ('id,id_obj', $dirname, 'id_obj!=0');
+    $res = $app->db->select ('id,id_obj', $dirname, 'id_obj!=0');
     while ($res && $row = $res->get ())
         if (isset ($objs[$row['id_obj']]) == false) {
-	    $this->db->update ($dirname, 'id_obj=0', 'id="' . $row['id'] . '"');
+	    $app->db->update ($dirname, 'id_obj=0', 'id="' . $row['id'] . '"');
 	    $cnt++;
         }
     echo "$cnt invalid object pointers removed from $dirname.<br>";
 }
 
 # TODO: Make database description fit for a general consistency check.
-function db_consistency_check (&$this)
+function db_consistency_check (&$app)
 {
     global $lang;
 
-    $db =& $this->db;
-    $p =& $this->ui;
+    $db =& $app->db;
+    $p =& $app->ui;
     $p->msgbox ('Please wait...', 'yellow');
     $changes = 0;
  
@@ -244,9 +244,9 @@ function db_consistency_check (&$this)
     $res = $db->select ('id', 'objects');
     while ($res && $row = $res->get ())
         $obj[$row['id']] = true;
-    $changes += dbchkdir ($this, $obj, 'categories');
-    $changes += dbchkdir ($this, $obj, 'pages');
-    $changes += dbchkdir ($this, $obj, 'products');
+    $changes += dbchkdir ($app, $obj, 'categories');
+    $changes += dbchkdir ($app, $obj, 'pages');
+    $changes += dbchkdir ($app, $obj, 'products');
 
     echo 'Removing old tokens...<br>';
     flush ();
@@ -268,11 +268,11 @@ function db_consistency_check (&$this)
 }
 
 # TODO: Make database description fit for a general consistency check.
-function db_sort_directories (&$this)
+function db_sort_directories (&$app)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
     $p->msgbox ('Sorting directories - please wait...', 'yellow');
     flush ();
     sort_linked_list ($p->db, 'categories', '1', 'ORDER BY name ASC' , -1);

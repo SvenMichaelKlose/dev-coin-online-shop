@@ -7,21 +7,21 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function product_attrib_init (&$this)
+function product_attrib_init (&$app)
 {
-    $this->add_viewfunc ('product_attrib_edit');
-    $ssi =& new ssi_php_array;
-    $this->ui->add_ssi ('php_array', $ssi);
+    $app->add_function ('product_attrib_edit');
+    $ssi = new ssi_php_array;
+    $app->ui->add_ssi ('php_array', $ssi);
 }
 
-function product_attrib_mask_view (&$this, &$obj)
+function product_attrib_mask_view (&$app, &$obj)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
 
     # Fetch attribute object.
-    $aobj = new dbobj ($this->db, 'u_attribs', $this->db->def, $obj->_table, $obj->_id);
+    $aobj = new dbobj ($app->db, 'u_attribs', $app->db->def, $obj->_table, $obj->_id);
     foreach (unserialize ($aobj->active['data']) as $record)
         $attr[$record['name']] = true;
 
@@ -61,16 +61,16 @@ function product_attrib_mask_view (&$this, &$obj)
     $p->close_source ();
 }
 
-function product_attrib_mask_edit (&$this, &$obj)
+function product_attrib_mask_edit (&$app, &$obj)
 {
-    $this->call_view ('return2caller');
+    $app->call_view ('return2caller');
 }
 
-function product_attrib_edit (&$this, &$obj)
+function product_attrib_edit (&$app, &$obj)
 {
     global $lang;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
 
     $p->open_source ('obj_data');
     $p->get ('WHERE id=' . $obj->active['id']);
@@ -91,9 +91,9 @@ function product_attrib_edit (&$this, &$obj)
     }
     $p->paragraph ();
     $p->open_row ();
-    $p->link ( 'Add new', '_create', $this->arg_set_next (array ('preset_values' => array ('name' => ''),
-                                                                 'msg' => 'Record created.')));
-    $p->submit_button ('Ok', '_update', $this->arg_set_next ());
+    $p->link ( 'Add new', '_create', $app->arg_set_next (array ('preset_values' => array ('name' => ''),
+                                                                'msg' => 'Record created.')));
+    $p->submit_button ('Ok', '_update', $app->arg_set_next ());
     $p->close_row ();
     $p->close_source ();
     $p->close_source ();

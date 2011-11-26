@@ -17,12 +17,11 @@ $debug = 0;
 # Note that this options spoils images so they won't be displayed by any browser.
 $page_profiler = false;
 
-$PATH_TO_CAROSHI = '.';
 $PATH_TO_ADMIN = 'admin/';
   
-if (!file_exists ('./.dbi.conf.php'))
-    die ('Can\'t find database confiuration file .dbi.conf.php - stop.');
-include '.dbi.conf.php';
+if (!file_exists ('./config.php'))
+    die ('Can\'t find database confiuration file config.php - stop.');
+include 'config.php';
 
 # Get current time for profiling.
 if ($debug || $page_profiler) {
@@ -35,16 +34,16 @@ if ($debug || $page_profiler) {
 ### External files ###
 ######################
 
-include "$PATH_TO_CAROSHI/lib/strhead.php"; # Get head of strings.
-include "$PATH_TO_CAROSHI/lib/xml_scanner.class.php"; # scanner.class is the template scanner.
-include "$PATH_TO_CAROSHI/lib/htmllig2latin.php"; # Convert HTML ligatures to latin characters. E.g. &auml; => ae
-include "$PATH_TO_CAROSHI/lib/panic.class.php"; # Panic and tell the administrator about incidents.
-include "$PATH_TO_CAROSHI/lib/debug_dump.php"; # Debug dumps.
-include "$PATH_TO_CAROSHI/dbi/dbctrl.class.php"; # Basic database access.
-include "$PATH_TO_CAROSHI/dbi/dbdepend.class.php"; # Database table relations.
-include "$PATH_TO_CAROSHI/dbi/dbobj.class.php"; # Inheritable objects in the directory.
-include "$PATH_TO_CAROSHI/dbi/dbtree.php"; # Directory utilities.
-include "$PATH_TO_CAROSHI/dbi/dbsession.php"; # Sessions management.
+include PATH_TO_CAROSHI . '/string/strhead.php'; # Get head of strings.
+include PATH_TO_CAROSHI . '/string/htmllig2latin.php'; # Convert HTML ligatures to latin characters. E.g. &auml; => ae
+include PATH_TO_CAROSHI . '/text/xml/scanner.class.php'; # scanner.class is the template scanner.
+include PATH_TO_CAROSHI . '/proc/panic.class.php'; # Panic and tell the administrator about incidents.
+include PATH_TO_CAROSHI . '/proc/debug_dump.php'; # Debug dumps.
+include PATH_TO_CAROSHI . '/dbi/dbctrl.class.php'; # Basic database access.
+include PATH_TO_CAROSHI . '/dbi/dbdepend.class.php'; # Database table relations.
+include PATH_TO_CAROSHI . '/dbi/dbobj.class.php'; # Inheritable objects in the directory.
+include PATH_TO_CAROSHI . '/dbi/dbtree.php'; # Directory utilities.
+include PATH_TO_CAROSHI . '/dbi/dbsession.class.php'; # Sessions management.
 
 
 ##############################
@@ -76,7 +75,7 @@ if (isset ($SESSION_KEY))
 ### Inclusion of internal files ###
 ###################################
 
-require "$PATH_TO_ADMIN/admin/config.php";
+require PATH_TO_ADMIN . '/cms-config.php';
 
 # Shop-indepented part.
 require 'attic.php'; # Outdated features scheduled for removal but left in for temporary backwards compatibility.

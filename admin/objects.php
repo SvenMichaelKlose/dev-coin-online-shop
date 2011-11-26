@@ -7,52 +7,52 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-function object_init (&$this)
+function object_init (&$app)
 {
-    $this->add_viewfunc ('assoc_object');
-    $this->add_viewfunc ('copy_object');
-    $this->add_viewfunc ('remove_object');
-    $this->add_viewfunc ('remove_object4real');
-    $this->add_viewfunc ('edit_data');
+    $app->add_function ('assoc_object');
+    $app->add_function ('copy_object');
+    $app->add_function ('remove_object');
+    $app->add_function ('remove_object4real');
+    $app->add_function ('edit_data');
 }
 
 # Associate object with a table.
 # Creates an object and stores the object-id in the referenced table.
-function assoc_object (&$this)
+function assoc_object (&$app)
 {
     global $lang;
 
-    $class = $this->arg ('class');
-    $table = $this->arg ('table');
-    $id = $this->arg ('id');
+    $class = $app->arg ('class');
+    $table = $app->arg ('table');
+    $id = $app->arg ('id');
 
-    $obj =& new DBOBJ ($this->db, $class, $this->db->def);
+    $obj = new DBOBJ ($app->db, $class, $app->db->def);
     $obj->active['mime'] = 'text/plain';
     $obj->assoc ($table, $id);
 
-    $this->ui->msgbox (sprintf ($lang['msg obj assoced'], $class));
+    $app->ui->msgbox (sprintf ($lang['msg obj assoced'], $class));
 }
   
 # Copy object to another directory.
-function copy_object (&$this)
+function copy_object (&$app)
 {
     global $lang;
 
-    $hier =& $this->db->def;
-    $class = $this->arg ('class');
-    $table = $this->arg ('table');
-    $id = $this->arg ('id');
-    $srctable = $this->arg ('srctable');
-    $srcid = $this->arg ('srcid');
+    $hier =& $app->db->def;
+    $class = $app->arg ('class');
+    $table = $app->arg ('table');
+    $id = $app->arg ('id');
+    $srctable = $app->arg ('srctable');
+    $srcid = $app->arg ('srcid');
 
-    $obj =& new DBOBJ ($this->db, $class, $hier, $table, $id);
+    $obj = new DBOBJ ($app->db, $class, $hier, $table, $id);
     if ($obj->active['_table'] == $table && $obj->active['_id'] == $id) {
-        $this->ui->msgbox ($lang['msg obj already exists'], "red");
+        $app->ui->msgbox ($lang['msg obj already exists'], "red");
         return;
     }
 
     # Fetch data of source object.
-    $obj =& new DBOBJ ($this->db, $class, $hier, $srctable, $srcid);
+    $obj = new DBOBJ ($app->db, $class, $hier, $srctable, $srcid);
     $data['data'] = $obj->active['data'];
     $data['mime'] = $obj->active['mime'];
     $data['start'] = $obj->active['start'];
@@ -60,64 +60,64 @@ function copy_object (&$this)
     $data['is_public'] = $obj->active['is_public'];
 
     # Create a new object and copy the source data to it.
-    $obj =& new DBOBJ ($this->db, $class, $hier);
+    $obj = new DBOBJ ($app->db, $class, $hier);
     $obj->active = $data;
 
     # Associate object with source directory.
     $obj->assoc ($table, $id);
-    $this->ui->msgbox (sprintf ($lang['msg obj assoced'], $table, $id));
+    $app->ui->msgbox (sprintf ($lang['msg obj assoced'], $table, $id));
 }
 
-function remove_object (&$this)
+function remove_object (&$app)
 {
     global $lang;
 
-    $class = $this->arg ('class');
-    $table = $this->arg ('table');
-    $id = $this->arg ('id');
-    $otable = $this->subarg ('otable');
-    $oid = $this->subarg ('oid');
+    $class = $app->arg ('class');
+    $table = $app->arg ('table');
+    $id = $app->arg ('id');
+    $otable = $app->subarg ('otable');
+    $oid = $app->subarg ('oid');
 
     $q = ($table != $otable || $id != $oid) ? $lang['ask remove other object'] : $lang['ask remove object'];
     $arg = array ('class' => $class, 'table' => $table, 'id' => $id);
-    $this->ui->confirm ($q, $lang['yes'], 'remove_object4real', $arg, $lang['no'], 'edit_data', $arg);
+    $app->ui->confirm ($q, $lang['yes'], 'remove_object4real', $arg, $lang['no'], 'edit_data', $arg);
 }
  
 # Remove association of object.
 # table/id = directory of object.
 # class = object's class name.
-function remove_object4real (&$this)
+function remove_object4real (&$app)
 {
     global $lang;
 
-    $db =& $this->db;
-    $hierarchy =& $this->db->def;
-    $class = $this->arg ('class');
-    $table = $this->arg ('table');
-    $id = $this->arg ('id');
+    $db =& $app->db;
+    $hierarchy =& $app->db->def;
+    $class = $app->arg ('class');
+    $table = $app->arg ('table');
+    $id = $app->arg ('id');
 
-    $obj =& new DBOBJ ($db, $class, $hierarchy, $table, $id, true);
+    $obj = new DBOBJ ($db, $class, $hierarchy, $table, $id, true);
     $obj->remove ();
 
-    $this->ui->msgbox ($lang['msg obj removed']);
-    $this->call_view ('return2caller');
+    $app->ui->msgbox ($lang['msg obj removed']);
+    $app->call_view ('return2caller');
 }  
 
 # Navigator for edit_data and related views.
-function edit_data_navigator (&$this)
+function edit_data_navigator (&$app)
 {
     global $lang;
 
-    $p =& $this->ui;
-    $dep =& $this->db->def;
-    $class = $this->arg ('class');
-    $table = $this->arg ('table');
-    $id = $this->arg ('id');
-    $otable = $this->subarg ('otable');
-    $oid = $this->subarg ('oid');
+    $p =& $app->ui;
+    $dep =& $app->db->def;
+    $class = $app->arg ('class');
+    $table = $app->arg ('table');
+    $id = $app->arg ('id');
+    $otable = $app->subarg ('otable');
+    $oid = $app->subarg ('oid');
 
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
-    show_directory_index ($this, $otable, $oid);
+    show_directory_index ($app, $otable, $oid);
     # Link back to originating view.
     $p->link ($lang['cmd back/quit'], 'return2caller');
 
@@ -131,7 +131,7 @@ function edit_data_navigator (&$this)
     echo '<table border="0">';
     while (1) {
         # Fetch the object.
-        $obj =& new DBOBJ ($this->db, $class, $dep, $xtable, $xid);
+        $obj = new DBOBJ ($app->db, $class, $dep, $xtable, $xid);
 
         # If there's none, stop right here.
         if (!isset ($obj->active))
@@ -146,23 +146,23 @@ function edit_data_navigator (&$this)
 	    echo '<td><b>' . $lang['current'] . ' --></b></td><td>-</td>';
         else {
             echo '<td>&nbsp;</td><td>';
-	    $p->link ($lang['copy to current'], 'copy_object', $this->arg_set_next (array ('class' => $class,
-	  	                                                                           'table' => $otable,
-	  	                                                                           'id' => $oid,
-	  	                                                                           'srctable' => $obj->active['_table'],
-	  	                                                                           'srcid' => $obj->active['_id'])));
+	    $p->link ($lang['copy to current'], 'copy_object', $app->arg_set_next (array ('class' => $class,
+	  	                                                                          'table' => $otable,
+	  	                                                                          'id' => $oid,
+	  	                                                                          'srctable' => $obj->active['_table'],
+	  	                                                                          'srcid' => $obj->active['_id'])));
 	    echo '</td>';
         }
 
         # Print the path to the directory.
         echo '<td>';
-        $p->link ($this->db->traverse_refs_from ($this, $t, $i, 'nav_linkpath', 1, false), 'edit_data', array ('table' => $t, 'id' => $i, 'class' => $class));
+        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', 1, false), 'edit_data', array ('table' => $t, 'id' => $i, 'class' => $class));
         echo '</td></tr>';
 
         # Fetch parent directory's position and break if there is none.
         $xtable = $t;
         $xid = $i;
-        dbitree_get_parent ($this->db, $xtable, $xid);
+        dbitree_get_parent ($app->db, $xtable, $xid);
         if (!$xid)
             break;
         echo '<BR>';
@@ -173,31 +173,31 @@ function edit_data_navigator (&$this)
 # Edit data, mime type and other flags of an object.
 # caller/table/id = directory of object.
 # class = Class of object.
-function edit_data (&$this)
+function edit_data (&$app)
 {
     global $lang, $cms_object_editors;
 
-    $p =& $this->ui;
-    $db = $this->db;
+    $p =& $app->ui;
+    $db = $app->db;
     $dep = $db->def;
-    $otable = $this->subarg ('otable');
-    $oid = $this->subarg ('oid');
-    $class = $this->subarg ('class');
-    $table = $this->arg ('table');
-    $id = $this->arg ('id');
-    $remove_args = $this->arg_set_next (compact ('class', 'table', 'id'));
+    $otable = $app->subarg ('otable');
+    $oid = $app->subarg ('oid');
+    $class = $app->subarg ('class');
+    $table = $app->arg ('table');
+    $id = $app->arg ('id');
+    $remove_args = $app->arg_set_next (compact ('class', 'table', 'id'));
 
     $p->headline ($lang['title edit_data']);
 
     # Output standard navigator with copy options.
-    edit_data_navigator ($this);
+    edit_data_navigator ($app);
 
     # Fetch the object we want to edit.
-    $obj =& new DBOBJ ($db, $class, $dep, $table, $id, true);
+    $obj = new DBOBJ ($db, $class, $dep, $table, $id, true);
 
     # Use external object editor if specified.
     if (isset ($cms_object_editors[$class]))
-        return $cms_object_editors[$class] ($this, $obj, $class);
+        return $cms_object_editors[$class] ($app, $obj, $class);
  
     # Fetch class description.
     $res = $db->select ('descr', 'obj_classes', "name='$class'");
@@ -224,7 +224,7 @@ function edit_data (&$this)
     $p->radiobox ('is_local', $lang['yes'], $lang['no'], $lang['local'] . '<BR>');
     # Radiobox public/private.
     $p->radiobox ('is_public', $lang['yes'], $lang['no'], $lang['public'] . '<BR>');
-    $p->submit_button ('Ok', '_update', $this->arg_set_next ());
+    $p->submit_button ('Ok', '_update', $app->arg_set_next ());
     $p->close_row ();
     $p->paragraph ();
 
@@ -275,7 +275,7 @@ function edit_data (&$this)
 
     $p->open_row (array ('ALIGN' => 'CENTER'));
     $p->fileform ('data', $lang['upload'], 'mime', 'filename');
-    $p->submit_button ('Ok', '_update', $this->arg_set_next ());
+    $p->submit_button ('Ok', '_update', $app->arg_set_next ());
     $p->close_row ();
 
     if ($mime == 'text') {
@@ -291,21 +291,21 @@ function edit_data (&$this)
     $p->close_source ();
 }
 
-function _object_box_toggler_for_inherited_objects (&$this, $only_local)
+function _object_box_toggler_for_inherited_objects (&$app, $only_local)
 {
     global $lang;
 
     if ($only_local)
         return;
 
-    $p =& $this->ui;
+    $p =& $app->ui;
 
-    $oargs = $this->args;
+    $oargs = $app->args;
     $label = $oargs['display_inherited_objects'] ?
              '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
              '<B>' . $lang['cmd objectbox unhide'] . '</B>';
     $oargs['display_inherited_objects'] ^= true;
-    $p->link ($label, $this->args['__view'], $oargs);
+    $p->link ($label, $app->args['__view'], $oargs);
 
     # Describe label colors for inherited/local objects.
     echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
@@ -316,19 +316,19 @@ function _object_box_toggler_for_inherited_objects (&$this, $only_local)
 # Show inherited and/or local objects.
 # $table/$id specify the current directory.
 # If $only_local is true only local objects are shown.
-function _object_box (&$this, $table, $id, $caller, $only_local = false)
+function _object_box (&$app, $table, $id, $caller, $only_local = false)
 {
     global $lang, $cms_object_views;
 
-    $p =& $this->ui;
-    $db =& $this->db;
-    $dep =& $this->db->def;
+    $p =& $app->ui;
+    $db =& $app->db;
+    $dep =& $app->db->def;
 
     # Save starting point so the paths can be displayed correctly by edit_data().
     $caller['otable'] = $table;
     $caller['oid'] = $id;
 
-    _object_box_toggler_for_inherited_objects (&$this, $only_local);
+    _object_box_toggler_for_inherited_objects ($app, $only_local);
 
     $cache = dbtree_get_objects_in_path ($db, $table, $id);
     $documents = $enumerations = $configuration = $user_defined = $images = '';
@@ -346,10 +346,10 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
         if (!isset ($cache[$id_class][0]) && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
             $tmp = '[' .
                    $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , 'assoc_object',
-                                   $this->arg_set_next (array ('table' => $table, 'id' => $id, 'class' => $class),
-		                                        'edit_data',
-		                                        $this->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-		                                                                      'otable' => $table, 'oid' => $id)))) .
+                                   $app->arg_set_next (array ('table' => $table, 'id' => $id, 'class' => $class),
+		                                       'edit_data',
+		                                       $app->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
+		                                                                    'otable' => $table, 'oid' => $id)))) .
                    "]\n";
         } else {
             if (!isset ($cache[$id_class][0]))
@@ -401,9 +401,9 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
                     $images .= '<td><table border="1" cellpadding="2" cellspacing="0">' .
 	                       '<tr><td align="center">' .
 	                       '<a href="' .
-	                       $this->link ('edit_data',
-		                            $this->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-		                                                          'otable' => $table, 'oid' => $id))) .
+	                       $app->link ('edit_data',
+		                           $app->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
+		                                                        'otable' => $table, 'oid' => $id))) .
                                '"><img border="0" src="' .
 	                       $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
                                "\" alt=\"$imagename\"></a><br>" .
@@ -416,8 +416,8 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
                     $tmp = '[' .
                            $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat",
 	                                   'edit_data',
-	                                   $this->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-	                                                                 'otable' => $table, 'oid' => $id))) .
+	                                   $app->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
+	                                                                'otable' => $table, 'oid' => $id))) .
                            "]\n";
             }
         }
@@ -463,9 +463,9 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
         list ($table, $id) = $ti;
 
         # Fetch the object we want to edit.
-        $obj =& new DBOBJ ($this->db, $class, $dep, $table, $id, true);
+        $obj = new DBOBJ ($app->db, $class, $dep, $table, $id, true);
 
-        $cms_object_views[$class] ($this, $obj);
+        $cms_object_views[$class] ($app, $obj);
     }
     echo '</table>';
 }
