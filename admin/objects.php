@@ -290,6 +290,28 @@ function edit_data (&$this)
     $p->close_source ();
 }
 
+function _object_box_toggler_for_inherited_objects (&$this, $only_local)
+{
+    global $lang;
+
+    if ($only_local)
+        return;
+
+    $p =& $this->ui;
+
+    $oargs = $this->args;
+    $label = $oargs['display_inherited_objects'] ?
+             '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
+             '<B>' . $lang['cmd objectbox unhide'] . '</B>';
+    $oargs['display_inherited_objects'] ^= true;
+    $p->link ($label, $this->args['__view'], $oargs);
+
+    # Describe label colors for inherited/local objects.
+    echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
+         '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
+         '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
+}
+
 # Show inherited and/or local objects.
 # $table/$id specify the current directory.
 # If $only_local is true only local objects are shown.
@@ -297,55 +319,21 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
 {
     global $lang, $cms_object_views;
 
-    $caller['otable'] = $table; # Save starting point so the paths can be
-    $caller['oid'] = $id;	#   displayer correctly by edit_data().
     $p =& $this->ui;
     $db =& $this->db;
     $dep =& $this->db->def;
 
-    $oargs = $this->args;
-    if (isset ($oargs['objmode']))
-        $objmode = $oargs['objmode'];
-    else
-        $oargs['objmode'] = $objmode = 0;
-    $oargs['objmode'] ^= 1;
+    # Save starting point so the paths can be displayed correctly by edit_data().
+    $caller['otable'] = $table;
+    $caller['oid'] = $id;
 
-    # Print color descriptions.
-    if (!$only_local) {
-        $tmp = ($objmode & 1) ?
-               '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
-               '<B>' . $lang['cmd objectbox unhide'] . '</B>';
-        $p->link ($tmp, $this->args['__view'], $oargs);
-        if (!($objmode & 1))
-            $only_local = true; #return;
-        echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
-             '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
-             '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
-    }
+    _object_box_toggler_for_inherited_objects (&$this, $only_local);
 
-    # Read all objects along the path to root to $cache.
-    $t = $table;
-    $i = $id;
-    while ($t && $i) {
-        $res =& $db->select ('*', $t, "id=$i");
-        if ($res->num_rows () > 0) {
-            $tmp = $res->fetch_array ();
-	    $res =& $db->select ('*', 'obj_data', 'id_obj=' . $tmp['id_obj']);
-	    if ($res->num_rows () > 0)
-	        while ($row =& $res->fetch_array ()) {
-	            $row['_table'] = $t;
-	            $row['_id'] = $i;
-	            $cache[$row['id_class']][] =& $row;
-	        }
-        }
-        dbitree_get_parent ($db, $t, $i);
-    }
+    $cache = dbtree_get_objects_in_path ($db, $table, $id);
+    $documents = $enumerations = $configuration = $user_defined = $images = '';
 
     # For each class, search for an object.
     $res =& $db->select ('id,name,descr', 'obj_classes', '', ' ORDER BY descr ASC');
-
-    $documents = $enumerations = $configuration = $user_defined = $images = '';
-
     while (list ($id_class, $class, $descr) = $res->fetch_array ()) {
         $descr = ereg_replace (' ', '&nbsp;', $descr);
         $tmp = '';
@@ -414,7 +402,7 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
 	                       '<a href="' .
 	                       $this->link ('edit_data',
 		                            $this->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-		                                                   'otable' => $table, 'oid' => $id))) .
+		                                                          'otable' => $table, 'oid' => $id))) .
                                '"><img border="0" src="' .
 	                       $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
                                "\" alt=\"$imagename\"></a><br>" .
