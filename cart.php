@@ -1,168 +1,19 @@
 <?
-# Product management extension for dev/con cms.
-#
 # Copyright (c) 2000-2001 dev/consulting GmbH
 # Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-# About this file:
-#
-# This file contains tag and document functions for directories of type
-# PRODUCT and CART.
-
-
-# Describe directory hierarchy for dbobj.class.
-if (!isset ($_MERGED_DIRS)) {
-    $dep->set_ref ('categories', 'categories', 'id_parent');
-    $dep->set_ref ('categories', 'pages',      'id_category');
-    $dep->set_ref ('pages',      'products',   'id_page');
-    $dep->set_ref ('products',   'cart',       'id_product');
-    $dep->set_primary ('categories', 'id');
-    $dep->set_primary ('pages', 'id');
-    $dep->set_primary ('products', 'id');
-    $dep->set_primary ('cart', 'id');
-
-    # Create directory types.
-    $scanner->assoc ('CATEGORY', 'categories');
-    $scanner->assoc ('PAGE',     'pages');
-    $scanner->assoc ('PRODUCT',  'products');
-    $scanner->assoc ('SESSION',  true);
-    $scanner->assoc ('CART',     true);
-}
-
 # Register cart tags.
-$scanner->dirtag ('PRODUCT', 'QUANTITY PRICE TOTAL FORMQUANTITY QUANTITYNAME LIST-ATTRS NUM-ATTRS ATTR');
 $scanner->dirtag ('CART', 'LIST LINK QUANTITY TOTAL IS-EMPTY');
 
-$product_attr = '0'; # LIST-ATTRS can't be nested.
-
-
-####################
-### PRODUCT tags ###
-####################
-
-# Return quantity of current product in user's cart.
-function dirtag_product_quantity ($dummy)
+function cart_is_empty ()
 {
-    global $session, $scanner, $db;
+    global $db;
 
-    if (!$id = $session->id ())
-        return 0;
-    $q = isset ($scanner->context['attrib']) ? '"' . $scanner->context['attrib'] . '"' : '0';
-    $res = $db->select ('quantity', 'cart', "id_session=$id AND id_product=" . $scanner->context['id'] . " AND attrib=$q");
-    return $res ? $res->get ('quantity') : 0;
+    return !$session->id () || !$db->select ('id', 'cart', 'id_session=' . $session->id ());
 }
-
-function dirtag_product_quantityname ($dummy)
-{
-    global $scanner, $product_attr;
-
-    $attr = isset ($scanner->context['attrib']) ? $scanner->context['attrib'] : $product_attr;
-    if (!trim ($attr))
-        $attr = '0';
-
-    return 'quant[' . $scanner->context['id'] . ',' . urlencode ($attr) . ']';
-}
-
-function dirtag_product_formquantity ($dummy)
-{
-    $quant = dirtag_product_quantity ('');
-    if (!$quant)
-        return '1';
-    return $quant;
-}
-
-# TODO: Fetch price from object.
-function dirtag_product_price ($attr)
-{
-    global $scanner;
-
-    $currency = strtolower ($attr['currency']);
-    # TODO: Global config: default currency.
-    if (!$currency)
-        $currency = 'dm';
-    if (!isset ($scanner->context["price_$currency"]))
-        return '0,00';
-    return number_format ($scanner->context["price_$currency"], 2);
-}
-
-function dirtag_product_total ($attr)
-{
-    $currency = strtolower ($attr['currency']);
-    return number_format (dirtag_product_price ($attr) * dirtag_product_quantity (''), 2);
-}
-
-function dirtag_product_list_attrs ($attr)
-{
-    global $product_attr, $scanner;
-
-    $obj = cms_fetch_object ('u_attrib_mask');
-    if (!$obj)
-        return '<b>PRODUCT:LIST-ATTRS: No object of class u_attribs.</b>';
-
-    $arr = unserialize ($obj);
-    if (is_array ($arr))
-        foreach ($arr as $record)
-	    if (isset ($record['name']))
-                $attr[$record['name']] = $record['is_used'];
-
-    # Scan template for each set attribute.
-    $out = '';
-    foreach ($attr as $name => $flag) {
-        if (!$flag)
-            continue;
-        $product_attr = $name;
-        $branch = $scanner->scan ($attr['_']);
-        $out .= $scanner->exec ($branch);
-        $product_attr = '0';
-    }
-
-    return $out;
-}
-
-function dirtag_product_num_attrs ($attr)
-{
-    global $product_attr, $scanner;
-
-    $obj = cms_fetch_object ('u_attrib_mask');
-    if (!$obj)
-        return '<b>PRODUCT:NUM-ATTRS: No object of class u_attribs.</b>';
-
-    $arr = unserialize ($obj);
-    if (is_array ($arr))
-        foreach ($arr as $record)
-	    if (isset ($record['name']))
-                $attr[$record['name']] = $record['is_used'];
-
-    # Scan template for each set attribute.
-    $num = '0';
-    foreach ($attr as $name => $flag)
-        if ($flag)
-            $num++;
-
-    return $num;
-}
-
-function dirtag_product_attr ($attr)
-{
-    global $product_attr, $scanner, $db, $session;
-
-    if ($scanner->parent_dirtype != 'CART' && $scanner->parent_dirtype != 'ORDER') {
-        if (!$product_attr)
-            return;
-        return $product_attr;
-    }
-
-    $res = $db->select ('attrib', 'cart', 'id_product=' . $scanner->context['id'] . ' AND id_session=' . $session->id());
-    return $res ? $res->get ('attrib');
-}
-
-
-#################
-### CART tags ###
-#################
 
 function update_product_quantity ($id, $quantity, $attribute)
 {
@@ -187,14 +38,9 @@ function update_product_quantity ($id, $quantity, $attribute)
         $db->insert ('cart', 'id_session=' . $session->id () . ", id_product=$id, quantity=" . (int) $quantity . ", attrib=\"$attribute\"");
 }
 
-function cart_is_empty ()
-{
-    global $db;
-
-    return !$session->id () || !$db->select ('id', 'cart', 'id_session=' . $session->id ());
-}
-
-# Update cart.
+# Document handler
+#
+# Updates cart.
 # See also: dirtag_product_form.*() and dirtag_product_quantity.*()
 function document_cart ()
 {
@@ -275,6 +121,11 @@ function document_cart ()
         exit;
     }
 }
+
+
+####################
+### TAG HANDLERS ###
+####################
 
 # Create link to cart document.
 function dirtag_cart_link ($attr)

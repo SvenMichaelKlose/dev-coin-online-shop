@@ -31,42 +31,20 @@ if ($debug || $page_profiler) {
 }
 
 
-#####################
-### External file ###
-#####################
+######################
+### External files ###
+######################
 
-# Get head of strings.
-include "$PATH_TO_CAROSHI/lib/strhead.php";
-
-# scanner.class is the template scanner.
-include "$PATH_TO_CAROSHI/lib/xml_scanner.class.php";
-
-# Convert HTML ligatures to latin characters. E.g. &auml; => ae
-include "$PATH_TO_CAROSHI/lib/htmllig2latin.php";
-
-# Call panic() if you want to set alarm and send a mail to the
-# administrator. (Uses the email address in $SERVER_ADMIN which you can
-# override in .dbi.conf.php.
-include "$PATH_TO_CAROSHI/lib/panic.class.php";
-
-# Debug dumps.
-include "$PATH_TO_CAROSHI/lib/debug_dump.php";
-
-# Basic database access.
-include "$PATH_TO_CAROSHI/dbi/dbctrl.class.php";
-
-# Database table relations.
-include "$PATH_TO_CAROSHI/dbi/dbdepend.class.php";
-
-# Inheritable objects in the directory tree of
-# categories, pages (aka product groups) and products.
-include "$PATH_TO_CAROSHI/dbi/dbobj.class.php";
-
-# Tree walking.
-include "$PATH_TO_CAROSHI/dbi/dbtree.php";
-
-# Sessions.
-include "$PATH_TO_CAROSHI/dbi/dbsession.php";
+include "$PATH_TO_CAROSHI/lib/strhead.php"; # Get head of strings.
+include "$PATH_TO_CAROSHI/lib/xml_scanner.class.php"; # scanner.class is the template scanner.
+include "$PATH_TO_CAROSHI/lib/htmllig2latin.php"; # Convert HTML ligatures to latin characters. E.g. &auml; => ae
+include "$PATH_TO_CAROSHI/lib/panic.class.php"; # Panic and tell the administrator about incidents.
+include "$PATH_TO_CAROSHI/lib/debug_dump.php"; # Debug dumps.
+include "$PATH_TO_CAROSHI/dbi/dbctrl.class.php"; # Basic database access.
+include "$PATH_TO_CAROSHI/dbi/dbdepend.class.php"; # Database table relations.
+include "$PATH_TO_CAROSHI/dbi/dbobj.class.php"; # Inheritable objects in the directory.
+include "$PATH_TO_CAROSHI/dbi/dbtree.php"; # Directory utilities.
+include "$PATH_TO_CAROSHI/dbi/dbsession.php"; # Sessions management.
 
 
 ##############################
@@ -81,8 +59,8 @@ if (!$db->is_connected () || $db->error ())
 	 'Keine Verbindung zur Datenbank moeglich. Bitte versuchen Sie es ' .
 	 'mit dem Administrationsskript - Stop.');
 
-# $dep contains a database description which is very important for
-# the directory management. See dbi/dbdepend.class for details.
+# $dep contains a database description required for the directory management.
+# See also dbi/dbdepend.class in Caroshi.
 $dep =& new DBDEPEND;
 $db->def =& $dep;
 
@@ -98,31 +76,20 @@ if (isset ($SESSION_KEY))
 ### Inclusion of internal files ###
 ###################################
 
-# Load CMS configuration.
 require "$PATH_TO_ADMIN/admin/config.php";
 
-# Outdated features scheduled for removal but left in for temporary backwards compatibility.
-require 'attic.php';
+# Shop-indepented part.
+require 'attic.php'; # Outdated features scheduled for removal but left in for temporary backwards compatibility.
+require 'cms.php'; # Data management system, e.g. context creation and general tag handlers.
+require 'document.php'; # Analyses the URL, picks a template and processes it.
 
-# Data management system, e.g. context creation and general tag handlers.
-require 'cms.php';
-
-# Trolley functions and all tag handlers for PRODUCT and CART directories.
+require 'directory.php'; # Describes how tables relate to form the directory.
+require 'product.php';
 require 'cart.php';
-
-require 'order.php';
-
-# CMS-independent functions for ECML v1.1 support.
-require 'ecml.php';
-
-# Sending orders via mail,
+require 'ecml.php'; # CMS-independent functions for ECML v1.1 support.
 require 'send_order.php';
-
-# Analyses the URL, picks a template and processes it.
-require 'document.php';
-
-# Search engine.
-require 'search.php';
+require 'order.php';
+require 'search.php'; # Product search.
 
 
 ###########
