@@ -62,8 +62,7 @@ function edit_product (&$this)
     _object_box (&$this, 'products', $id, $this->args, false);
 
     # Get group id.
-    $res = $this->db->select ('id_page', 'products', "id=$id");
-    list ($pid) = $res->fetch_array ();
+    $pid = $db->select ('id_page', 'products', "id=$id")->get ('id_page');
 
     # Create form for product fields.
     $p->open_source ('products', '_update', $this->arg_set_next (0, $this->view, $this->args));

@@ -34,14 +34,10 @@ function document_order ()
         panic ('document_order: No session key.', 'Maybe tries to pinch address information.');
 
     # Redirect to empty cart template if appropriate.
-    $res = $db->select ('id' , 'cart', "id_session=$sid");
-    if ($res->num_rows () < 1) {
+    if (cart_is_empty ()) {
         document_set_template (cms_fetch_object ('l_empty_cart'));
         return;
     }
-
-    # Read in order record.
-    $res =& $db->select ('*', 'ecml_order', "id_session=$sid");
 
     # Perform order if address info is complete.
     if (ecml_parse_form () == true) {
@@ -52,7 +48,6 @@ function document_order ()
 
         # Redirect to thank-you-page.
         document_set_template (cms_fetch_object ('l_ecml'));
-        return;
     }
 }
 

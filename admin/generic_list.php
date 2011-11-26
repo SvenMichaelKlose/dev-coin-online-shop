@@ -11,7 +11,7 @@ function _get_index (&$this, $parent, $ref_parent, $table, $id)
 {
     $id_parent = $this->db->column ($table, $ref_parent, $id);
     $res = $this->db->select ('id, id_last, id_next', $table, "$ref_parent=$id_parent");
-    while ($row = $res->fetch_array ())
+    while ($res && $row = $res->get ())
         $tmp[$row['id_last']] = $row;
     for ($row = reset ($tmp), $i = 1; $row; $row = next ($tmp), $i++)
         if ($row['id'] == $id)

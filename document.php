@@ -19,7 +19,7 @@ unset ($path_tail);
 # Hold intital document template.
 unset ($document_template);
 
-function document_set_template (&$template)
+function document_set_template ($template)
 {
     $GLOBALS['document_template'] = $template;
 }
@@ -28,20 +28,20 @@ function document_set_template (&$template)
 # in an URL.
 function document_readable_url ($url)
 {
-    $url =& ereg_replace ('&auml;', 'ae', urldecode ($url));
-    $url =& ereg_replace ('&ouml;', 'oe', $url);
-    $url =& ereg_replace ('&uuml;', 'ue', $url);
-    $url =& ereg_replace ('&Auml;', 'Ae', $url);
-    $url =& ereg_replace ('&Ouml;', 'Oe', $url);
-    $url =& ereg_replace ('&Uuml;', 'Ue', $url);
-    $url =& ereg_replace ('&amp;', '', $url);
-    $url =& ereg_replace ('&', '', $url);
-    $url =& ereg_replace (',', '', $url);
-    $url =& ereg_replace ('\(', '', $url);
-    $url =& ereg_replace ('\)', '', $url);
-    $url =& ereg_replace ('/', '_2f', $url);
-    $url =& ereg_replace (' ', '_', $url);
-    $url =& ereg_replace ('__', '_', $url);
+    $url = ereg_replace ('&auml;', 'ae', urldecode ($url));
+    $url = ereg_replace ('&ouml;', 'oe', $url);
+    $url = ereg_replace ('&uuml;', 'ue', $url);
+    $url = ereg_replace ('&Auml;', 'Ae', $url);
+    $url = ereg_replace ('&Ouml;', 'Oe', $url);
+    $url = ereg_replace ('&Uuml;', 'Ue', $url);
+    $url = ereg_replace ('&amp;', '', $url);
+    $url = ereg_replace ('&', '', $url);
+    $url = ereg_replace (',', '', $url);
+    $url = ereg_replace ('\(', '', $url);
+    $url = ereg_replace ('\)', '', $url);
+    $url = ereg_replace ('/', '_2f', $url);
+    $url = ereg_replace (' ', '_', $url);
+    $url = ereg_replace ('__', '_', $url);
     return urlencode ($url);
 }
 
@@ -78,8 +78,8 @@ function document_path_to_directory ($path, $table, $id)
 	    # Read names into hash.
 	    unset ($names);
             # Get all childs of $ctab/$id.
-	    for ($res =& dbitree_get_childs ($db, $ctab, $id);
-	         $row =& $res->fetch_array (), isset ($row['name']);
+	    for ($res = dbitree_get_childs ($db, $ctab, $id);
+	         $row = $res && $res->get (), isset ($row['name']);
 	         $names[strtolower (document_readable_url ($row['name']))] = $row);
 
 	    # If subdirectory with $name exists, save the table name, id
@@ -120,8 +120,7 @@ function document_process ($root_table, $root_id, $root_template)
     # is used.
     $template = '';
     if (sizeof ($path_tail) > 0) {
-        $res =& $db->select ('id', 'obj_classes', 'name=\'' . $path_tail[0] . '\'');
-        if ($res->num_rows () > 0)
+        if ($db->select ('id', 'obj_classes', 'name=\'' . $path_tail[0] . '\''))
             $template = $path_tail[0]; # Tail is a legal user template.
     }
     if (!$template)
@@ -160,8 +159,8 @@ function document_process ($root_table, $root_id, $root_template)
         die ('No such path.');
 
     # Fetch result into array.
-    for ($res =& dbitree_get_childs ($db, $table, $rid);
-	 $tmp =& $res->fetch_array ();
+    for ($res = dbitree_get_childs ($db, $table, $rid);
+	 $tmp = $res->get ();
 	 $set[$tmp['id_last']] = $tmp['id']);
 
     # Sort indices into $current_indices array and find the current one.
@@ -195,7 +194,7 @@ function document_process ($root_table, $root_id, $root_template)
     # TODO: This could depend on the document template's mime type.
     # see also the scanner in lib/scanner.class.
     $document_tree = $scanner->scan ($document_template);
-    $out =& $scanner->exec ($document_tree, $table, $id);
+    $out = $scanner->exec ($document_tree, $table, $id);
     eval ("?>$out<?");
 }
 ?>

@@ -178,7 +178,8 @@ function edit_data (&$this)
     global $lang, $cms_object_editors;
 
     $p =& $this->ui;
-    $dep = $this->db->def;
+    $db = $this->db;
+    $dep = $db->def;
     $otable = $this->subarg ('otable');
     $oid = $this->subarg ('oid');
     $class = $this->subarg ('class');
@@ -192,15 +193,15 @@ function edit_data (&$this)
     edit_data_navigator ($this);
 
     # Fetch the object we want to edit.
-    $obj =& new DBOBJ ($this->db, $class, $dep, $table, $id, true);
+    $obj =& new DBOBJ ($db, $class, $dep, $table, $id, true);
 
     # Use external object editor if specified.
     if (isset ($cms_object_editors[$class]))
         return $cms_object_editors[$class] ($this, $obj, $class);
  
     # Fetch class description.
-    $res = $this->db->select ('descr', 'obj_classes', "name='$class'");
-    list ($classdesc) = $res->fetch_array ();
+    $res = $db->select ('descr', 'obj_classes', "name='$class'");
+    list ($classdesc) = $res->get ();
 
     # Open view on obj_data.
     $p->open_source ('obj_data');
@@ -333,8 +334,8 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
     $documents = $enumerations = $configuration = $user_defined = $images = '';
 
     # For each class, search for an object.
-    $res =& $db->select ('id,name,descr', 'obj_classes', '', ' ORDER BY descr ASC');
-    while (list ($id_class, $class, $descr) = $res->fetch_array ()) {
+    $res = $db->select ('id,name,descr', 'obj_classes', '', ' ORDER BY descr ASC');
+    while ($res && list ($id_class, $class, $descr) = $res->get ()) {
         $descr = ereg_replace (' ', '&nbsp;', $descr);
         $tmp = '';
 

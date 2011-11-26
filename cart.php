@@ -50,13 +50,9 @@ function dirtag_product_quantity ($dummy)
 
     if (!$id = $session->id ())
         return 0;
-    $quantity = 0;
     $q = isset ($scanner->context['attrib']) ? '"' . $scanner->context['attrib'] . '"' : '0';
-    $res =& $db->select ('quantity', 'cart', "id_session=$id AND id_product=" . $scanner->context['id'] . " AND attrib=$q");
-    if ($res && $res->num_rows () > 0)
-        list ($quantity) = $res->fetch_array ();
-
-    return $quantity;
+    $res = $db->select ('quantity', 'cart', "id_session=$id AND id_product=" . $scanner->context['id'] . " AND attrib=$q");
+    return $res ? $res->get ('quantity') : 0;
 }
 
 function dirtag_product_quantityname ($dummy)
@@ -98,11 +94,11 @@ function dirtag_product_total ($attr)
     return number_format (dirtag_product_price ($attr) * dirtag_product_quantity (''), 2);
 }
 
-function &dirtag_product_list_attrs ($attr)
+function dirtag_product_list_attrs ($attr)
 {
     global $product_attr, $scanner;
 
-    $obj =& cms_fetch_object ('u_attrib_mask');
+    $obj = cms_fetch_object ('u_attrib_mask');
     if (!$obj)
         return '<b>PRODUCT:LIST-ATTRS: No object of class u_attribs.</b>';
 
@@ -126,11 +122,11 @@ function &dirtag_product_list_attrs ($attr)
     return $out;
 }
 
-function &dirtag_product_num_attrs ($attr)
+function dirtag_product_num_attrs ($attr)
 {
     global $product_attr, $scanner;
 
-    $obj =& cms_fetch_object ('u_attrib_mask');
+    $obj = cms_fetch_object ('u_attrib_mask');
     if (!$obj)
         return '<b>PRODUCT:NUM-ATTRS: No object of class u_attribs.</b>';
 
@@ -149,7 +145,7 @@ function &dirtag_product_num_attrs ($attr)
     return $num;
 }
 
-function &dirtag_product_attr ($attr)
+function dirtag_product_attr ($attr)
 {
     global $product_attr, $scanner, $db, $session;
 
@@ -160,11 +156,7 @@ function &dirtag_product_attr ($attr)
     }
 
     $res = $db->select ('attrib', 'cart', 'id_product=' . $scanner->context['id'] . ' AND id_session=' . $session->id());
-    list ($attr) = $res->fetch_array ();
-
-    if (!$attr)
-        return;
-    return $attr;
+    return $res ? $res->get ('attrib');
 }
 
 
@@ -179,9 +171,9 @@ function update_product_quantity ($id, $quantity, $attribute)
     if (!$attribute)
         $attribute = "0";
 
-    $res =& $db->select ('id,quantity', 'cart', 'id_session=' . $session->id () . " AND id_product=$id AND attrib=\"$attribute\"");
-    if ($res && $res->num_rows () > 0) {
-        $r =& $res->fetch_array ();
+    $res = $db->select ('id,quantity', 'cart', 'id_session=' . $session->id () . " AND id_product=$id AND attrib=\"$attribute\"");
+    if ($res) {
+        $r = $res->get ();
         $s = substr ($quantity, 0, 1);
         if ($s == '+' || $s == '-')
             $quantity = ((int) $r['quantity'] + (int) $quantity);
@@ -193,6 +185,13 @@ function update_product_quantity ($id, $quantity, $attribute)
  	    $db->update ('cart', 'quantity=' . $quantity, 'id=' . $r['id'] . " AND attrib=\"$attribute\"");
     } else
         $db->insert ('cart', 'id_session=' . $session->id () . ", id_product=$id, quantity=" . (int) $quantity . ", attrib=\"$attribute\"");
+}
+
+function cart_is_empty ()
+{
+    global $db;
+
+    return !$session->id () || !$db->select ('id', 'cart', 'id_session=' . $session->id ());
 }
 
 # Update cart.
@@ -261,8 +260,7 @@ function document_cart ()
 
     # Redirect to l_empty_cart if there still is no session or if the
     # cart is empty.
-    $res =& $db->select ('id', 'cart', 'id_session=' . $session->id ());
-    if (!$session->id () || $res->num_rows () < 1) {
+    if (cart_is_empty ()) {
         $templ_empty = cms_fetch_object ('l_empty_cart');
         if (!$templ_empty)
             return '<b>CART: No template for empty cart l_empty_cart.</b>';
@@ -299,11 +297,11 @@ function dirtag_cart_list ($attr)
     $table = $scanner->context_table;
 
     # Query all products in the cart.
-    $res =& $db->select ('id_product,attrib', 'cart', 'id_session=' . $session->id ());
+    $res = $db->select ('id_product,attrib', 'cart', 'id_session=' . $session->id ());
 
     # Create indexed record set.
     $i = 0;
-    while ($cartitem =& $res->fetch_array ()) {
+    while ($res && $cartitem = $res->get ()) {
         $set[$i] = cms_fetch_directory ('products', $cartitem['id_product']);
         $set[$i++]['attrib'] = $cartitem['attrib'];
     }
@@ -324,10 +322,9 @@ function dirtag_cart_total ($attr)
     $currency = !isset ($attr['currency']) ? $currency = 'dm' : strtolower ($attr['currency']);
 
     $res = $db->select ('id_product,quantity', 'cart', 'id_session=' . $session->id ());
-
-    for ($total = 0; list ($id_prod, $quant) = $res->fetch_array (); $total += $price * $quant) {
-        $res2 =& $db->select ("price_$currency", 'products', "id=$id_prod");
-        list ($price) = $res2->fetch_array ();
+    for ($total = 0; $res && list ($id_prod, $quant) = $res->get (); $total += $price * $quant) {
+        $res2 = $db->select ("price_$currency", 'products', "id=$id_prod");
+        list ($price) = $res2->get ();
     }
     return number_format ($total, 2);
 }
@@ -338,19 +335,14 @@ function dirtag_cart_quantity ($dummy)
     global $session, $scanner, $db;
 
     $quantity = 0;
-    if ($sid = $session->id ()) {
-        $res =& $db->select ('SUM(num)', 'cart', 'id_session=' . $session->id ());
-        if ($res->num_rows ())
-            list ($quantity) = $res->fetch_array ();
-    }
+    if ($sid = $session->id ())
+        if ($res = $db->select ('SUM(num)', 'cart', 'id_session=' . $session->id ()))
+            list ($quantity) = $res->get ();
     return $quantity;
 }
 
 function dirtag_cart_is_empty ($args)
 {
-    global $db;
-
-    $res =& $db->select ('id', 'cart', 'id_session=' . $session->id ());
-    return (!$session->id () || $res->num_rows () < 1) ? '0' : '1';
+    return cart_is_empty ();
 }
 ?>

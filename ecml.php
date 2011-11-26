@@ -45,19 +45,17 @@ function ecml_address_field ($arg, $address)
     global $scanner, $db, $session;
 
     # Fetch key of address field in order record.
-    $res = $db->select ("id_address_$address", 'ecml_order', 'id_session=' . $session->id ());
-    if ($res->num_rows () < 1)
-        return;
-    list ($id) = $res->fetch_array ();
-    if (!$id)
-        return;
+    if ($res = $db->select ("id_address_$address", 'ecml_order', 'id_session=' . $session->id ())) {
+        list ($id) = $res->get ();
+        if (!$id)
+            return;
 
-    # Fetch field from address record.
-    $res = $db->select ($arg, 'address', "id=$id");
-    if ($res->num_rows () < 1)
-        return;
-    list ($field) = $res->fetch_array ();
-    return $field;
+        # Fetch field from address record.
+        if ($res = $db->select ($arg, 'address', "id=$id")) {
+            list ($field) = $res->get ();
+            return $field;
+        }
+    }
 }
 
 # Returns a associative array with shortcuts of ECML field names.
@@ -91,12 +89,12 @@ function ecml_add_address ($db, $type, $idname)
     $idname = "id_address_$idname";
 
     # Get address' id.
-    $res = $db->select ($idname, 'ecml_order', "id_session=$SESSION_ID");
-    if ($res->num_rows () < 1) {
+    if ($res = $db->select ($idname, 'ecml_order', "id_session=$SESSION_ID"))
+        list ($id) = $res->get ();
+    } else {
         $db->insert ('ecml_order', "id_session=$SESSION_ID");
         $id = 0;
-    } else
-        list ($id) = $res->fetch_array ();
+    }
 
     # Collect each existing field into update set.
     $first = true;
@@ -144,7 +142,7 @@ function ecml_parse_form ()
     # Read in ECML-Fields.
     if (isset ($GLOBALS['Ecom_SchemaVersion']) && $GLOBALS['Ecom_SchemaVersion'] == 'http://www.ecml.org/version/1.1') {
         # Read in duty field description.
-        $tmp =& cms_fetch_object ('d_order_duty');
+        $tmp = cms_fetch_object ('d_order_duty');
         if (!$tmp)
             die ('No duty fields defined - stop.');
         $tmp = unserialize ($tmp);
@@ -164,7 +162,7 @@ function ecml_parse_form ()
         # Query fields for each address type.
         foreach ($duty as $addrtype => $address) {
 	    $res = $db->select ('id_address_' . $addrtype, 'ecml_order', "id_session=$SESSION_ID");
-	    list ($aid) = $res->fetch_array ();
+	    list ($aid) = $res->get ();
 
 	    # Read in duty fields to check them later.
 	    for ($list = '', $v = reset ($address); $v;) {
@@ -174,11 +172,9 @@ function ecml_parse_form ()
             }
 
 	    $fields = Array ('');
-	    if ($aid) {
-	        $res = $db->select ($list, 'address', "id=$aid");
-                if ($res->num_rows () > 0)
-	            $fields = $res->fetch_array ();
-	    }
+	    if ($aid)
+                if ($res = $db->select ($list, 'address', "id=$aid"))
+	            $fields = $res->get ();
 
 	    # Check duty fields.
 	    foreach ($address as $v)

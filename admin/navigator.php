@@ -50,15 +50,15 @@ function show_directory_index (&$this, $table, $id)
 {
     global $lang;
 
+    $db =& $this->db;
     $p =& $this->ui;
     $GLOBALS['table'] = $table;
     $GLOBALS['id'] = $id;
-    echo $this->db->traverse_refs_from ($this, $table, $id, 'nav_linkpath', 0, false);
+    echo $db->traverse_refs_from ($this, $table, $id, 'nav_linkpath', 0, false);
 
     if ($table == 'categories') {
         # List subcategories
-        $res = $this->db->select ('name, id', 'categories', "id_parent=$id ORDER BY name ASC");
-        if ($res && $res->num_rows () > 0) {
+        if ($res = $db->select ('name, id', 'categories', "id_parent=$id ORDER BY name ASC")) {
             echo "<P>\n<font color=\"#888888\"><B>" . $lang['subdirectories'] . ':</B></FONT>';
 	    while (list ($name, $id) = $res->fetch_array ())
 	        $p->link ($name, 'view_pages', array ('id' => $id));

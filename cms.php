@@ -47,7 +47,7 @@ $list_sizes = array ();	# Last list sizes.
 # Fetch object starting at current context or position passed in
 # $l_table/$l_id. $fields limits the fields fetched from an object.
 # This is useful if you need just a mime type and not a whole file.
-function &cms_fetch_object ($class, $l_table = '', $l_id = '', $fields = '*')
+function cms_fetch_object ($class, $l_table = '', $l_id = '', $fields = '*')
 {
     global $dep, $db, $scanner;
 
@@ -57,7 +57,7 @@ function &cms_fetch_object ($class, $l_table = '', $l_id = '', $fields = '*')
         $t = $scanner->parent_context_table;
         $i = $scanner->parent_context['id'];
     }
-    $obj =& new DBOBJ ($db, $class, $dep, $t, $i, true, $fields);
+    $obj = new DBOBJ ($db, $class, $dep, $t, $i, true, $fields);
 
     # Return nothing if object wasn't found.
     if (isset ($obj->active) && is_array ($obj->active))
@@ -66,7 +66,7 @@ function &cms_fetch_object ($class, $l_table = '', $l_id = '', $fields = '*')
 
 # Fetch array at position specified by $table/$id and return it as array
 # of columns. Caching is used here.
-function &cms_fetch_directory ($table, $id)
+function cms_fetch_directory ($table, $id)
 { 
     global $db, $_CMS_CACHE_DIRS;
 
@@ -75,11 +75,11 @@ function &cms_fetch_directory ($table, $id)
         return $_CMS_CACHE_DIRS[$table][$id];
 
     # Select whole directory record.
-    $res =& $db->select ('*', $table, "id=$id");
+    $res = $db->select ('*', $table, "id=$id");
 
     # Read record into cache and return it.
-    if ($res->num_rows () > 0)
-        return $_CMS_CACHE_DIRS[$table][$id] = $res->fetch_array ();
+    if ($res)
+        return $_CMS_CACHE_DIRS[$table][$id] = $res->get ();
   }
 
 
@@ -101,7 +101,7 @@ function cms_make_link ($t, $i)
         if ($t == $cms_root_table && $i == $cms_root_id)
             break;
 
-        $row =& cms_fetch_directory ($t, $i);
+        $row = cms_fetch_directory ($t, $i);
         if (!$row)
 	    break;
         $url = document_readable_url ($row['name'] . ($url ? "/$url" : ""));
@@ -195,7 +195,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
     # Get parent directory or real if virtual.
     if (strtoupper ($dirtype) == 'PARENT') {
         dbitree_get_parent ($db, $table, $id);
-        if (!($row =& cms_fetch_directory ($table, $id)) || !$row['id']) {
+        if (!($row = cms_fetch_directory ($table, $id)) || !$row['id']) {
 	    # There's no parent. Clear context so tag won't get executed.
 	    $scanner->context = $scanner->context_table = 0;
 	    return;
@@ -221,7 +221,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
 
     # Search through the path until we find a directory of the given type.
     while ($id) {
-        $row =& cms_fetch_directory ($table, $id);
+        $row = cms_fetch_directory ($table, $id);
         if ($table == $dirtype) {
             $scanner->dirtype = $scanner->dirtypes[$table];
             $scanner->context_table = $table;
@@ -246,7 +246,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
 
 $scanner->dirtag ('SESSION', 	'KEY');
 
-$session =& new DBSESSION ($db);
+$session = new DBSESSION ($db);
 if (isset ($SESSION_KEY))
     $session->read_id ($SESSION_KEY);
 
@@ -273,21 +273,20 @@ function cms_listsource ()
 # This function also creates index numbers for the records we need to split
 # up lists..
 # TODO: Index code doesn't belong here. Use linked list support instead.
-function &parse_result_set (&$template, $size = 0)
+function parse_result_set ($template, $size = 0)
 {
     global $current_index, $current_results, $current_indices, $scanner, $dep, $db;
 
     $table = $scanner->parent_context_table;
     $id = $scanner->parent_context['id'];
 
-    $res =& dbitree_get_childs ($db, $table, $id, $scanner->context_table);
-    if (!$res || $res->num_rows () < 1)
+    if ($res = dbitree_get_childs ($db, $table, $id, $scanner->context_table))
         return '<!-- Nothing to list. -->';
 
     # Read IDs for index2link ()
     $old_indices = $current_indices;
     unset ($current_indices);
-    while ($tmp =& $res->fetch_array ())
+    while ($tmp = $res->get ())
         $set[$tmp['id_last']] = $tmp;
 
     # Sort indexes into $current_indices and $list.
@@ -308,7 +307,7 @@ function &parse_result_set (&$template, $size = 0)
 # $records	= Array of records to list.
 # $template	= Document tree of template.
 # $size	= Maximum list size.
-function cms_process_list (&$records, &$template, $table = '', $size = 0)
+function cms_process_list ($records, $template, $table = '', $size = 0)
 {
     global $db, $dep, $scanner, $list_sizes, $list_offsets, $current_index;
 
@@ -420,8 +419,8 @@ function tag_template ($attr)
     global $scanner;
 
     $class = $attr['class'];
-    $template =& cms_fetch_object ($class);
-    $tree =& $scanner->scan ($template);
+    $template = cms_fetch_object ($class);
+    $tree = $scanner->scan ($template);
     return $scanner->exec ($tree);
 }
 
@@ -437,7 +436,7 @@ function tag_objectlink ($attr)
     # Create file name from mime type.
     $table = $scanner->context_table;
     $id = $scanner->context['id'];
-    $dbobj =& new DBOBJ ($db, $arg, $dep, $table, $id, true, 'mime');
+    $dbobj = new DBOBJ ($db, $arg, $dep, $table, $id, true, 'mime');
     $filename = isset ($dbobj->active) ? ereg_replace ('/', '.', $dbobj->active['mime']) : '';
     $arg .= '/' . strtolower ($filename);
 
@@ -449,7 +448,7 @@ function tag_objectlink ($attr)
 }
 
 # Create link from index.
-function &index2link ($index, $vdir_template = '')
+function index2link ($index, $vdir_template = '')
 {
     global $SCRIPT_NAME, $current_indices, $scanner;
 
@@ -513,12 +512,12 @@ function tag_next ($arg)
     return index2link (tag_next_index (''), $arg);
 }
 
-function &tag_list ($attr)
+function tag_list ($attr)
 {
     global $scanner, $default_enumeration;
 
     @$size = $attr['size'];
-    $template =& $attr['_'];
+    $template = $attr['_'];
     return parse_result_set ($template, $size);
 }
 
@@ -544,8 +543,8 @@ function tag_num_type ($attr)
 
     # TODO: Do a proper iteration.
     if ($table == 'categories' && $id == 1 ) {
-        $res =& $db->select ('COUNT(id)', $desttab);
-        list ($num) = $res->fetch_array ();
+        $res = $db->select ('COUNT(id)', $desttab);
+        list ($num) = $res->get ();
         return (string) $num;
     }
 
@@ -576,9 +575,8 @@ function tag_num_subdirs ($attr)
 
     if (!($table = $scanner->tables[$arg]))
         return "<!-- cms: No directory type '$arg' known. -->";
-    $res =& dbitree_get_childs ($db, $table, $scanner->context['id']);
-    if (($num = $res->num_rows ()) < 1)
-        $num = 0;
+    $res = dbitree_get_childs ($db, $table, $scanner->context['id']);
+    $num = $res ? $res->num_rows () : 0;
     return (string) $num;
 }
 
@@ -596,14 +594,14 @@ function _c ($apath, $i, $id, $subtable = '', $norec = 0)
     if (!$subtable)
         $subtable = $apath[$i - 1];
 
-    $res =& dbitree_get_childs ($db, $subtable, $id);
-    if ($res && ($tmp = $res->num_rows ()) > 0) {
+    $res = dbitree_get_childs ($db, $subtable, $id);
+    if ($res) {
         if ($i == 1)
-            return $num += $tmp;
+            return $num += $res->num_rows ();
         else {
             if (!$norec)
 	        $i--;
-            while ($tmp =& $res->fetch_array ())
+            while ($tmp = $res->get ())
                 $num += _c ($apath, $i, $tmp['id']);
         }
     }

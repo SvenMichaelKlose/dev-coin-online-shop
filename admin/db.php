@@ -26,10 +26,10 @@ function create_dirtype (&$db, $name)
 function copy_o2ndir (&$this, $name, $id_type, &$dir_array)
 {
     $db =& $this->db;
-    $res = $db->select ('*', $name);
     $c = 0;
     $dep = $this->db->def;
-    while ($row = $res->fetch_array ()) {
+    $res = $db->select ('*', $name);
+    while ($res && $row = $res->get ()) {
         if ($c++ % 100 == 0) 
  	    echo "$c directories copied...<br>", flush ();
         $tmp = $db->insert ( 'directories', 'id_obj=' . $row['id_obj'] . ', name="' . addslashes ($row['name']) . '"');
@@ -98,23 +98,24 @@ function create_tables (&$this)
     global $lang, $debug;
 
     $p =& $this->ui;
+    $db =& $this->db;
     $TABLE_PREFIX = isset ($this->args['__TABLE_PREFIX']) ? $this->args['__TABLE_PREFIX'] : '';
 
     echo "<HR>\n";
 
     $tmp = $debug;
     $debug = true;
-    $this->db->create_tables ($TABLE_PREFIX);
+    $db->create_tables ($TABLE_PREFIX);
     $debug = $tmp;
 
     echo '<FONT COLOR=GREEN>' . $lang['msg tables created'] . '</FONT><BR>';
 
-    $res = $this->db->select ('id', 'categories', 'id=1');
-    if ($res->num_rows () < 1) {
-        $this->db->insert ('categories', 'id=1, name=\'root\'');
-        echo '<FONT COLOR=GREEN>' . $lang['msg root category created'] . '</FONT><BR>';
-    } else
+    if ($db->select ('id', 'categories', 'id=1')) {
         echo '<FONT COLOR=RED>' . $lang['msg root category exists'] . '</FONT><BR>';
+    } else {
+        $db->insert ('categories', 'id=1, name=\'root\'');
+        echo '<FONT COLOR=GREEN>' . $lang['msg root category created'] . '</FONT><BR>';
+    }
 
     # Create default classes.
     $tmp = array (
@@ -135,16 +136,15 @@ function create_tables (&$this)
         echo 'Klasse ' . $class[$i][0] . ' (' . $class[$i][1] . ') ';
 
         # Rename already existing classes.
-        $tmp = $this->db->select ('*', 'obj_classes', 'name=\'' . $class[$i][0] . '\'');
-        if ($tmp->num_rows () > 0) {
-            $res = $tmp->fetch_array ();
-            $this->db->update ('obj_classes', 'descr="' . $class[$i][1] . '"', 'id=' . $res['id']);
+        if ($tmp = $db->select ('*', 'obj_classes', 'name=\'' . $class[$i][0] . '\'')) {
+            $res = $tmp->get ();
+            $db->update ('obj_classes', 'descr="' . $class[$i][1] . '"', 'id=' . $res['id']);
             echo "<FONT COLOR=GREEN>updated.</FONT><BR>\n";
 	    continue;
         }
 
         # Create new class.
-        $this->db->insert ('obj_classes', 'name=\'' . $class[$i][0] . '\', descr=\'' . $class[$i][1] . '\'');
+        $db->insert ('obj_classes', 'name=\'' . $class[$i][0] . '\', descr=\'' . $class[$i][1] . '\'');
         echo "<FONT COLOR=GREEN>erstellt.</FONT><BR>\n";
     }
 
@@ -175,7 +175,7 @@ function dbchkdir (&$this, &$objs, $dirname)
 {
     $cnt = '0';
     $res = $this->db->select ('id,id_obj', $dirname, 'id_obj!=0');
-    while ($row = $res->fetch_array ())
+    while ($res && $row = $res->get ())
         if (isset ($objs[$row['id_obj']]) == false) {
 	    $this->db->update ($dirname, 'id_obj=0', 'id="' . $row['id'] . '"');
 	    $cnt++;
@@ -188,6 +188,7 @@ function db_consistency_check (&$this)
 {
     global $lang;
 
+    $db =& $this->db;
     $p =& $this->ui;
     $p->msgbox ('Please wait...', 'yellow');
     $changes = 0;
@@ -195,42 +196,43 @@ function db_consistency_check (&$this)
     echo 'Removing free objects...<br>';
     flush ();
     # Get all object id in directories.
-    $res = $p->db->select ('id_obj', 'categories');
-    while (list ($id_obj) = $res->fetch_array ())
+    $res = $db->select ('id_obj', 'categories');
+    while ($res && list ($id_obj) = $res->get ())
         $refs[$id_obj] = true;
-    $res = $p->db->select ('id_obj', 'pages');
-    while (list ($id_obj) = $res->fetch_array ())
+    $res = $db->select ('id_obj', 'pages');
+    while ($es && list ($id_obj) = $res->get ())
         $refs[$id_obj] = true;
-    $res = $p->db->select ('id_obj', 'products');
-    while (list ($id_obj) = $res->fetch_array ())
+    $res = $db->select ('id_obj', 'products');
+    while ($res && list ($id_obj) = $res->get ())
         $refs[$id_obj] = true;
 
     # Remove objects and data that is not referenced
-    $res = $p->db->select ('id', 'objects');
-    while (list ($id) = $res->fetch_array ())
+    $res = $db->select ('id', 'objects');
+    while ($res && list ($id) = $res->get ())
         if (!isset ($refs[$id])) {
-            $p->db->delete ('obj_data', "id_obj=$id");
-            $p->db->delete ('objects', "id=$id");
+            $db->delete ('obj_data', "id_obj=$id");
+            $db->delete ('objects', "id=$id");
         }
 
     echo 'Removing empty objects...<br>';
     flush ();
-    $res = $p->db->select ('id, id_obj', 'obj_data', 'data=\'\'');
-    while ($row = $res->fetch_array ())
-	$p->db->delete ('obj_data', 'id=' . $row['id']);
-    echo $res->num_rows () . ' empty objects removed.<br>';
-    $changes += $res->num_rows ();
+    $res = $db->select ('id, id_obj', 'obj_data', 'data=\'\'');
+    while ($res && $row = $res->get ())
+	$db->delete ('obj_data', 'id=' . $row['id']);
+    $num_rows = ($res ? $res->num_rows () : 0);
+    echo "$num_rows empty objects removed.<br>";
+    $changes += $num_rows;
 
     echo 'Removing hanging xrefs...<br>';
     flush ();
-    $res = $p->db->select ('id_obj', 'obj_data');
-    while (list ($id_obj) = $res->fetch_array ())
+    $res = $db->select ('id_obj', 'obj_data');
+    while ($res && list ($id_obj) = $res->get ())
         $bref[$id_obj] = true;
-    $res = $p->db->select ('id', 'objects');
     $n = 0;
-    while (list ($id) = $res->fetch_array ())
+    $res = $db->select ('id', 'objects');
+    while ($res && list ($id) = $res->get ())
         if (!$refs[$id]) {
-            $p->db->delete ('objects', "id=$id");
+            $db->delete ('objects', "id=$id");
 	    $n++;
 	    $changes++;
         }
@@ -239,8 +241,8 @@ function db_consistency_check (&$this)
     # Remove dangling object ids in directories.
     echo 'Removing dangling object ids in directories...<br>';
     flush ();
-    $res = $p->db->select ('id', 'objects');
-    while ($row = $res->fetch_array ())
+    $res = $db->select ('id', 'objects');
+    while ($res && $row = $res->get ())
         $obj[$row['id']] = true;
     $changes += dbchkdir ($this, $obj, 'categories');
     $changes += dbchkdir ($this, $obj, 'pages');
@@ -248,18 +250,18 @@ function db_consistency_check (&$this)
 
     echo 'Removing old tokens...<br>';
     flush ();
-    $p->db->delete ('tokens');
+    $db->delete ('tokens');
 
     echo 'Optimizing tables...<br>';
     flush ();
-    $p->db->query ('OPTIMIZE TABLE categories');
-    $p->db->query ('OPTIMIZE TABLE pages');
-    $p->db->query ('OPTIMIZE TABLE products');
-    $p->db->query ('OPTIMIZE TABLE objects');
-    $p->db->query ('OPTIMIZE TABLE obj_data');
-    $p->db->query ('OPTIMIZE TABLE cart');
-    $p->db->query ('OPTIMIZE TABLE sessions');
-    $p->db->query ('OPTIMIZE TABLE tokens');
+    $db->query ('OPTIMIZE TABLE categories');
+    $db->query ('OPTIMIZE TABLE pages');
+    $db->query ('OPTIMIZE TABLE products');
+    $db->query ('OPTIMIZE TABLE objects');
+    $db->query ('OPTIMIZE TABLE obj_data');
+    $db->query ('OPTIMIZE TABLE cart');
+    $db->query ('OPTIMIZE TABLE sessions');
+    $db->query ('OPTIMIZE TABLE tokens');
 
     $p->msgbox ("$changes changes.");
     $p->link ('back', 'defaultview');

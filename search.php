@@ -43,8 +43,8 @@ function document_search ()
     $SEARCH_TEXT = mysql_real_escape ($SEARCH_TEXT);
     $url_vars['SEARCH_TEXT'] = $SEARCH_TEXT;
 
-    $res =& $db->select ('id', 'products', "name LIKE '%'$SEARCH_TEXT%' OR bestnr LIKE '%$SEARCH_TEXT%'");
-    while ($row =& $res->fetch_array ())
+    $res = $db->select ('id', 'products', "name LIKE '%'$SEARCH_TEXT%' OR bestnr LIKE '%$SEARCH_TEXT%'");
+    while ($res && $row = $res->get ())
         $search_records[] = $row;
 }
 
