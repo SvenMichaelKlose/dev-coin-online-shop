@@ -103,7 +103,8 @@ function generic_list (&$this, $c)
     $p->use_filter ('form_safe');
 
     if ($p->get ("WHERE $c->ref_table=$id", true)) {
-        $p->table_headers ($c->headers);
+        if ($c->headers)
+            $p->table_headers ($c->headers);
         $idx = 1;
         do {
 	    $recordfunc ($this, $idx);

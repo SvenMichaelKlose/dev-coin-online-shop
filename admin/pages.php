@@ -22,7 +22,6 @@ function view_pages (&$this)
     $c->child_table = 'pages';
     $c->ref_table = 'id_category';
     $c->ref_parent = 'id_parent';
-    $c->headers = Array ('');
     $c->recordfunc = 'record_page';
     $c->txt_no_func = $lang['msg no product group'];
     $c->txt_create = $lang['cmd create_page'];
