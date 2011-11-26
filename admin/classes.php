@@ -2,7 +2,7 @@
 # Object classes.
 #
 # (c)2000-2001 dev/consulting GmbH
-#	    	 Sven Klose (sven@devcon.net)
+#	    	 Sven Michael Klose (sven@devcon.net)
 #
 # Licensed under the MIT, BSD and GPL licenses.
   
@@ -74,8 +74,7 @@ function _class2tag ($name)
     if (substr ($name, 0, 2) == 'd_')
         return 'Konfiguration';
     if (substr ($name, 0, 2) == 'u_')
-        return '<B>&lt;!:OBJECT&nbsp;' . $name . '!&gt;</B> ' .
-               ' <B>&lt;!:OBJECTLINK&nbsp;' . $name . '!&gt;</B> (' . $lang['user defined'] . ')';
+        return "<B>&lt;!:OBJECT&nbsp;$name!&gt;</B> <B>&lt;!:OBJECTLINK&nbsp;$name!&gt;</B> (" . $lang['user defined'] . ')';
     if ($name == 'l_cart')
         return '<B>&lt;!CART!&gt;</B>';
     if ($name == 'l_ecml')
@@ -86,18 +85,18 @@ function _class2tag ($name)
         return '-';
     if (substr ($name, 0, 2) == 'l_') {
         if ($name == 'l_pages') {
-            $arg = ' ' . $name;
+            $arg = " $name";
 	    $name = 'l_page';
         } else
             if ($name == 'l_empty_cart')
 	        $name = 'l_cart';
-        return '<b>&lt;!' . strtoupper (substr ($name, 2)) . ':LINK' . $arg . '!&gt;</b>';
+        return '<b>&lt;!' . strtoupper (substr ($name, 2)) . ":LINK$arg!&gt;</b>";
     } else if (substr ($name, 0, 3) == 'll_') {
         if ($name == 'll_pages')
-            $arg = ' ' . $name;
+            $arg = " $name";
         else
             if ($name == 'll_page_indices') {
-                $arg = ' ' . $name;
+                $arg = " $name";
 	        $name = 'll_page';
             } else
                 if ($name == 'll_category_group')
@@ -105,7 +104,7 @@ function _class2tag ($name)
                 else
                     if ($name == 'll_order_email' || $name == 'll_order_confirm')
                         $name = 'll_order';
-        return '<b>&lt;!' . strtoupper (substr ($name, 3)) . ':LIST' . $arg . '!&gt;</b>';
+        return '<b>&lt;!' . strtoupper (substr ($name, 3)) . ":LIST$arg!&gt;</b>";
     }
     return $name . ' <FONT COLOR="RED">(' . $lang['illegal name'] . ')</FONT>';
 }

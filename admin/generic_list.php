@@ -2,7 +2,7 @@
 # Generic directory lister.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -10,9 +10,7 @@
 function _get_index (&$this, $parent, $ref_parent, $table, $id)
 {
     $id_parent = $this->db->column ($table, $ref_parent, $id);
-    $res = $this->db->select (
-      'id, id_last, id_next', $table, $ref_parent . '=' . $id_parent
-    );
+    $res = $this->db->select ('id, id_last, id_next', $table, "$ref_parent=$id_parent");
     while ($row = $res->fetch_array ())
         $tmp[$row['id_last']] = $row;
     for ($row = reset ($tmp), $i = 1; $row; $row = next ($tmp), $i++)
@@ -45,21 +43,16 @@ function _range_panel (&$this, $id, $child_view, $txt_create, $table, $have_subm
 }
 
 # View products within a product group.
-function generic_list (&$this,
-                       $table, $parent_table, $child_table,
-                       $ref_table, $ref_parent,
-                       $headers, $recordfunc,
-                       $txt_no_records, $txt_create, $txt_input, $parent_view, $child_view,
-                       $have_submit_button = false)
+function generic_list (&$this, $table, $parent_table, $child_table, $ref_table, $ref_parent, $headers, $recordfunc, $txt_no_records, $txt_create, $txt_input, $parent_view, $child_view, $have_submit_button = false)
 {
     global $lang;
 
-    $this->args['table'] = $table;	# Needed for _object_box.
+    $this->args['table'] = $table; # Needed for _object_box.
     $id = $this->args['id'];
     $p =& $this->ui;
 
     # Navigator
-    $p->headline ($lang['title ' . $this->view]);
+    $p->headline ($lang["title $this->view"]);
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
     show_directory_index ($this, $table, $id);
 
@@ -93,7 +86,7 @@ function generic_list (&$this,
     $p->open_source ($child_table);
     $p->use_filter ('form_safe');
 
-    if ($p->get ('WHERE ' . $ref_table . '=' . $id, true)) {
+    if ($p->get ("WHERE $ref_table=$id", true)) {
         $p->table_headers ($headers);
         $idx = 1;
         do {

@@ -2,7 +2,7 @@
 # ORDER directory extension for dev/con cms.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH,
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -26,6 +26,7 @@ function document_order ()
 
     $table = $scanner->context_table;
     $id = $scanner->context['id'];
+    $sid = $session->id ();
 
     # Fetch current session key. If there's none, report odd things are
     # happening and exit.
@@ -33,14 +34,14 @@ function document_order ()
         panic ('document_order: No session key.', 'Maybe tries to pinch address information.');
 
     # Redirect to empty cart template if appropriate.
-    $res = $db->select ('id' , 'cart', 'id_session=' . $session->id ());
+    $res = $db->select ('id' , 'cart', "id_session=$sid");
     if ($res->num_rows () < 1) {
         document_set_template (cms_fetch_object ('l_empty_cart'));
         return;
     }
 
     # Read in order record.
-    $res =& $db->select ('*', 'ecml_order', 'id_session=' . $session->id ());
+    $res =& $db->select ('*', 'ecml_order', "id_session=$sid");
 
     # Perform order if address info is complete.
     if (ecml_parse_form () == true) {
@@ -65,7 +66,7 @@ function dirtag_order_link ($arg)
 # Be ECML compliant (http://www.ecml.org/ECMLv1.1fieldspec.txt)
 function dirtag_order_ecml_version ($arg)
 {
-    return '<INPUT TYPE=HIDDEN NAME="' . ecml_version_name () . '" ' . 'VALUE="' . ecml_version () . '">';
+    return '<input type="hidden" name="' . ecml_version_name () . '" value="' . ecml_version () . '">';
 }
 
 function dirtag_order_finish ($arg)

@@ -2,7 +2,7 @@
 # Product management extension for dev/con cms.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -52,8 +52,7 @@ function dirtag_product_quantity ($dummy)
         return 0;
     $quantity = 0;
     $q = isset ($scanner->context['attrib']) ? '"' . $scanner->context['attrib'] . '"' : '0';
-    $res =& $db->select ('quantity', 'cart',
-                         'id_session=' . $id . ' AND id_product=' . $scanner->context['id'] . ' AND attrib=' . $q);
+    $res =& $db->select ('quantity', 'cart', "id_session=$id AND id_product=" . $scanner->context['id'] . " AND attrib=$q");
     if ($res && $res->num_rows () > 0)
         list ($quantity) = $res->fetch_array ();
 
@@ -139,7 +138,7 @@ function &dirtag_product_num_attrs ($attr)
     if (is_array ($arr))
         foreach ($arr as $record)
 	    if (isset ($record['name']))
-              $attr[$record['name']] = $record['is_used'];
+                $attr[$record['name']] = $record['is_used'];
 
     # Scan template for each set attribute.
     $num = '0';
@@ -160,7 +159,7 @@ function &dirtag_product_attr ($attr)
         return $product_attr;
     }
 
-    $res = $db->select ('attrib', 'cart', 'id_product=' . $scanner->context['id'] . ' AND ' . 'id_session=' . $session->id());
+    $res = $db->select ('attrib', 'cart', 'id_product=' . $scanner->context['id'] . ' AND id_session=' . $session->id());
     list ($attr) = $res->fetch_array ();
 
     if (!$attr)
@@ -180,7 +179,7 @@ function update_product_quantity ($id, $quantity, $attribute)
     if (!$attribute)
         $attribute = "0";
 
-    $res =& $db->select ('id,quantity', 'cart', 'id_session=' . $session->id () . ' AND id_product=' . $id . ' AND attrib="' .  $attribute . '"');
+    $res =& $db->select ('id,quantity', 'cart', 'id_session=' . $session->id () . " AND id_product=$id AND attrib=\"$attribute\"");
     if ($res && $res->num_rows () > 0) {
         $r =& $res->fetch_array ();
         $s = substr ($quantity, 0, 1);
@@ -191,18 +190,16 @@ function update_product_quantity ($id, $quantity, $attribute)
         if (!$quantity)
             $db->delete ('cart', 'id=' . $r['id']);
         else
- 	    $db->update ('cart', 'quantity=' . $quantity, 'id=' . $r['id'] . ' AND attrib="' . $attribute . '"');
+ 	    $db->update ('cart', 'quantity=' . $quantity, 'id=' . $r['id'] . " AND attrib=\"$attribute\"");
     } else
-        $db->insert ('cart', 'id_session=' . $session->id () . ',id_product=' . $id . ',quantity=' . (int) $quantity . ',attrib="' . $attribute . '"');
+        $db->insert ('cart', 'id_session=' . $session->id () . ", id_product=$id, quantity=" . (int) $quantity . ", attrib=\"$attribute\"");
 }
 
 # Update cart.
 # See also: dirtag_product_form.*() and dirtag_product_quantity.*()
 function document_cart ()
 {
-    global $path, $quant, $PHP_SELF, $session, $dep, $scanner, $db,
-    	   $path_tail, $use_cookies, $SCRIPT_NAME, $SERVER_NAME,
-           $url_vars;
+    global $path, $quant, $PHP_SELF, $session, $dep, $scanner, $db, $path_tail, $use_cookies, $SCRIPT_NAME, $SERVER_NAME, $url_vars;
 
     $attr = isset ($path_tail[1]) ? urldecode ($path_tail[1]) : '0';
     $attr = addslashes ($attr);
@@ -292,9 +289,7 @@ function dirtag_cart_link ($attr)
     if ($quantity == '')
         return tag_link (array ('template' => $vdir_alias['CART']));
 
-    return tag_link (array ('template' => $vdir_alias['CART'] . '/' .
-                                          $scanner->context['id'] . '/' .
-                                          urlencode ($product_attr) . '/' . $quantity));
+    return tag_link (array ('template' => $vdir_alias['CART'] . '/' . $scanner->context['id'] . '/' . urlencode ($product_attr) . "/$quantity"));
 }
  
 function dirtag_cart_list ($attr)
@@ -331,7 +326,7 @@ function dirtag_cart_total ($attr)
     $res = $db->select ('id_product,quantity', 'cart', 'id_session=' . $session->id ());
 
     for ($total = 0; list ($id_prod, $quant) = $res->fetch_array (); $total += $price * $quant) {
-        $res2 =& $db->select ('price_' . $currency, 'products', 'id=' . $id_prod);
+        $res2 =& $db->select ("price_$currency", 'products', "id=$id_prod");
         list ($price) = $res2->fetch_array ();
     }
     return number_format ($total, 2);
@@ -344,7 +339,7 @@ function dirtag_cart_quantity ($dummy)
 
     $quantity = 0;
     if ($sid = $session->id ()) {
-        $res =& $db->select ('SUM(num)', 'cart', 'id_session=' . $SESSION_ID);
+        $res =& $db->select ('SUM(num)', 'cart', 'id_session=' . $session->id ());
         if ($res->num_rows ())
             list ($quantity) = $res->fetch_array ();
     }

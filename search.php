@@ -2,7 +2,7 @@
 # Fulltext search extension for dev/con cms.
 #
 # Copyright (c) 2000 dev/consulting GmbH,
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -40,9 +40,10 @@ function document_search ()
     if (!isset ($SEARCH_TEXT) || !$SEARCH_TEXT)
         return;
 
+    $SEARCH_TEXT = mysql_real_escape ($SEARCH_TEXT);
     $url_vars['SEARCH_TEXT'] = $SEARCH_TEXT;
 
-    $res =& $db->select ('id', 'products', 'name LIKE \'%' . $SEARCH_TEXT . '%\'' . ' OR bestnr LIKE \'%' . $SEARCH_TEXT . '%\'');
+    $res =& $db->select ('id', 'products', "name LIKE '%'$SEARCH_TEXT%' OR bestnr LIKE '%$SEARCH_TEXT%'");
     while ($row =& $res->fetch_array ())
         $search_records[] = $row;
 }

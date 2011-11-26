@@ -37,7 +37,7 @@ function record_page (&$this, $idx)
 
     $p->open_row ();
     $p->open_cell (array ('ALIGN' => 'LEFT', 'WIDTH' => '100&'));
-    $p->link ($idx . ' ' . $nam, 'view_products', array ('id' => $p->value ('id')));
+    $p->link ("$idx $nam", 'view_products', array ('id' => $p->value ('id')));
     $p->close_cell ();
     $p->open_cell (array ('ALIGN' => 'RIGHT'));
     $p->link ($lang['cmd view_products'], 'view_products', array ('id' => $p->value ('id')));

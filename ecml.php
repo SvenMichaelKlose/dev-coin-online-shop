@@ -2,7 +2,7 @@
 # ECML extension
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -32,20 +32,20 @@ function ecml_finish ()
 function ecml_address_field_name ($type, $shortcut)
 {
     $fields = ecml_typearray ();
-    if ($name = $fields[strtolower ($shortcut)])
-        return 'Ecom_' . $type . '_' . $name;
-    else
-        return 'No such ECML ' . $type . '-fieldname "' . $shortcut . '".';
+    $name = $fields[strtolower ($shortcut)];
+    if (!$name)
+        die ("No such ECML $type-fieldname '$shortcut'.");
+    return 'Ecom_' . $type . "_$name";
 }
 
 # Fetch particular address field.
 # One may want to fetch the address set just once.
 function ecml_address_field ($arg, $address)
 {
-    global $scanner, $db;
+    global $scanner, $db, $session;
 
     # Fetch key of address field in order record.
-    $res = $db->select ('id_address_' . $address, 'ecml_order', 'id_session=' . $GLOBALS['session']->id ());
+    $res = $db->select ("id_address_$address", 'ecml_order', 'id_session=' . $session->id ());
     if ($res->num_rows () < 1)
         return;
     list ($id) = $res->fetch_array ();
@@ -53,7 +53,7 @@ function ecml_address_field ($arg, $address)
         return;
 
     # Fetch field from address record.
-    $res = $db->select ($arg, 'address', 'id=' . $id);
+    $res = $db->select ($arg, 'address', "id=$id");
     if ($res->num_rows () < 1)
         return;
     list ($field) = $res->fetch_array ();
@@ -88,11 +88,11 @@ function ecml_add_address ($db, $type, $idname)
     global $session;
     $SESSION_ID = $session->id ();
 
-    $idname = 'id_address_' . $idname;
+    $idname = "id_address_$idname";
     # Get address' id.
-    $res = $db->select ($idname, 'ecml_order', 'id_session=' . $SESSION_ID);
+    $res = $db->select ($idname, 'ecml_order', "id_session=$SESSION_ID");
     if ($res->num_rows () < 1) {
-        $db->insert ('ecml_order', 'id_session=' . $SESSION_ID);
+        $db->insert ('ecml_order', "id_session=$SESSION_ID");
         $id = 0;
     } else
         list ($id) = $res->fetch_array ();
@@ -118,9 +118,9 @@ function ecml_add_address ($db, $type, $idname)
         if (!$id) {
             $db->insert ('address', 'name_last=\'\'');
             $id = $db->insert_id ();
-            $db->update ('ecml_order', $idname . '=' . $id, 'id_session=' . $SESSION_ID);
+            $db->update ('ecml_order', "$idname=$id", "id_session=$SESSION_ID");
         }
-        $db->update ('address', $set, 'id=' . $id);
+        $db->update ('address', $set, "id=$id");
     }
 }
 
@@ -164,7 +164,7 @@ function ecml_parse_form ()
 
         # Query fields for each address type.
         foreach ($duty as $addrtype => $address) {
-	    $res = $db->select ('id_address_' . $addrtype, 'ecml_order', 'id_session=' . $SESSION_ID);
+	    $res = $db->select ('id_address_' . $addrtype, 'ecml_order', "id_session=$SESSION_ID");
 	    list ($aid) = $res->fetch_array ();
 
 	    # Read in duty fields to check them later.
@@ -176,7 +176,7 @@ function ecml_parse_form ()
 
 	    $fields = Array ('');
 	    if ($aid) {
-	        $res = $db->select ($list, 'address', 'id=' . $aid);
+	        $res = $db->select ($list, 'address', "id=$aid");
                 if ($res->num_rows () > 0)
 	            $fields = $res->fetch_array ();
 	    }
@@ -184,10 +184,7 @@ function ecml_parse_form ()
 	    # Check duty fields.
 	    foreach ($address as $v)
 	        if (!isset ($fields[$v]) || !$fields[$v])
-	            if (!$msg[$addrtype][$v])
-	                $order_errors .= 'No missing field warning for ' . $v;
-	            else
-	                $order_errors .= $msg[$addrtype][$v];
+	            $order_errrors .= $msg[$addrtype][$v] || "No warning phrase defined for missing field '$v'";
         }
         # Return true if address info is complete.
         if (!$order_errors && $GLOBALS['Ecom_TransactionComplete'])

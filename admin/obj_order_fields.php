@@ -2,7 +2,7 @@
 # ECML form configuration
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -26,7 +26,7 @@ function print_field_form (&$this, $title, $p, $stdtype, $adrtype, $data)
     else
         $duty_msgs = $data[$adrtype]['duty_msgs'];
 
-    $p->headline ($lang['title ' . $adrtype] . ':');
+    $p->headline ($lang["title $adrtype"] . ':');
     $p->open_table ();
     for (reset ($stdtype); $n = key ($stdtype); next ($stdtype)) {
         $p->open_row ();
@@ -118,10 +118,10 @@ function edit_user_fields (&$this, &$obj, $class)
             $desc = $v['desc'];
             $p->open_row ();
             $p->open_cell ();
-            echo '<INPUT TYPE="TEXT" NAME="name[]" SIZE="16" ' . 'VALUE="' . $name . '">';
+            echo '<INPUT TYPE="TEXT" NAME="name[]" SIZE="16" VALUE="' . $name . '">';
             $p->close_cell ();
             $p->open_cell ();
-            echo '<INPUT TYPE="TEXT" NAME="desc[]" SIZE="60" ' . 'VALUE="' . $desc . '">';
+            echo '<INPUT TYPE="TEXT" NAME="desc[]" SIZE="60" VALUE="' . $desc . '">';
             $p->close_cell ();
             $args = $this->args;
             $args['removefield'] = $k;

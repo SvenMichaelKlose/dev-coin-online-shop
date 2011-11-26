@@ -2,7 +2,7 @@
 # Generic document generation
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -25,12 +25,11 @@
 
 # Register default cms tags.
 $scanner->tags ('FIELD HAS-OBJECT OBJECT TEMPLATE ' . # data
-                  'LIST ' . # enumerations
-                  'LINK OBJECTLINK FIRST PREV NEXT LAST ' . # links
-                  'INDEX THIS-INDEX PREV-INDEX NEXT-INDEX FIRST-INDEX' .
-                  ' LAST-INDEX ' . # indexes
-                  'TYPE NUM-SUBDIRS NUM-TYPE ' . # structural
-                  'SELECTED '); # conditional
+                'LIST ' . # enumerations
+                'LINK OBJECTLINK FIRST PREV NEXT LAST ' . # links
+                'INDEX THIS-INDEX PREV-INDEX NEXT-INDEX FIRST-INDEX LAST-INDEX ' . # indexes
+                'TYPE NUM-SUBDIRS NUM-TYPE ' . # structural
+                'SELECTED '); # conditional
 
 $current_index = -1;
 $current_indices = '';
@@ -76,7 +75,7 @@ function &cms_fetch_directory ($table, $id)
         return $_CMS_CACHE_DIRS[$table][$id];
 
     # Select whole directory record.
-    $res =& $db->select ('*', $table, 'id=' . $id);
+    $res =& $db->select ('*', $table, "id=$id");
 
     # Read record into cache and return it.
     if ($res->num_rows () > 0)
@@ -106,23 +105,21 @@ function cms_make_link ($t, $i)
         if (!$row)
 	    break;
         if ($url)
-            $url = document_readable_url ($row['name']) . '/' . $url;
+            $url = document_readable_url ($row['name']) . "/$url";
         else
             $url = document_readable_url ($row['name']);
         dbitree_get_parent ($db, $t, $i);
     } while ($t && $i);
 
     # Prepend script name to path an return it.
-    return $GLOBALS['SCRIPT_NAME'] . '/' . $url;
+    return $GLOBALS['SCRIPT_NAME'] . "/$url";
 }
 
 # Add current set of URL variables to URL.
 function cms_variable_url ($url)
 {
     $tail = cms_variable_tail ();
-    if ($tail)
-        return $url . '?' . $tail;
-    return $url;
+    return $tail ? "$url?$tail" : $url;
 }
 
 # Create URL tail for variable set in $url_vars.
@@ -140,11 +137,8 @@ function cms_variable_tail ()
 
     # Assemble tail.
     $url = '';
-    foreach ($url_vars as $k => $v) {
-        $url .= $k . '=' . urlencode ($v);
-        if ($url)
-	    $url .= '&';
-    }
+    foreach ($url_vars as $k => $v)
+        $url .= ($url ? '&' : '') . "$k=" . urlencode ($v);
 
     return $url;
 }
@@ -217,7 +211,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
 
     # Type is a real directory - get the table name.
     if (!isset ($scanner->tables[$dirtype])) {
-        echo 'Undefined source keyword ' . $dirtype . '.';
+        echo "Undefined source keyword '$dirtype'.";
         return;
     }
 
@@ -274,8 +268,7 @@ function cms_listsource ()
 {
     global $scanner;
 
-    return $scanner->dirtype . $scanner->context_table .
-           $scanner->context['id'];
+    return $scanner->dirtype . $scanner->context_table . $scanner->context['id'];
 }
 
 # Used by <!:LIST!> tags.
@@ -285,8 +278,7 @@ function cms_listsource ()
 # TODO: Index code doesn't belong here. Use linked list support instead.
 function &parse_result_set (&$template, $size = 0)
 {
-    global $current_index, $current_results, $current_indices,
-	   $scanner, $dep, $db;
+    global $current_index, $current_results, $current_indices, $scanner, $dep, $db;
 
     $table = $scanner->parent_context_table;
     $id = $scanner->parent_context['id'];
@@ -334,21 +326,18 @@ function cms_process_list (&$records, &$template, $table = '', $size = 0)
 
     # Get or create current_index of list.
     if (!isset ($list_offsets[$listsource]))
-        $current_index = $list_offsets[$listsource] = 1;
-    else
-        $current_index = $list_offsets[$listsource];
+        $list_offsets[$listsource] = 1;
+    $current_index = $list_offsets[$listsource];
 
     # Get ending record by start and size.
     if ($size != 0) {
-        if ($current_index + $size > sizeof ($records))
-	    $end = sizeof ($records);
-        else
-	    $end = $current_index + (int) $size - 1;
+        $end = (($current_index + $size) > sizeof ($records)) ?
+	       sizeof ($records) :
+	       $current_index + (int) $size - 1;
     } else
         $end = sizeof ($records);
 
-    while (isset ($records[$current_index - 1]) && $current_index <= $end
-	   ? $row = $records[$current_index - 1] : 0) {
+    while (isset ($records[$current_index - 1]) && $current_index <= $end ? $row = $records[$current_index - 1] : 0) {
         # Execute child branch in product's context.
         $out .= $scanner->exec ($template, $table, $row['id'], $row);
 
@@ -387,10 +376,7 @@ fuNction tag_link ($attr, $use_key = true)
 
     # Add argument, maybe a virtual directory's name to the URL,
     # XXX if there's no argument add 'index.html' ...??!?
-    if ($arg)
-        $url .= '/' . $arg;
-    else
-        $url .= '/index.html';
+    $url .= '/' . ($arg ? $arg : 'index.html');
 
     # Return bare URL without variable tail.
     if (!$use_key || $key == 'no')
@@ -401,10 +387,7 @@ fuNction tag_link ($attr, $use_key = true)
     # If we're in a list context, create offset variables in the URL.
     $listsource = cms_listsource ();
     if ($relative_index)
-        if (isset ($list_offsets[$listsource]))
-            $url_vars['list_offsets[' . $listsource . ']'] = $list_offsets[$listsource] + $relative_index;
-        else
-            $url_vars['list_offsets[' . $listsource . ']'] = 1 + $relative_index;
+        $url_vars["list_offsets[$listsource]"] = isset ($list_offsets[$listsource]) ? $list_offsets[$listsource] + $relative_index : 1 + $relative_index;
 
     $url = cms_variable_url ($url);
 
@@ -431,11 +414,7 @@ function tag_object ($arg)
 
 function tag_has_object ($attr)
 {
-    $tmp =& cms_fetch_object ($attr['class']);
-
-    if ($tmp)
-        return '1';
-    return '0';
+    return cms_fetch_object ($attr['class']) ? '1' : '0';
 }
 
 function tag_template ($attr)
@@ -461,20 +440,14 @@ function tag_objectlink ($attr)
     $table = $scanner->context_table;
     $id = $scanner->context['id'];
     $dbobj =& new DBOBJ ($db, $arg, $dep, $table, $id, true, 'mime');
-    if (isset ($dbobj->active))
-        $filename = ereg_replace ('/', '.', $dbobj->active['mime']);
-    else
-        $filename = '';
+    $filename = isset ($dbobj->active) ? ereg_replace ('/', '.', $dbobj->active['mime']) : '';
     $arg .= '/' . strtolower ($filename);
 
     # Prevent use of session key or other url variables for images.
-    if (isset ($dbobj->active) && strhead ($dbobj->active['mime'] , 'image/'))
-        $use_key = false;
-    else
-        $use_key = true;
+    $use_key = !(isset ($dbobj->active) && strhead ($dbobj->active['mime'] , 'image/'));
 
     # OBJ is an internal virtual directory for object downloads.
-    return tag_link (array ('template' => 'OBJ/' . $arg), $use_key);
+    return tag_link (array ('template' => "OBJ/$arg"), $use_key);
 }
 
 # Create link from index.
@@ -494,10 +467,7 @@ function tag_index ($arg)
 
     # Return index of list context.
     $listsource = cms_listsource ();
-    if (isset ($list_offsets[$listsource]))
-        return $list_offsets[$listsource];
-    else
-        return 1;
+    return isset ($list_offsets[$listsource]) ? $list_offsets[$listsource] : 1;
 }
 
 # Return index for form result in set or 0.
@@ -522,9 +492,7 @@ function tag_next_index ($arg)
 {
     global $current_index;
 
-    if ($current_index == tag_last_index ($arg))
-        return 0;
-    return $current_index + 1;
+    return ($current_index == tag_last_index ($arg)) ? 0 : $current_index + 1;
 }
 
 function tag_first ($arg)
@@ -552,9 +520,7 @@ function &tag_list ($attr)
     global $scanner, $default_enumeration;
 
     @$size = $attr['size'];
-
     $template =& $attr['_'];
-
     return parse_result_set ($template, $size);
 }
 
@@ -576,7 +542,7 @@ function tag_num_type ($attr)
     $arg = strtoupper ($attr['type']);
 
     if (!($desttab = $scanner->tables[$arg]))
-        return '<!-- cms: No directories of type ' . $arg . '. -->';
+        return "<!-- cms: No directories of type '$arg'. -->";
 
     # TODO: Do a proper iteration.
     if ($table == 'categories' && $id == 1 ) {
@@ -598,7 +564,7 @@ function tag_num_type ($attr)
 
     # If srctab is not the first entry, we can't reach desttab.
     if ($apath[sizeof ($apath) - 1] != $srctab)
-        return '<!-- cms: No subdirectories of type ' . $arg . ' in directories of type ' . $scanner->dirtypes[$srctab] . '.';
+        return "<!-- cms: No subdirectories of type '$arg' in directories of type " . $scanner->dirtypes[$srctab] . '.';
 
     return (string) _c ($apath, sizeof ($apath) - 1, $id);
 }
@@ -611,7 +577,7 @@ function tag_num_subdirs ($attr)
     $arg = $attr['type'];
 
     if (!($table = $scanner->tables[$arg]))
-        return '<!-- cms: No directory type ' . $arg . ' known. -->';
+        return "<!-- cms: No directory type '$arg' known. -->";
     $res =& dbitree_get_childs ($db, $table, $scanner->context['id']);
     if (($num = $res->num_rows ()) < 1)
         $num = 0;

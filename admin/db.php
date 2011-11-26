@@ -2,7 +2,7 @@
 # Miscellaneous database stuff.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -19,7 +19,7 @@ function db_init (&$this)
 function create_dirtype (&$db, $name)
 {
     # Create a directory type of $name.
-    $res =& $db->insert ('dirtypes', 'name="' . $name . '"');
+    $res =& $db->insert ('dirtypes', "name='$name'");
     return $db->insert_id ();
 }
 
@@ -89,7 +89,7 @@ function merge_directories ($this)
 	    $id_parent = $type_parent = 0;
         $type_child = $row['id_type'];
         #echo "$id_type, $id_parent, $id_child, $type_parent, $type_child, " . $row[$rc[$id_type]] . "<br>";
-        $db->insert ('xrefs', 'id_parent=' . $id_parent . ',' .  'id_child=' . $id_child . ',' .  'type_parent=' . $type_parent . ',' .  'type_child=' . $type_child);
+        $db->insert ('xrefs', "id_parent=$id_parent, id_child=$id_child, type_parent=$type_parent, type_child=$type_child");
     }
 }
 
@@ -98,10 +98,7 @@ function create_tables (&$this)
     global $lang, $debug;
 
     $p =& $this->ui;
-    if (isset ($this->args['__TABLE_PREFIX']))
-        $TABLE_PREFIX = $this->args['__TABLE_PREFIX'];
-    else
-        $TABLE_PREFIX = '';
+    $TABLE_PREFIX = isset ($this->args['__TABLE_PREFIX']) ? $this->args['__TABLE_PREFIX'] : '';
 
     echo "<HR>\n";
 
@@ -132,7 +129,7 @@ function create_tables (&$this)
     );
 
     foreach ($tmp as $v)
-        $class[] = Array ($v, $lang['class ' . $v]);
+        $class[] = Array ($v, $lang["class $v"]);
 
     for ($i = 0; $i < sizeof ($class); $i++) {
         echo 'Klasse ' . $class[$i][0] . ' (' . $class[$i][1] . ') ';
@@ -182,7 +179,7 @@ function dbchkdir (&$this, &$objs, $dirname)
 	    $this->db->update ($dirname, 'id_obj=0', 'id="' . $row['id'] . '"');
 	    $cnt++;
         }
-    echo $cnt . ' invalid object pointers removed from ' . $dirname . '.<br>';
+    echo "$cnt invalid object pointers removed from $dirname.<br>";
 }
 
 # TODO: Make database description fit for a general consistency check.
@@ -210,8 +207,8 @@ function db_consistency_check (&$this)
     $res = $p->db->select ('id', 'objects');
     while (list ($id) = $res->fetch_array ())
         if (!isset ($refs[$id])) {
-            $p->db->delete ('obj_data', 'id_obj=' . $id);
-            $p->db->delete ('objects', 'id=' . $id);
+            $p->db->delete ('obj_data', "id_obj=$id");
+            $p->db->delete ('objects', "id=$id");
         }
 
     echo 'Removing empty objects...<br>';
@@ -231,11 +228,11 @@ function db_consistency_check (&$this)
     $n = 0;
     while (list ($id) = $res->fetch_array ())
         if (!$refs[$id]) {
-            $p->db->delete ('objects', 'id=' . $id);
+            $p->db->delete ('objects', "id=$id");
 	    $n++;
 	    $changes++;
         }
-    echo $n . ' xrefs removed.<br>';
+    echo "$n xrefs removed.<br>";
 
     # Remove dangling object ids in directories.
     echo 'Removing dangling object ids in directories...<br>';
@@ -262,7 +259,7 @@ function db_consistency_check (&$this)
     $p->db->query ('OPTIMIZE TABLE sessions');
     $p->db->query ('OPTIMIZE TABLE tokens');
 
-    $p->msgbox ($changes . ' changes.');
+    $p->msgbox ("$changes changes.");
     $p->link ('back', 'defaultview');
 }
 

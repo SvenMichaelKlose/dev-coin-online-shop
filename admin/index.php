@@ -2,7 +2,7 @@
 # dev/con modular shop administration interface
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -26,24 +26,20 @@ if (!isset ($PATH_TO_PUBLIC))
     die ('$PATH_TO_PUBLIC is not set.');
 
 # Include libraries.
-require $PATH_TO_CAROSHI . '/lib/application.class';
-require $PATH_TO_CAROSHI . '/admin_panel/admin_panel.class';
-require $PATH_TO_CAROSHI . '/admin_panel/ssi/php_array.class';
-require $PATH_TO_CAROSHI . '/admin_panel/tk/range_edit.php';
-require $PATH_TO_CAROSHI . '/admin_panel/tk/tree_edit.php';
-require $PATH_TO_CAROSHI . '/admin_panel/tk/treeview.class';
-require $PATH_TO_CAROSHI . '/dbi/dbsession.class';
-require $PATH_TO_CAROSHI . '/dbi/dbobj.class';
-require $PATH_TO_CAROSHI . '/dbi/dbsort.php';
-require $PATH_TO_CAROSHI . '/dbi/dbtree.php';
+require "$PATH_TO_CAROSHI/lib/application.class";
+require "$PATH_TO_CAROSHI/admin_panel/admin_panel.class";
+require "$PATH_TO_CAROSHI/admin_panel/ssi/php_array.class";
+require "$PATH_TO_CAROSHI/admin_panel/tk/range_edit.php";
+require "$PATH_TO_CAROSHI/admin_panel/tk/tree_edit.php";
+require "$PATH_TO_CAROSHI/admin_panel/tk/treeview.class";
+require "$PATH_TO_CAROSHI/dbi/dbsession.class";
+require "$PATH_TO_CAROSHI/dbi/dbobj.class";
+require "$PATH_TO_CAROSHI/dbi/dbsort.php";
+require "$PATH_TO_CAROSHI/dbi/dbtree.php";
 
-# Load language description.
-if (file_exists ('lang_' . $language . '.inc'))
-    require 'lang_' . $language . '.inc';
-else
-    require $PATH_TO_PUBLIC . '/lang_' . $language . '.inc';
-
-require $PATH_TO_PUBLIC . '/lang_' . $language . '.inc';
+# Load language descriptions.
+require "lang_$language.inc";
+require "$PATH_TO_PUBLIC/lang_$language.inc";
 
 # Include other views.
 require 'categories.php';
@@ -105,14 +101,14 @@ class shop_admin extends application {
 
     function init ()
     {
-        global $lang;
+        global $lang, $SERVER_NAME;
 
         $def =& $this->db->def;
 
         tables_define ($this);
 
         # Init user interface.
-        $this->ui =& new admin_panel ($this, $lang['administration'] . '&nbsp;' . $GLOBALS['SERVER_NAME'], '&nbsp;dev/coin&nbsp;0.9.11&nbsp;');
+        $this->ui =& new admin_panel ($this, $lang['administration'] . " $SERVER_NAME dev/coin 0.9.11 ");
 
         # Initialise toolkits
         tk_range_edit_init ($this);

@@ -2,7 +2,7 @@
 # Object editor.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -78,11 +78,7 @@ function remove_object (&$this)
     $otable = $this->subarg ('otable');
     $oid = $this->subarg ('oid');
 
-    if ($table != $otable || $id != $oid)
-        $q = $lang['ask remove other object'];
-    else
-        $q = $lang['ask remove object'];
-
+    $q = ($table != $otable || $id != $oid) ? $lang['ask remove other object'] : $lang['ask remove object'];
     $arg = array ('class' => $class, 'table' => $table, 'id' => $id);
     $this->ui->confirm ($q, $lang['yes'], 'remove_object4real', $arg, $lang['no'], 'edit_data', $arg);
 }
@@ -213,8 +209,7 @@ function edit_data (&$this)
     $p->get ('WHERE id=' . $obj->active['id']);
 
     # Show class name and example tag.
-    $p->table_headers (array ('<B><FONT SIZE="+1">' . $classdesc .
-                              '</FONT></B>'));
+    $p->table_headers (array ("<B><FONT SIZE=\"+1\">$classdesc</FONT></B>"));
 
     $p->paragraph ();
 
@@ -309,30 +304,30 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
     $dep =& $this->db->def;
 
     $oargs = $this->args;
-    isset ($oargs['objmode'])
-      ? $objmode = $oargs['objmode']
-      : $oargs['objmode'] = $objmode = 0;
+    if (isset ($oargs['objmode']))
+        $objmode = $oargs['objmode'];
+    else
+        $oargs['objmode'] = $objmode = 0;
     $oargs['objmode'] ^= 1;
 
     # Print color descriptions.
     if (!$only_local) {
-        if ($objmode & 1)
-            $tmp = '<B>' . $lang['cmd objectbox hide'] . ':</B>';
-        else
-            $tmp = '<B>' . $lang['cmd objectbox unhide'] . '</B>';
-      $p->link ($tmp, $this->args['__view'], $oargs);
-      if (!($objmode & 1))
-          $only_local = true; #return;
-      echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
-           '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
-           '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
+        $tmp = ($objmode & 1) ?
+               '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
+               '<B>' . $lang['cmd objectbox unhide'] . '</B>';
+        $p->link ($tmp, $this->args['__view'], $oargs);
+        if (!($objmode & 1))
+            $only_local = true; #return;
+        echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
+             '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
+             '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
     }
 
     # Read all objects along the path to root to $cache.
     $t = $table;
     $i = $id;
     while ($t && $i) {
-        $res =& $db->select ('*', $t, 'id=' . $i);
+        $res =& $db->select ('*', $t, "id=$i");
         if ($res->num_rows () > 0) {
             $tmp = $res->fetch_array ();
 	    $res =& $db->select ('*', 'obj_data', 'id_obj=' . $tmp['id_obj']);
@@ -361,7 +356,7 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
         # Link to create object if none found.
         if (!isset ($cache[$id_class][0]) && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
             $tmp = '[' .
-                   $p->_looselink ('<FONT COLOR="BLACK">' . $descr . '</FONT>' , 'assoc_object',
+                   $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , 'assoc_object',
                                    $this->arg_set_next (array ('table' => $table, 'id' => $id, 'class' => $class),
 		                                        'edit_data',
 		                                        $this->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
@@ -371,9 +366,7 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
             if (!isset ($cache[$id_class][0]))
 	        continue;
             $obj = $cache[$id_class][0];
-            $obj['_table'] == $table && $obj['_id'] == $id
-                ? $found_local = true
-	        : $found_local = false;
+            $found_local = ($obj['_table'] == $table && $obj['_id'] == $id);
 
             # Skip local object not found local.
 	    if ($obj['is_local'] && $found_local == false)
@@ -395,10 +388,7 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
 
             # Use different colors for class description when finding it local or
             # not.
-            if ($found_local)
-                $color = '#0000CC';
-            else
-                $color = '#009000';
+            $color = $found_local ? '#0000CC' : '#009000';
 
             # Warn if label is public.
             if ($obj['is_public'] || $obj['is_local']) {
@@ -427,15 +417,15 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
 		                                                   'otable' => $table, 'oid' => $id))) .
                                '"><img border="0" src="' .
 	                       $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
-                               '" alt="' . $imagename . '"></a><br>' .
-	                       '<FONT COLOR="' . $color . '">' . $descr . ', ' . $imagename . '</FONT>' . $stat .
+                               "\" alt=\"$imagename\"></a><br>" .
+	                       '<FONT COLOR="' . $color . '">' . $descr . ", $imagename</FONT>$stat" .
 	                       '</td></tr>' .
 	                       '</table></td>' . "\n";
 	            continue;
 
                 default:
                     $tmp = '[' .
-                           $p->_looselink ('<FONT COLOR="' . $color . '">' . $descr . '</FONT>' . $stat,
+                           $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat",
 	                                   'edit_data',
 	                                   $this->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
 	                                                                 'otable' => $table, 'oid' => $id))) .
@@ -448,9 +438,11 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
             case 'l_':
 	        $documents .= $tmp;
 	        break;
+
 	    case 'd_':
 	        $configuration .= $tmp;
 	        break;
+
 	    default:
 	        $user_defined .= $tmp;
         }
@@ -467,11 +459,11 @@ function _object_box (&$this, $table, $id, $caller, $only_local = false)
         echo '<tr><td align="center"><table border="0"><tr>' . $images . '</tr></table></td></tr>'. "\n";
     }
     if ($documents)
-        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['documents'] . ':</b></td></tr><tr><td>' . $documents . "</td></tr>\n";
+        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['documents'] . ":</b></td></tr><tr><td>$documents</td></tr>\n";
     if ($user_defined)
-        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['user defined classes'] . ':</b></td></tr><tr><td>' . $user_defined . "</td></tr>\n";
+        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['user defined classes'] . ":</b></td></tr><tr><td>$user_defined</td></tr>\n";
     if ($configuration)
-        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['configuration'] . ':</b></td></tr><tr><td>' . $configuration . "</td></tr>\n";
+        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['configuration'] . ":</b></td></tr><tr><td>$configuration</td></tr>\n";
     echo '</table>';
 
     if (!isset ($objviews))

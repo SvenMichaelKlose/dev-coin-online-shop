@@ -2,7 +2,7 @@
 # Document lookup.
 #
 # Copyright(c) 2000-2001 dev/consulting GmbH
-# Copyright(c) 2011 Sven Klose <pixel@copei.de>
+# Copyright(c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -111,16 +111,9 @@ function document_path_to_directory ($path, $table, $id)
 # Set up the document, parse and evaluate it.
 function document_process ($root_table, $root_id, $root_template)
 {
-    global $scanner, $dep, $db, $path_tail,
-           $current_index, $current_indices,
-	   $PATH_INFO,
-	   $default_document, $document_template,
-	   $debug,
-	   $list_offsets,
-	   $url_vars;
+    global $scanner, $dep, $db, $path_tail, $current_index, $current_indices, $PATH_INFO, $default_document, $document_template, $debug, $list_offsets, $url_vars;
 
-    list ($dirtype, $table, $id, $vdir, $path_tail, $name)
-        = document_path_to_directory (explode ('/', $PATH_INFO), $root_table, $root_id);
+    list ($dirtype, $table, $id, $vdir, $path_tail, $name) = document_path_to_directory (explode ('/', $PATH_INFO), $root_table, $root_id);
 
     # Check if the first unprocessed directory of the tail is a known
     # object class and use it as the template. If it's not, a default template
@@ -145,7 +138,7 @@ function document_process ($root_table, $root_id, $root_template)
     # This is done right here to skip all other activities and exit.
     if ($name == 'OBJ') {
         if (!is_array ($dbobj->active) || !$dbobj->active['id'])
-	    die ('No such object class \'' . $template . '\'.');
+	    die ("'$template' is not an object class.");
         if (!$dbobj->active['is_public']) {
 	    exit; #panic ('Object is not marked public!');
 	    exit;
@@ -172,16 +165,14 @@ function document_process ($root_table, $root_id, $root_template)
 	 $set[$tmp['id_last']] = $tmp['id']);
 
     # Sort indices into $current_indices array and find the current one.
-    for ($i = 1, $last = 0;
-	 isset ($set[$last]) && $rid = $current_indices[$i] = $set[$last];
-         $last = $rid, $i++)
+    for ($i = 1, $last = 0; isset ($set[$last]) && ($rid = $current_indices[$i] = $set[$last]); $last = $rid, $i++)
         if ($rid == $id)
 	    $current_index = $i;
 
     # Feed list offsets into URL vars.
     if (isset ($list_offsets))
         foreach ($list_offsets as $key => $val)
-            $url_vars['list_offsets[' . $key . ']'] = $val;
+            $url_vars["list_offsets[$key]"] = $val;
 
     # Open a new context.
     $scanner->push_context (); # XXX is this really required?
@@ -198,14 +189,13 @@ function document_process ($root_table, $root_id, $root_template)
     }
 
     if ($debug)
-        echo "dirtype: $dirtype - tab: $table - id: $id - " .
-	     "default template: $template<br>";
+        echo "dirtype: $dirtype - tab: $table - id: $id - default template: $template<br>";
 
     # Invoke scanner and evaluate the page.
     # TODO: This could depend on the document template's mime type.
     # see also the scanner in lib/scanner.class.
     $document_tree = $scanner->scan ($document_template);
     $out =& $scanner->exec ($document_tree, $table, $id);
-    eval ('?>' . $out . '<?');
+    eval ("?>$out<?");
 }
 ?>

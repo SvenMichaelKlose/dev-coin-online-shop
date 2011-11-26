@@ -2,7 +2,7 @@
 # Navigator used in directory listings.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -22,30 +22,26 @@ function nav_linkpath ($this, $table, $row, $arg)
     switch ($table) {
         case 'categories':
 	    $out .= '/';
-	    if ($id == 1)
-	        $link = $lang['root category'];
-	    else
-	        $link = $name;
+	    $link = $id == 1 ? $lang['root category'] : $name;
 	    $view = 'view_pages';
 	    break;
         case 'pages':
 	    $out .= ' ' . $lang['product group'] . '&nbsp;';
-	    $link = '&quot;' . $name . '&quot;';
+	    $link = "&quot;$name&quot;";
 	    $view = 'view_products';
 	    break;
         case 'products':
 	    $out .= ' ';
-	    $link = $lang['product'] . '&nbsp;&quot;' . $name . '&quot;';
+	    $link = $lang['product'] . "&nbsp;&quot;$name&quot;";
 	    break;
     }
 
     $args['id'] = $id;
 
     # If this is the current position, only show where we are.
-    if ($arg || $GLOBALS['table'] == $table && $GLOBALS['id'] == $id)
-        $out .= '<B>' . $link . '</B>';
-    else
-        $out .= $p->_looselink ($link, $view, $args);
+    $out .= ($arg || $GLOBALS['table'] == $table && $GLOBALS['id'] == $id) ?
+            "<B>$link</B>" :
+            $p->_looselink ($link, $view, $args);
     return $out;
 }
 
@@ -61,9 +57,9 @@ function show_directory_index (&$this, $table, $id)
 
     if ($table == 'categories') {
         # List subcategories
-        $res = $this->db->select ('name, id', 'categories', 'id_parent=' . $id, ' ORDER BY name ASC');
+        $res = $this->db->select ('name, id', 'categories', "id_parent=$id ORDER BY name ASC");
         if ($res && $res->num_rows () > 0) {
-            echo '<P>' . "\n" . '<FONT COLOR="#888888"><B>' . $lang['subdirectories'] . ':</B></FONT>';
+            echo "<P>\n<font color=\"#888888\"><B>" . $lang['subdirectories'] . ':</B></FONT>';
 	    while (list ($name, $id) = $res->fetch_array ())
 	        $p->link ($name, 'view_pages', array ('id' => $id));
         }

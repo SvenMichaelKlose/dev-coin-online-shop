@@ -2,7 +2,7 @@
 # This is the main file of the public script.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Klose <pixel@copei.de>
+# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
@@ -10,12 +10,12 @@
 # We want it strict.
 error_reporting (-1); # "strict-mode-surrogate-extract"
 
-# HEADSUP: Global variable declarations start here.
-# Use global variables rarely.
-$debug = 0;			# Set true for excessive verbosity/profiling.
-$page_profiler = false;	# Show overall time needed to create page.
-  				# Note that this options spoils images so they
-				# won't be displayed by any browser.
+# Set true for excessive verbosity/profiling.
+$debug = 0;
+
+# Show overall time needed to create page.
+# Note that this options spoils images so they won't be displayed by any browser.
+$page_profiler = false;
 
 $PATH_TO_CAROSHI = '.';
 $PATH_TO_ADMIN = 'admin/';
@@ -36,37 +36,37 @@ if ($debug || $page_profiler) {
 #####################
 
 # Get head of strings.
-include $PATH_TO_CAROSHI . '/lib/strhead.php';
+include "$PATH_TO_CAROSHI/lib/strhead.php";
 
 # scanner.class is the template scanner.
-include $PATH_TO_CAROSHI . '/lib/xml_scanner.class.php';
+include "$PATH_TO_CAROSHI/lib/xml_scanner.class.php";
 
 # Convert HTML ligatures to latin characters. E.g. &auml; => ae
-include $PATH_TO_CAROSHI . '/lib/htmllig2latin.php';
+include "$PATH_TO_CAROSHI/lib/htmllig2latin.php";
 
 # Call panic() if you want to set alarm and send a mail to the
 # administrator. (Uses the email address in $SERVER_ADMIN which you can
 # override in .dbi.conf.php.
-include $PATH_TO_CAROSHI . '/lib/panic.class.php';
+include "$PATH_TO_CAROSHI/lib/panic.class.php";
 
 # Debug dumps.
-include $PATH_TO_CAROSHI . '/lib/debug_dump.php';
+include "$PATH_TO_CAROSHI/lib/debug_dump.php";
 
 # Basic database access.
-include $PATH_TO_CAROSHI . '/dbi/dbctrl.class.php';
+include "$PATH_TO_CAROSHI/dbi/dbctrl.class.php";
 
 # Database table relations.
-include $PATH_TO_CAROSHI . '/dbi/dbdepend.class.php';
+include "$PATH_TO_CAROSHI/dbi/dbdepend.class.php";
 
 # Inheritable objects in the directory tree of
 # categories, pages (aka product groups) and products.
-include $PATH_TO_CAROSHI . '/dbi/dbobj.class.php';
+include "$PATH_TO_CAROSHI/dbi/dbobj.class.php";
 
 # Tree walking.
-include $PATH_TO_CAROSHI . '/dbi/dbtree.php';
+include "$PATH_TO_CAROSHI/dbi/dbtree.php";
 
 # Sessions.
-include $PATH_TO_CAROSHI . '/dbi/dbsession.php';
+include "$PATH_TO_CAROSHI/dbi/dbsession.php";
 
 
 ##############################
@@ -99,7 +99,7 @@ if (isset ($SESSION_KEY))
 ###################################
 
 # Load CMS configuration.
-require $PATH_TO_ADMIN . '/admin/config.php';
+require "$PATH_TO_ADMIN/admin/config.php";
 
 # Outdated features scheduled for removal but left in for temporary backwards compatibility.
 require 'attic.php';
@@ -142,8 +142,7 @@ document_process ('categories', 1, 'l_index');
 # Page profiler: Get current time and print the difference.
 if ($debug || $page_profiler) {
     $t = gettimeofday ();
-    echo 'Overall time spent: ' .
-         (($t['usec'] + $t['sec'] * 1000000 - $__start_time) / 1000000) . 's' .
+    echo 'Overall time spent: ' . (($t['usec'] + $t['sec'] * 1000000 - $__start_time) / 1000000) . 's' .
 	 ' database queries: ' . $DB_QUERIES;
-  }
+}
 ?>
