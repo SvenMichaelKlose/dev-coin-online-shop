@@ -15,6 +15,7 @@ function order_init (&$this)
 function view_orders (&$this)
 {
     global $lang;
+
     $p =& $this->ui;
     $p->headline ('&Uuml;bersicht der Bestellungen');
     $p->link ($lang['cmd defaultview'], 'defaultview');

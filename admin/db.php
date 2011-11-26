@@ -156,6 +156,7 @@ function create_tables (&$this)
 function database_menu (&$this)
 {
     global $lang;
+
     $p =& $this->ui;
     $p->headline ($lang['title database_menu']);
 
@@ -186,6 +187,7 @@ function dbchkdir (&$this, &$objs, $dirname)
 function db_consistency_check (&$this)
 {
     global $lang;
+
     $p =& $this->ui;
     $p->msgbox ('Please wait...', 'yellow');
     $changes = 0;

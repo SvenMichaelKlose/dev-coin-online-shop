@@ -67,6 +67,7 @@ class shop_admin extends application {
     function defaultview ()
     {
         global $lang;
+
         $p =& $this->ui;
  
         $treeargs = array (

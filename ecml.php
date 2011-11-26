@@ -86,9 +86,10 @@ function ecml_typearray ()
 function ecml_add_address ($db, $type, $idname)
 {
     global $session;
-    $SESSION_ID = $session->id ();
 
+    $SESSION_ID = $session->id ();
     $idname = "id_address_$idname";
+
     # Get address' id.
     $res = $db->select ($idname, 'ecml_order', "id_session=$SESSION_ID");
     if ($res->num_rows () < 1) {
@@ -128,7 +129,7 @@ function ecml_add_address ($db, $type, $idname)
 # Returns: true if form is complete.
 function ecml_parse_form ()
 {
-    global $session, $scanner, $dep, $db;
+    global $session, $scanner, $dep, $db, $order_errors;
 
     $SESSION_ID = $session->id ();
     $SESSION_KEY = $session->key ();
@@ -142,8 +143,6 @@ function ecml_parse_form ()
 
     # Read in ECML-Fields.
     if (isset ($GLOBALS['Ecom_SchemaVersion']) && $GLOBALS['Ecom_SchemaVersion'] == 'http://www.ecml.org/version/1.1') {
-        global $order_errors;
-
         # Read in duty field description.
         $tmp =& cms_fetch_object ('d_order_duty');
         if (!$tmp)

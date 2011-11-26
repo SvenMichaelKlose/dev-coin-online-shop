@@ -1,8 +1,8 @@
 <?
 # Object classes.
 #
-# (c)2000-2001 dev/consulting GmbH
-#	    	 Sven Michael Klose (sven@devcon.net)
+# Copyright (c) 2000-2001 dev/consulting GmbH
+# Copyright (c) 2011 Sven Michael Klose (sven@devcon.net)
 #
 # Licensed under the MIT, BSD and GPL licenses.
   
@@ -18,6 +18,7 @@ function class_init (&$this)
 function view_classes (&$this)
 {
     global $lang;
+
     $p =& $this->ui;
     $p->headline ($lang['title view_classes']);
     $p->link ($lang['title defaultview'], 'defaultview', 0);

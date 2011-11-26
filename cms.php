@@ -104,10 +104,7 @@ function cms_make_link ($t, $i)
         $row =& cms_fetch_directory ($t, $i);
         if (!$row)
 	    break;
-        if ($url)
-            $url = document_readable_url ($row['name']) . "/$url";
-        else
-            $url = document_readable_url ($row['name']);
+        $url = document_readable_url ($row['name'] . ($url ? "/$url" : ""));
         dbitree_get_parent ($db, $t, $i);
     } while ($t && $i);
 
@@ -314,6 +311,7 @@ function &parse_result_set (&$template, $size = 0)
 function cms_process_list (&$records, &$template, $table = '', $size = 0)
 {
     global $db, $dep, $scanner, $list_sizes, $list_offsets, $current_index;
+
     $old_index = $current_index;
 
     if (!$table)
