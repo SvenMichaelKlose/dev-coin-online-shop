@@ -195,7 +195,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
     # Get parent directory or real if virtual.
     if (strtoupper ($dirtype) == 'PARENT') {
         dbitree_get_parent ($db, $table, $id);
-        if (!($row = cms_fetch_directory ($table, $id)) || !$row['id']) {
+        if (!$row = cms_fetch_directory ($table, $id)) || !$row['id'] {
 	    # There's no parent. Clear context so tag won't get executed.
 	    $scanner->context = $scanner->context_table = 0;
 	    return;
@@ -538,7 +538,7 @@ function tag_num_type ($attr)
     $id = $scanner->context['id'];
     $arg = strtoupper ($attr['type']);
 
-    if (!($desttab = $scanner->tables[$arg]))
+    if (!$desttab = $scanner->tables[$arg])
         return "<!-- cms: No directories of type '$arg'. -->";
 
     # TODO: Do a proper iteration.
@@ -573,7 +573,7 @@ function tag_num_subdirs ($attr)
 
     $arg = $attr['type'];
 
-    if (!($table = $scanner->tables[$arg]))
+    if (!$table = $scanner->tables[$arg])
         return "<!-- cms: No directory type '$arg' known. -->";
     $res = dbitree_get_childs ($db, $table, $scanner->context['id']);
     $num = $res ? $res->num_rows () : 0;
