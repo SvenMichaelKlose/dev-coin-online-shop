@@ -19,14 +19,21 @@ function view_products (&$this)
 {
     global $lang;
 
-    generic_list ($this,
-                  'pages', 'categories', 'products', 'id_page', 'id_category',
-                  Array ('&nbsp;', '&nbsp;', $lang['description'], $lang['product key'], $lang['price'] . ' Euro'),
-                  'record_product',
-                  $lang['msg no product'], $lang['cmd create_product'],
-                  $lang['product group name'],
-                  'view_pages', 'products_after_create',
-                  true); # Have submit button.
+    $c = new generic_list_conf {
+    $table = 'pages';
+    $parent_table = 'categories';
+    $child_table = 'products';
+    $ref_table = 'id_page';
+    $ref_parent = 'id_category';
+    $headers = Array ('&nbsp;', '&nbsp;', $lang['description'], $lang['product key'], $lang['price'] . ' Euro');
+    $recordfunc = 'record_product';
+    $txt_no_func = $lang['msg no product'];
+    $txt_create = $lang['cmd create_product'];
+    $txt_input = $lang['product group name'];
+    $parent_view = 'view_pages';
+    $child_view = 'products_after_create';
+    $have_submit_button = true;
+    generic_list ($this, $c);
 }
 
 function record_product (&$this, $idx)

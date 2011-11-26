@@ -42,24 +42,40 @@ function _range_panel (&$this, $id, $child_view, $txt_create, $table, $have_subm
     $p->close_row ();
 }
 
+class generic_list_conf {
+    public $table;
+    public $parent_table;
+    public $child_table;
+    public $ref_table;
+    public $ref_parent;
+    public $headers;
+    public $recordfunc;
+    public $txt_no_func;
+    public $txt_create;
+    public $txt_input;
+    public $parent_view;
+    public $child_view;
+    public $have_submit_button = false;
+};
+
 # View products within a product group.
-function generic_list (&$this, $table, $parent_table, $child_table, $ref_table, $ref_parent, $headers, $recordfunc, $txt_no_records, $txt_create, $txt_input, $parent_view, $child_view, $have_submit_button = false)
+function generic_list (&$this, $c)
 {
     global $lang;
 
-    $this->args['table'] = $table; # Needed for _object_box.
+    $this->args['table'] = $c->table; # Needed for _object_box.
     $id = $this->args['id'];
     $p =& $this->ui;
 
     # Navigator
     $p->headline ($lang["title $this->view"]);
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
-    show_directory_index ($this, $table, $id);
+    show_directory_index ($this, $c->table, $id);
 
     # Link to next/last product group.
-    $id_last = $this->db->column ($table, 'id_last', $id);
-    $id_next = $this->db->column ($table, 'id_next', $id);
-    list ($thisindex, $last) = _get_index ($this, $parent_table, $ref_parent, $table, $id);
+    $id_last = $this->db->column ($c->table, 'id_last', $id);
+    $id_next = $this->db->column ($c->table, 'id_next', $id);
+    list ($thisindex, $last) = _get_index ($this, $c->parent_table, $c->ref_parent, $c->table, $id);
     if ($id_last)
         $p->link ($lang['previous'], $this->view, array ('id' => $id_last));
     echo ' ' . sprintf ($lang['x of y'], $thisindex, $last) . ' ';
@@ -68,26 +84,26 @@ function generic_list (&$this, $table, $parent_table, $child_table, $ref_table, 
     echo '<BR>';
 
     # Show all objects for this group.
-    _object_box ($this, $table, $id, $this->args);
+    _object_box ($this, $c->table, $id, $this->args);
 
     # Input field for group name.
-    $parent_id = $this->db->column ($table, $ref_parent, $id);
-    $p->open_source ($table, '_update', $this->arg_set_next (0, $this->view, array ('id' => $id)));
+    $parent_id = $this->db->column ($c->table, $c->ref_parent, $id);
+    $p->open_source ($c->table, '_update', $this->arg_set_next (0, $this->view, array ('id' => $id)));
 
     if ($p->get ("where id=$id")) {
         $p->open_row ();
-        $p->cmd_delete ($lang['remove'], $parent_view, array ('id' => $parent_id));
-        $p->inputline ('name', 255, $txt_input);
+        $p->cmd_delete ($lang['remove'], $c->parent_view, array ('id' => $parent_id));
+        $p->inputline ('name', 255, $c->txt_input);
         $p->submit_button ('Ok', '_update', $this->arg_set_next (0, $this->view, array ('id' => $id)));
         $p->close_row ();
     }
     $p->close_source ();
 
-    $p->open_source ($child_table);
+    $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
 
-    if ($p->get ("WHERE $ref_table=$id", true)) {
-        $p->table_headers ($headers);
+    if ($p->get ("WHERE $c->ref_table=$id", true)) {
+        $p->table_headers ($c->headers);
         $idx = 1;
         do {
 	    $recordfunc ($this, $idx);
@@ -95,10 +111,10 @@ function generic_list (&$this, $table, $parent_table, $child_table, $ref_table, 
         } while ($p->get_next ());
 
         $p->paragraph ();
-        _range_panel ($this, $id, $child_view, $txt_create, $child_table, $have_submit_button);
+        _range_panel ($this, $id, $c->child_view, $c->txt_create, $c->child_table, $c->have_submit_button);
     } else {
-        $p->label ($txt_no_records);
-        $p->cmd_create ($txt_create, $child_view, 'id', $id, $lang['msg record created']);
+        $p->label ($c->txt_no_records);
+        $p->cmd_create ($c->txt_create, $c->child_view, 'id', $id, $lang['msg record created']);
     }
 
     $p->close_source ();
