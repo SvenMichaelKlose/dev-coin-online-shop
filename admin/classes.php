@@ -25,19 +25,16 @@ function view_classes (&$app)
     $p->no_update = true;
     $p->open_source ('obj_classes');
     $p->table_headers (Array ('Syntax', $lang['class'], $lang['description']));
-    if ($p->get ('ORDER BY name ASC'))
-        do {
-            $p->open_row (array ('ALIGN' => 'LEFT'));
-	    $p->label (_class2tag ($p->value ('name')));
-	    $p->show ('name');
-	    $v = $p->value ('descr');
-	    if (!$v)
-	        $v = '[' . $lang['unnamed'] . ']';
-            $p->open_cell (array ('ALIGN' => 'LEFT'));
-	    $p->cmd ($v, 'id', 'edit_class');
-	    $p->close_cell ();
-	    $p->close_row ();
-        } while ($p->get_next ());	
+    $p->query ('', 'ORDER BY name ASC');
+    while ($p->get ()) {
+        $p->open_row (array ('ALIGN' => 'LEFT'));
+        $p->label (_class2tag ($p->value ('name')));
+        $p->link ($p->value ('name'), new event ('edit_class'));
+        $v = $p->value ('descr');
+        if (!$v)
+            $v = '[' . $lang['unnamed'] . ']';
+        $p->close_row ();
+    }
     $p->paragraph ();  
     $p->cmd_create ($lang['cmd create class'], 'view_classes');  
     $p->close_source ();

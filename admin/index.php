@@ -39,6 +39,7 @@ require_once PATH_TO_CAROSHI . '/dbi/dbtree.php';
 require "../lang_$language.php";
 
 # Include other views.
+require 'admin_panel.php';
 require 'categories.php';
 require 'classes.php';
 require 'cms-config.php';
@@ -108,7 +109,7 @@ class shop_admin extends application {
         tables_define ($this);
 
         # Init user interface.
-        $this->ui =& new admin_panel ($this, new widget_set);
+        $this->ui = new devcoin_admin_panel ($this, new widget_set);
 
         # Initialise toolkits
         tk_range_edit_init ($this);
