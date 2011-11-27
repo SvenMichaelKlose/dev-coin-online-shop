@@ -38,7 +38,7 @@ function document_search ()
         unset ($url_vars['list_offsets[' . cms_listsource () . ']']);
     }
 
-    if (!isset ($SEARCH_TEXT) || !$SEARCH_TEXT)
+    if (!$SEARCH_TEXT)
         return;
 
     $SEARCH_TEXT = mysql_real_escape ($SEARCH_TEXT);
