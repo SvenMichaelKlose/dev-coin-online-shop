@@ -13,6 +13,7 @@ $scanner->assoc ('SEARCH', true);
 # Register new tags for our directory.
 $scanner->dirtag ('SEARCH', 'LIST LINK NUM-RESULTS');
 
+
 function dirtag_search_link ($attr)
 {
     global $vdir_alias;

@@ -34,6 +34,7 @@ if ($debug || $page_profiler) {
 ### External files ###
 ######################
 
+
 include PATH_TO_CAROSHI . '/string/strhead.php'; # Get head of strings.
 include PATH_TO_CAROSHI . '/string/htmllig2latin.php'; # Convert HTML ligatures to latin characters. E.g. &auml; => ae
 include PATH_TO_CAROSHI . '/text/xml/scanner.class.php'; # scanner.class is the template scanner.
@@ -49,6 +50,7 @@ include PATH_TO_CAROSHI . '/dbi/dbsession.class.php'; # Sessions management.
 ##############################
 ### Global initializations ###
 ##############################
+
 
 $db =& new DBCtrl ($dbidatabase, $dbiserver, $dbiuser, $dbipwd);
 $tmp = $db->select ('COUNT(id)', 'obj_classes');
@@ -75,6 +77,7 @@ if (isset ($SESSION_KEY))
 ### Inclusion of internal files ###
 ###################################
 
+
 require PATH_TO_ADMIN . '/cms-config.php';
 
 # Shop-indepented part.
@@ -95,6 +98,7 @@ require 'search.php'; # Product search.
 ### Go! ###
 ###########
 
+
 # Process document at $PATH_INFO starting with row of 'categories' where
 # id == 1. Use 'l_index' template for index page.
 # This function is in file 'document.php'.
@@ -104,6 +108,7 @@ document_process ('categories', 1, 'l_index');
 ##########################
 ### Optional profiling ###
 ##########################
+
 
 # Page profiler: Get current time and print the difference.
 if ($debug || $page_profiler) {

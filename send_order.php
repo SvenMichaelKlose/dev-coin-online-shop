@@ -10,7 +10,7 @@
 # Invoke scanner with email template and send the mail.
 function do_order ()
 {
-    global $SERVER_NAME, $scanner, $dep, $db;
+    global $scanner, $dep, $db;
 
     # Get context position.
     $table = $scanner->context_table;
@@ -26,7 +26,7 @@ function do_order ()
         panic ('No order template specified.');
     $tree =& $scanner->scan ($template);
     $body = $scanner->exec ($tree, $table, $id);
-    mail ($from, "$SERVER_NAME - e-shop", htmllig2latin ($body)); 
+    mail ($from, $_SERVER['SERVER_NAME'] . " - e-shop", htmllig2latin ($body)); # TODO subject attribute
 
     # Send confirmation.
     $subject =& cms_fetch_object ('d_order_email_subject');

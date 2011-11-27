@@ -19,10 +19,11 @@ $order_errors = '';
 $scanner->assoc ('ORDER', 'ecml_order');
 $scanner->dirtag ('ORDER', 'LINK ECML-VERSION FINISH SHIPTO BILLTO RECEIPTTO SHIPTO-NAME BILLTO-NAME RECEIPTTO-NAME IS-INCOMPLETE ERRORS');
 
+
 # Document handler for ORDER documents.
 function document_order ()
 {
-    global $session, $scanner, $db, $dep, $use_cookies, $SERVER_NAME, $SCRIPT_NAME;
+    global $session, $scanner, $db, $dep, $use_cookies;
 
     $table = $scanner->context_table;
     $id = $scanner->context['id'];
@@ -44,7 +45,7 @@ function document_order ()
         do_order ();
         $session->lock ();
         if ($use_cookies)
-            setcookie ('SESSION_KEY', $session->key (), time () - 3600, $SCRIPT_NAME, $SERVER_NAME);
+            setcookie ('SESSION_KEY', $session->key (), time () - 3600, $_SERVER['SCRIPT_NAME'], $_SERVER['SERVER_NAME'});
 
         # Redirect to thank-you-page.
         document_set_template (cms_fetch_object ('l_ecml'));

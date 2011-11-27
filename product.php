@@ -5,10 +5,11 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-# Register tags.                                                                                                                                                                 
+# Register tags.
 $scanner->dirtag ('PRODUCT', 'QUANTITY PRICE TOTAL FORMQUANTITY QUANTITYNAME LIST-ATTRS NUM-ATTRS ATTR');
 
 $product_attr = '0'; # LIST-ATTRS can't be nested.
+
 
 # Return quantity of current product in user's cart.
 function dirtag_product_quantity ($dummy)

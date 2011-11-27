@@ -111,18 +111,17 @@ function document_path_to_directory ($path, $table, $id)
 # Set up the document, parse and evaluate it.
 function document_process ($root_table, $root_id, $root_template)
 {
-    global $scanner, $dep, $db, $path_tail, $current_index, $current_indices, $PATH_INFO, $default_document, $document_template, $debug, $list_offsets, $url_vars;
+    global $scanner, $dep, $db, $path_tail, $current_index, $current_indices, $default_document, $document_template, $debug, $list_offsets, $url_vars;
 
-    list ($dirtype, $table, $id, $vdir, $path_tail, $name) = document_path_to_directory (explode ('/', $PATH_INFO), $root_table, $root_id);
+    list ($dirtype, $table, $id, $vdir, $path_tail, $name) = document_path_to_directory (explode ('/', $_SERVER['PATH_INFO']), $root_table, $root_id);
 
     # Check if the first unprocessed directory of the tail is a known
     # object class and use it as the template. If it's not, a default template
     # is used.
     $template = '';
-    if (sizeof ($path_tail) > 0) {
+    if (sizeof ($path_tail) > 0)
         if ($db->select ('id', 'obj_classes', 'name=\'' . $path_tail[0] . '\''))
             $template = $path_tail[0]; # Tail is a legal user template.
-    }
     if (!$template)
         if ($table == $root_table && $id == $root_id && !$vdir)
 	    $template = $root_template;	# Show index page.
@@ -138,10 +137,8 @@ function document_process ($root_table, $root_id, $root_template)
     if ($name == 'OBJ') {
         if (!is_array ($dbobj->active) || !$dbobj->active['id'])
 	    die ("'$template' is not an object class.");
-        if (!$dbobj->active['is_public']) {
-	    exit; #panic ('Object is not marked public!');
-	    exit;
-        }
+        if (!$dbobj->active['is_public'])
+	    panic ('Object is not marked public!');
         Header ('Content-type: ' . $dbobj['mime']);
         echo $dbobj->active['data']; # No run through scanner.
         exit;
@@ -159,7 +156,7 @@ function document_process ($root_table, $root_id, $root_template)
         die ('No such path.');
 
     # Fetch result into array.
-    for ($res = dbitree_get_childs ($db, $table, $rid);
+    for ($res = dbitree_get_children ($db, $table, $rid);
 	 $tmp = $res->get ();
 	 $set[$tmp['id_last']] = $tmp['id']);
 

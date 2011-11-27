@@ -9,18 +9,18 @@
 
 # About this file:
 #
-# This file contains the global definitions for tags that can be applied
-# to all types of directories. They define the tag handling functions that
-# follow the global definitions.
+# This file contains the global definitions for tags that can be
+# applied to all types of directories.  They define the tag
+# handling functions that follow the global definitions.
 #
-# NOTE: The tag functions are invoked by the scanner. See document.php
-# to see how the scanner is invoked.
+# NOTE: The tag functions are invoked by the scanner.
+# See document.php to see how the scanner is invoked.
 #
-# Two sorts of directories can be handled by the CMS: Real directories
-# represented as rows in database tables and virtual directories that can
-# be childs of any real directory but can contain no objects.
-# There can also be functions that can only be used with particular
-# directory types.
+# Two sorts of directories can be handled by the CMS:
+#
+#   1. Real directories represented as rows in database tables and
+#   2. virtual directories that can be childrem of any real directory
+#      that cannot have own subdirectores.
 
 
 # Register default cms tags.
@@ -37,12 +37,13 @@ $url_vars = array ();
 
 # Helpers for grouping of lists.
 $list_sizes = array ();	# Last list sizes.
-#$list_offsets = array (); # Last starting offsets. DO NOT UNCOMMENT!
+#$list_offsets = array (); # Last starting offsets.
 
 
 #######################
 ### Database access ###
 #######################
+
 
 # Fetch object starting at current context or position passed in
 # $l_table/$l_id. $fields limits the fields fetched from an object.
@@ -86,6 +87,7 @@ function cms_fetch_directory ($table, $id)
 #####################
 ### Link creation ###
 #####################
+
 
 # Create link to document at table/id pair. Virtual directories are
 # appended in tag_link() if needed.
@@ -141,24 +143,25 @@ function cms_variable_tail ()
 }
 
 
-########################
-### Context creation ###
-########################
+###############
+### Context ###
+###############
+
 
 # Create context for a real node.
 # A context is specified by:
 #
 #    - current real directory type
-#    - real directory's primary key
 #    - optional virtual directory type
 #
-# Virtual directories are subdirectories of the specified directory.
+# Virtual directories are subdirectories but cannot have
+# own subdirectories.
 #
 # If a table/id pair is specified the current scanner context is
 # replaced by the specified directory.
 #
-# NOTE: This function is called by parse() in dev/con php base
-# lib/scanner.class.
+# NOTE: This function is called by parse() in Caroshi PHP
+# text/scanner.class.
 function cms_create_context ($dirtype, $table = '', $id = 0)
 {
     global $db, $dep, $scanner, $cms_root_table, $cms_root_id;
@@ -181,7 +184,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
     if (isset ($GLOBALS['vdir_alias'][$dirtype])) 
         return;
 
-    if ($table && $id && isset ($scanner->tables[$dirtype]) && $scanner->tables[$dirtype] == $table)
+    if ($table && $id && $scanner->tables[$dirtype] == $table)
         return;
 
     # Context for root directory.
@@ -244,6 +247,7 @@ function cms_create_context ($dirtype, $table = '', $id = 0)
 ### Sessions ###
 ################
 
+
 $scanner->dirtag ('SESSION', 	'KEY');
 
 $session = new DBSESSION ($db);
@@ -259,6 +263,7 @@ function dirtag_session_key ($dirtype, $arg)
 ###################
 ### LIST output ###
 ###################
+
 
 # Returns index information key for current directory.
 function cms_listsource ()
@@ -280,7 +285,7 @@ function parse_result_set ($template, $size = 0)
     $table = $scanner->parent_context_table;
     $id = $scanner->parent_context['id'];
 
-    if ($res = dbitree_get_childs ($db, $table, $id, $scanner->context_table))
+    if ($res = dbitree_get_children ($db, $table, $id, $scanner->context_table))
         return '<!-- Nothing to list. -->';
 
     # Read IDs for index2link ()
@@ -350,8 +355,8 @@ function cms_process_list ($records, $template, $table = '', $size = 0)
 #######################
 ### Global CMS tags ###
 #######################
-
 # NOTE: Tag functions are called by scan() in lib/scanner.class.
+
 
 # Return URL to document of current enumeration item.
 fuNction tag_link ($attr, $use_key = true)
@@ -384,7 +389,7 @@ fuNction tag_link ($attr, $use_key = true)
     # If we're in a list context, create offset variables in the URL.
     $listsource = cms_listsource ();
     if ($relative_index)
-        $url_vars["list_offsets[$listsource]"] = isset ($list_offsets[$listsource]) ? $list_offsets[$listsource] + $relative_index : 1 + $relative_index;
+        $url_vars["list_offsets[$listsource]"] = $relative_index + (isset ($list_offsets[$listsource]) ?  $list_offsets[$listsource] : 1);
 
     $url = cms_variable_url ($url);
 
@@ -420,8 +425,7 @@ function tag_template ($attr)
 
     $class = $attr['class'];
     $template = cms_fetch_object ($class);
-    $tree = $scanner->scan ($template);
-    return $scanner->exec ($tree);
+    return $scanner->scan_and_exec ($template);
 }
 
 # Return URL to object.
@@ -575,7 +579,7 @@ function tag_num_subdirs ($attr)
 
     if (!$table = $scanner->tables[$arg])
         return "<!-- cms: No directory type '$arg' known. -->";
-    $res = dbitree_get_childs ($db, $table, $scanner->context['id']);
+    $res = dbitree_get_children ($db, $table, $scanner->context['id']);
     $num = $res ? $res->num_rows () : 0;
     return (string) $num;
 }
@@ -594,7 +598,7 @@ function _c ($apath, $i, $id, $subtable = '', $norec = 0)
     if (!$subtable)
         $subtable = $apath[$i - 1];
 
-    $res = dbitree_get_childs ($db, $subtable, $id);
+    $res = dbitree_get_children ($db, $subtable, $id);
     if ($res) {
         if ($i == 1)
             return $num += $res->num_rows ();
