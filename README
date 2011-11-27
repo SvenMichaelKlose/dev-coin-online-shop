@@ -21,7 +21,11 @@ What can I do with it?
 
 You can set up an small online shop. Products are placed in
 categories or subcategories and can have variants.  Orders are
-sent via e-mail.  dev/coin is very search-engine friendly.
+sent via e-mail.  The inventory is edited in a private area
+online.
+
+dev/coin is very search-engine friendly. To the outside world the
+shop looks like the pages aren't dynamically generated.
 
 You can edit the design template as HTML online for each category
 or product.  No programming experience is required and you don't
