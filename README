@@ -1,5 +1,12 @@
-This is dev/coin, a PHP web shop released under the GPL. It depends
-on the application framework "Caroshi PHP" which can be found here:
+NOTE: At the time dev/coin is broken.
+
+
+What's this?
+============
+
+
+This is dev/coin, a free web shop written in PHP.  It depends on
+the application framework "Caroshi PHP" which can be found here:
 
     https://github.com/SvenMichaelKlose/Caroshi-PHP
 
@@ -7,28 +14,67 @@ For the lastest version of dev/coin, please see
 
     https://github.com/SvenMichaelKlose/dev-coin-online-shop
 
-Its properties:
 
-    - doesn't need JavaScript/ECMAScript anywhere
-    - has a very easy to use administration area
-    - can be set up by web designers who know next to nothing
-      about programming
-    - stores all information in a MySQL database
-    - inventory and templates are in the administration area
-    - categories can be nested as much as you like
+What can I do with it?
+======================
+
+
+You can set up an small online shop. Products are placed in
+categories or subcategories and can have variants.  Orders are
+sent via e-mail.  dev/coin is very search-engine friendly.
+
+You can edit the design template as HTML online for each category
+or product.  No programming experience is required and you don't
+need to tweak any files on the web server once the shop has been
+configured and uploaded.  Every configuration item, like
+templares or the e-mail address orders are sent to can be changed
+for every category or product, so you can share the shop with
+others.
+
+Professional support is available.
+
+In case you do have PHP programming experience you'll find that
+the source can be extended easily.  You may choose to share or
+not share the changes you made.
+
+
+Where can I see it in action?
+=============================
+
+
+Currently nowhere.  http://kendog.de is planned to run with
+dev/coin again once it's been repaired.  If you're brimming with
+impatience visit
+
+http://web.archive.org/web/20031009123548/http://www.kendog.de/shop/
+
+
+How do I install it?
+====================
+
+
+Change the MySQL database account information in file
+'config.php' to fit your web server.  Upload it onto your web
+server and open directory 'admin' in your web browser.  The shop
+should be up and running with a default design.
+
 
 History
 =======
 
-dev/coin has been developed from 2000 til 2002 by Sven Michael Klose
-at dev/consulting GmbH (Bielefeld, Germany) and it has been released
-under the GNU Public License in 2001. When dev/consulting GmbH was
-sold, dev/coin has been wiped off the servers and was believed to be
-gone forever. In November the 25th, 2011 it has been rediscovered.
+
+dev/coin has been developed from 2000 til 2002 by Sven Michael
+Klose at dev/consulting GmbH (Bielefeld, Germany) and it has
+been released under the GNU Public License in 2001.  When
+dev/consulting GmbH was sold, dev/coin has been wiped off the
+servers and was believed to be gone forever.  In November 2011
+it has been rediscovered.
+
 
 Future
 ======
 
-Still, it's an interesting piece of software than can be very useful
-and so we're going to get it up and running on PHP5. Also, we need
-to upgrade it use the newest version of Caroshi PHP.
+
+Still, it's an interesting piece of software than can be very
+useful and so we're going to get it up and running with the
+newest version of Caroshi PHP.
