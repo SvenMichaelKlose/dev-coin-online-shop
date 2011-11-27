@@ -30,7 +30,7 @@ shop looks like the pages aren't dynamically generated.
 You can edit the design template as HTML online for each category
 or product.  No programming experience is required and you don't
 need to tweak any files on the web server once the shop has been
-configured and uploaded.  Every configuration item, like
+configured and uploaded.  Every configuration item, like design
 templares or the e-mail address orders are sent to can be changed
 for every category or product, so you can share the shop with
 others.
