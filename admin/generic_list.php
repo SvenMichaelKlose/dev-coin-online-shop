@@ -26,31 +26,29 @@ function _range_panel (&$app, $id, $child_view, $txt_create, $table, $have_submi
     $p =& $app->ui;
 
     # Link to creator of new record.
-    $p->use_key ('');
     $p->open_row ();
 
     $e = new event ('tk_range_edit_select');
     $e->set_next ($app->event ());
     $p->submit_button ('select range', $e);
 
-    $sel = tk_range_edit_all_selected ($app);
+    $sel = tk_range_edit_all_selected ($app, 'marker');
 
     if ($sel == 0 || $sel == 2) {
-        $e = new event ('tk_range_edit_select');
-        $e->set_next ($app->event);
+        $e = new event ('tk_range_edit_select', array ('marker_field' => 'marker'));
+        $e->set_next ($app->event ());
         $p->submit_button ('select all', $e);
     }
 
     if ($sel == 1 || $sel == 2) {
         $e = new event ('tk_range_edit_unselect');
-        $e->set_next ($app->event);
+        $e->set_next ($app->event ());
         $p->submit_button ('select all', $e);
     }
 
     $e_delete = new event ('record_delete');
     $e_delete->set_next ($app->event ());
-    $e = new event ('tk_range_edit_call', array ('view' => '_delete', 'argname' => 'id'));
-    $e->set_next ($e_delete);
+    $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id'));
 
     $e = new event ('record_create');
     $e->set_next ($app->event ());
@@ -83,6 +81,7 @@ function generic_list (&$app, $c)
     global $lang;
 
     $db =& $app->db;
+    $def =& $db->def;
     $p =& $app->ui;
     $id = $app->arg ('id');
     $app->event ()->set_arg ('table', $c->table); # Required by _object_box().
@@ -128,23 +127,29 @@ function generic_list (&$app, $c)
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
-    $p->query (sql_assignment ($c->ref_table, $id));
+    $res = $p->query (sql_assignment ($c->ref_table, $id));
 
-    if ($p->get ()) {
+    if ($res) {
         if ($c->headers)
             $p->table_headers ($c->headers);
         $idx = 1;
-        do {
-	    $recordfunc ($app, $idx);
+        while ($p->get ()) {
+	    $fun = $c->recordfunc;
+	    $fun ($app, $idx);
 	    $idx++;
-        } while ($p->get_next ());
+        }
 
         $p->paragraph ();
         _range_panel ($app, $id, $c->child_view, $c->txt_create, $c->child_table, $c->have_submit_button);
     } else {
         $p->label ($c->txt_no_records);
-        $p->cmd_create ($c->txt_create, $c->child_view, array ('preset_values' => array ($c->ref_parent => $id)));
     }
+
+    if ($def->is_list ($c->child_table))
+        $pre[$def->ref_id ($c->child_table)] = $id;
+    $e = new event ('record_create', array ('preset_values' => $pre));
+    $e->set_next ($app->event ());
+    $p->submit_button ($c->txt_create, $e);
 
     $p->close_source ();
 }
