@@ -27,8 +27,6 @@ function view_classes (&$app)
     $p->table_headers (Array ('Syntax', $lang['class'], $lang['description']));
     $p->query ('', 'ORDER BY name ASC');
     while ($p->get ()) {
-        $p->open_row (array ('ALIGN' => 'LEFT'));
-
         $p->label (_class2tag ($p->value ('name')));
 
         $e = new event ('edit_class');
@@ -38,8 +36,6 @@ function view_classes (&$app)
         if (!$v)
             $v = '[' . $lang['unnamed'] . ']';
         $p->label ($v, $e);
-
-        $p->close_row ();
     }
     $p->paragraph ();  
     $p->cmd_create ($lang['cmd create class'], 'view_classes');  
@@ -56,10 +52,8 @@ function edit_class (&$app)
     $p->open_source ('obj_classes');
     $p->query ('id=' . $app->arg ('_cursor')->key ());
     $p->get ();
-    $p->open_row (array ('ALIGN' => 'LEFT'));
     $p->inputline ('name', 64, $lang['class name']);
     $p->label ('<B>' . _class2tag ($p->value ('name')) . '</B>');
-    $p->close_row ();
     $p->paragraph ();
     $p->inputline ('descr', 64, $lang['description']);
     $p->paragraph ();

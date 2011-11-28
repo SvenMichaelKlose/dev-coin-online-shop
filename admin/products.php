@@ -41,10 +41,8 @@ function record_product (&$app, $idx)
     $p =& $app->ui;
 
     $p->open_row ();
-    $p->open_cell (array ('ALIGN' => 'CENTER'));
     $p->checkbox ('marker');
-    $p->close_cell ();
-    $p->label ("$idx .", array ('ALIGN' => 'CENTER'));
+    $p->label ("$idx.");
     $p->inputline ('name', 40);
     $p->inputline ('bestnr', 16);
     $p->inputline ('price_eur', 8);

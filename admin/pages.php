@@ -43,24 +43,17 @@ function record_page (&$app, $idx)
         $nam = $lang['unnamed'];
 
     $p->open_row ();
-    $p->open_cell (array ('ALIGN' => 'LEFT', 'WIDTH' => '100&'));
     $p->link ("$idx $nam", 'view_products', array ('id' => $p->value ('id')));
-    $p->close_cell ();
-    $p->open_cell (array ('ALIGN' => 'RIGHT'));
     $p->link ($lang['cmd view_products'], 'view_products', array ('id' => $p->value ('id')));
-    $p->close_cell ();
     $p->close_row ();
 
     $p->paragraph ();
 
     $p->open_row ();
-    $p->open_cell (array ('ALIGN' => 'CENTER'));
     $p->checkbox ('marker');
-    $p->close_cell ();
-    $p->open_cell ();
     _object_box ($app, 'pages', $p->value ('id'), $app->args, true);
-    $p->close_cell ();
     $p->close_row ();
+
     $p->paragraph ();
 }
 ?>

@@ -232,11 +232,9 @@ function edit_data (&$app)
     $p->paragraph ();
 
     $p->open_row ();
-    $p->open_cell (array ('ALIGN' => 'CENTER'));
     $e = new event ('remove_object', $remove_args);
     $e->set_next ($app->event ());
     $p->link ($lang['remove'], $e);
-    $p->close_cell ();
 
     # Mark it as inherited or local.
     if ($obj->active['_table'] == $otable && $obj->active['_id'] == $oid)
@@ -255,7 +253,7 @@ function edit_data (&$app)
     $p->paragraph ('<hr>');
 
     # Show download link, textarea or image depending on mime type.
-    $p->open_row (array ('ALIGN' => 'CENTER'));
+    $p->open_row ();
     $mime = $p->value ('mime');
     $data = $p->value ('data');
     if (!$mime)
@@ -281,7 +279,7 @@ function edit_data (&$app)
 
     $p->paragraph ('<hr>');
 
-    $p->open_row (array ('ALIGN' => 'CENTER'));
+    $p->open_row ();
     $p->fileform ('data', $lang['upload'], 'mime', 'filename');
     $p->cmd_update ();
     $p->close_row ();
