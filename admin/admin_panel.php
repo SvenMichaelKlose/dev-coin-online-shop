@@ -36,9 +36,9 @@ class devcoin_admin_panel extends admin_panel {
 
     function close_source ()
     {
+        $this->close_table ();
         $this->close_form ();
         $this->close_context ();
-        $this->close_table ();
 
         $_is_open = false;
     }
