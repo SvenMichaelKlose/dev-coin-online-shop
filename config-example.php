@@ -9,4 +9,10 @@ $dbiserver = 'localhost';
 $dbiuser = 'user';
 $dbipwd = 'password';
 
+# Choose your language for the administration area:
+#
+# en - English
+# de - Deutsch (German)
+$language = 'en';
+
 ?>
