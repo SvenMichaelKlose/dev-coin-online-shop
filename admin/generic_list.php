@@ -85,7 +85,7 @@ function generic_list (&$app, $c)
     $app->event ()->set_arg ('table', $c->table); # Required by _object_box().
 
     # Navigator
-    $p->headline ($lang["title $app->view"]);
+    $p->headline ($lang["title " . $app->event ()->name]);
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
     show_directory_index ($app, $c->table, $id);
 
