@@ -68,22 +68,33 @@ class devcoin_admin_panel extends admin_panel {
         $this->close_row ();
     }
 
-    function cmd_create ($label, $handler ='', $args = 0)
+    function _make_cmd ($cmd, $label, $handler, $args)
     {
+        global $lang;
+
+        if (!$label)
+            $label = $lang["cmd $cmd"];
+
         $this->open_row_and_cell ();
-        $e = new event ($this->no_update ? 'record_create' : 'form_create');
+        $e = new event (($this->no_update ? 'record' : 'form') . "_$cmd");
         $e->set_next ($this->make_event ($handler, $args));
         $this->submit_button ($label, $e);
         $this->close_cell_and_row ();
     }
 
+    function cmd_create ($label = '', $handler ='', $args = 0)
+    {
+        $this->_make_cmd ('create', $label, $handler, $args);
+    }
+
     function cmd_delete ($label, $handler ='', $args = 0)
     {
-        $this->open_row_and_cell ();
-        $e = new event ('record_delete');
-        $e->set_next ($this->make_event ($handler, $args));
-        $this->submit_button ($label, $e);
-        $this->close_cell_and_row ();
+        $this->_make_cmd ('delete', $label, $handler, $args);
+    }
+
+    function cmd_update ($label = '', $handler ='', $args = 0)
+    {
+        $this->_make_cmd ('update', $label, $handler, $args);
     }
 }
 ?>
