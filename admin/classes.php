@@ -36,7 +36,7 @@ function view_classes (&$app)
         $v = $p->value ('descr');
         if (!$v)
             $v = '[' . $lang['unnamed'] . ']';
-        $p->label ($v, $e);
+        $p->link ($v, $e);
         $p->close_row ();
     }
     $p->paragraph ();  
