@@ -314,10 +314,12 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
     $p =& $app->ui;
 
     $oargs = $app->args ();
-    @$label = $oargs['display_inherited_objects'] ?
+    if (!isset ($oargs['display_inherited_objects']))
+        $oargs['display_inherited_objects'] = 0;
+    $label = $oargs['display_inherited_objects'] ?
              '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
              '<B>' . $lang['cmd objectbox unhide'] . '</B>';
-    @$oargs['display_inherited_objects'] ^= true;
+    $oargs['display_inherited_objects'] ^= true;
     $p->link ($label, new event ($app->event ()->name, $oargs));
 
     # Describe label colors for inherited/local objects.
