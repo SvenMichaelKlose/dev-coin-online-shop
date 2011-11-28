@@ -75,7 +75,7 @@ class devcoin_admin_panel extends admin_panel {
             $label = $lang["cmd $cmd"];
 
         $this->open_row_and_cell ();
-        $e = new event (($this->no_update ? 'record' : 'form') . "_$cmd");
+        $e = new event (($this->no_update || $cmd == 'delete' ? 'record' : 'form') . "_$cmd");
         $e->set_next ($this->make_event ($handler, $args));
         $this->submit_button ($label, $e);
         $this->close_cell_and_row ();
