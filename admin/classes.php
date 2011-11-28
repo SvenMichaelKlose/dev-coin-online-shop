@@ -27,6 +27,7 @@ function view_classes (&$app)
     $p->table_headers (Array ('Syntax', $lang['class'], $lang['description']));
     $p->query ('', 'ORDER BY name ASC');
     while ($p->get ()) {
+        $p->open_row ();
         $p->label (_class2tag ($p->value ('name')));
 
         $e = new event ('edit_class');
@@ -36,6 +37,7 @@ function view_classes (&$app)
         if (!$v)
             $v = '[' . $lang['unnamed'] . ']';
         $p->label ($v, $e);
+        $p->close_row ();
     }
     $p->paragraph ();  
     $p->cmd_create ($lang['cmd create class'], 'view_classes');  
