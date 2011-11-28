@@ -314,10 +314,10 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
     $p =& $app->ui;
 
     $oargs = $app->args ();
-    $label = $oargs['display_inherited_objects'] ?
+    @$label = $oargs['display_inherited_objects'] ?
              '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
              '<B>' . $lang['cmd objectbox unhide'] . '</B>';
-    $oargs['display_inherited_objects'] ^= true;
+    @$oargs['display_inherited_objects'] ^= true;
     $p->link ($label, new event ($app->event ()->name, $oargs));
 
     # Describe label colors for inherited/local objects.
@@ -353,7 +353,7 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
         $e_edit_data = new event ('edit_data', $common_args);
         $e_edit_data->set_caller ($app->event ());
 
-        $descr = ereg_replace (' ', '&nbsp;', $descr);
+        $descr = preg_replace ('/ /', '&nbsp;', $descr);
         $tmp = '';
 
         ### Simulate DBOBJ by reading objects from the cache.

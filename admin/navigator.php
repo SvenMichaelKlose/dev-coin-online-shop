@@ -14,7 +14,7 @@ function nav_linkpath (&$app, $table, $row, $arg)
     global $lang;
 
     $p =& $app->ui;
-    $name = '<I>' . ereg_replace (' +', '&nbsp;', $row['name']) . '</I>';
+    $name = '<I>' . preg_replace ('/ +/', '&nbsp;', $row['name']) . '</I>';
     $id = $row['id'];
     $out = '';
 
