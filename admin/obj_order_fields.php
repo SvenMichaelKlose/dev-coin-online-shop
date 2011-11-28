@@ -62,7 +62,7 @@ function edit_duty_fields (&$app, &$obj, $class)
     $p->headline ($lang['title edit_duty_fields']);
     $stdtype = ecml_typearray ();
 
-    echo '<form method="post" action="' . $app->link ('edit_data', $app->args) . '">';
+    echo '<form method="post" action="' . $app->url (new event ('edit_data', $app->args ())) . '">';
     $ret['shipto'] = print_field_form ($app, 'Lieferadresse:', $p, $stdtype, 'shipto', $data);
     $ret['receiptto'] = print_field_form ($app, 'Lieferscheinadresse:', $p, $stdtype, 'receiptto', $data);
     $ret['billto'] = print_field_form ($app, 'Rechnungsadresse:', $p, $stdtype, 'billto', $data);
@@ -106,7 +106,7 @@ function edit_user_fields (&$app, &$obj, $class)
 
     $p->headline ($lang['title edit_user_fields']);
 
-    echo '<form method="post" action="' . $app->link ('edit_data', $app->args) . '">';
+    echo '<form method="post" action="' . $app->url (new event ('edit_data', $app->args ())) . '">';
     $p->open_table ();
     $p->table_headers (array ('Name', 'Description'));
     $args = $app->args;

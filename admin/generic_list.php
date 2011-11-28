@@ -82,7 +82,7 @@ function generic_list (&$app, $c)
     $db =& $app->db;
     $p =& $app->ui;
     $id = $app->arg ('id');
-    $app->set_arg ('table', $c->table); # Required by _object_box().
+    $app->event ()->set_arg ('table', $c->table); # Required by _object_box().
 
     # Navigator
     $p->headline ($lang["title $app->view"]);
@@ -93,11 +93,17 @@ function generic_list (&$app, $c)
     $id_last = $db->column ($c->table, 'id_last', $id);
     $id_next = $db->column ($c->table, 'id_next', $id);
     list ($thisindex, $last) = _get_index ($app, $c->parent_table, $c->ref_parent, $c->table, $id);
-    if ($id_last)
-        $p->link ($lang['previous'], $app->view, array ('id' => $id_last));
+    if ($id_last) {
+        $e = $app->event ();
+        $e->set_arg ('id', $id_last);
+        $p->link ($lang['previous'], $e);
+    }
     echo ' ' . sprintf ($lang['x of y'], $thisindex, $last) . ' ';
-    if ($id_next)
-        $p->link ($lang['next'], $app->view, array ('id' => $id_next));
+    if ($id_next) {
+        $e = $app->event ();
+        $e->set_arg ('id', $id_next);
+        $p->link ($lang['next'], $e);
+    }
     echo '<BR>';
 
     # Show all objects for this group.
@@ -134,7 +140,7 @@ function generic_list (&$app, $c)
         _range_panel ($app, $id, $c->child_view, $c->txt_create, $c->child_table, $c->have_submit_button);
     } else {
         $p->label ($c->txt_no_records);
-        $p->cmd_create ($c->txt_create, $c->child_view, 'id', $id, $lang['msg record created']);
+        $p->cmd_create ($c->txt_create, $c->child_view, array ('preset_values' => array ($c->ref_parent => $id)));
     }
 
     $p->close_source ();

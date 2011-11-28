@@ -311,7 +311,7 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
              '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
              '<B>' . $lang['cmd objectbox unhide'] . '</B>';
     $oargs['display_inherited_objects'] ^= true;
-    $p->link ($label, $app->args['__view'], $oargs);
+    $p->link ($label, new event ($app->event ()->name, $oargs));
 
     # Describe label colors for inherited/local objects.
     echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
@@ -333,7 +333,7 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
                           'table' => $table, 'id' => $id,
                           'otable' => $table, 'oid' => $id);
     $e_edit_data = new event ('edit_data', $common_args);
-    $e_edit_data->set_caller ($app->event);
+    $e_edit_data->set_caller ($app->event ());
 
     # Save starting point so the paths can be displayed correctly by edit_data().
     $caller['otable'] = $table;
@@ -408,7 +408,7 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
                     $images .= '<td><table border="1" cellpadding="2" cellspacing="0">' .
 	                       '<tr><td align="center">' .
 	                       '<a href="' .
-	                       $app->link ($e_edit_data);
+	                       $app->url ($e_edit_data);
                                '"><img border="0" src="' .
 	                       $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
                                "\" alt=\"$imagename\"></a><br>" .
