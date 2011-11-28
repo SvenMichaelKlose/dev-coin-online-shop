@@ -64,7 +64,7 @@ function _range_panel (&$app, $c)
     $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id', 'marker_fiel' => 'marker'));
 
     generic_create ($app, $c);
-    if ($have_submit_button)
+    if ($c->have_submit_button)
         $p->cmd_update ();
     $p->close_row ();
 }
