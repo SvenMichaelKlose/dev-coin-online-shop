@@ -92,9 +92,14 @@ class shop_admin extends application {
         $p->headline ($lang['title defaultview']);
   
         # Main menu
-        $p->link ($lang['cmd move_category'], 'tree_edit_move', 0);
-        $p->link ($lang['cmd view_classes'], 'view_classes', 0);
-        $p->link ($lang['cmd database_menu'], 'database_menu', 0);
+        $p->link ($lang['cmd move_category'], new event ('tree_edit_move', array ('source' => 'categories',
+                                                                                  'id' => 'id',
+                                                                                  'name' => 'name',
+                                                                                  'txt_back' => 'back',
+                                                                                  'txt_select_node' => 'select node',
+                                                                                  'txt_select_dest' => 'select destination')));
+        $p->link ($lang['cmd view_classes'], 'view_classes');
+        $p->link ($lang['cmd database_menu'], 'database_menu');
         # TODO: Statistics, last orders.
         #$p->link ('Bestellungen', 'view_orders', 0);
 
