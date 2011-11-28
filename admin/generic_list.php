@@ -19,41 +19,51 @@ function _get_index (&$app, $parent, $ref_parent, $table, $id)
     return array ($thisindex, $i - 1);
 }
 
-function _range_panel (&$app, $id, $child_view, $txt_create, $table, $have_submit_button = false)
+function generic_create (&$app, $c)
+{
+    $def =& $app->db->def;
+
+    if ($def->is_list ($c->child_table))
+        $pre[$def->ref_id ($c->child_table)] = $app->arg ('id');
+    $e = new event ('record_create', array ('preset_values' => $pre));
+    $e->set_next ($app->event ());
+    $app->ui->submit_button ($c->txt_create, $e);
+}
+
+function _range_panel (&$app, $c)
 {
     global $lang;
 
     $p =& $app->ui;
+    $def =& $app->db->def;
+    $m = array ('marker_field' => 'marker');
 
     # Link to creator of new record.
     $p->open_row ();
 
-    $e = new event ('tk_range_edit_select');
+    $e = new event ('tk_range_edit_select', $m);
     $e->set_next ($app->event ());
     $p->submit_button ('select range', $e);
 
     $sel = tk_range_edit_all_selected ($app, 'marker');
 
     if ($sel == 0 || $sel == 2) {
-        $e = new event ('tk_range_edit_select', array ('marker_field' => 'marker'));
+        $e = new event ('tk_range_edit_select', $m);
         $e->set_next ($app->event ());
         $p->submit_button ('select all', $e);
     }
 
     if ($sel == 1 || $sel == 2) {
-        $e = new event ('tk_range_edit_unselect');
+        $e = new event ('tk_range_edit_unselect', $m);
         $e->set_next ($app->event ());
         $p->submit_button ('select all', $e);
     }
 
     $e_delete = new event ('record_delete');
     $e_delete->set_next ($app->event ());
-    $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id'));
+    $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id', 'marker_fiel' => 'marker'));
 
-    $e = new event ('record_create');
-    $e->set_next ($app->event ());
-    $p->link ($txt_create, $e);
-
+    generic_create ($app, $c);
     if ($have_submit_button)
         $p->cmd_update ();
     $p->close_row ();
@@ -132,6 +142,7 @@ function generic_list (&$app, $c)
     if ($res) {
         if ($c->headers)
             $p->table_headers ($c->headers);
+
         $idx = 1;
         while ($p->get ()) {
 	    $fun = $c->recordfunc;
@@ -140,16 +151,12 @@ function generic_list (&$app, $c)
         }
 
         $p->paragraph ();
-        _range_panel ($app, $id, $c->child_view, $c->txt_create, $c->child_table, $c->have_submit_button);
+        _range_panel ($app, $c);
+        $p->paragraph ();
     } else {
         $p->label ($c->txt_no_records);
+        generic_create ($app, $c);
     }
-
-    if ($def->is_list ($c->child_table))
-        $pre[$def->ref_id ($c->child_table)] = $id;
-    $e = new event ('record_create', array ('preset_values' => $pre));
-    $e->set_next ($app->event ());
-    $p->submit_button ($c->txt_create, $e);
 
     $p->close_source ();
 }
