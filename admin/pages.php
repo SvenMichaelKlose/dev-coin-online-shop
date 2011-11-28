@@ -23,7 +23,7 @@ function view_pages (&$app)
     $c->ref_table = 'id_category';
     $c->ref_parent = 'id_parent';
     $c->recordfunc = 'record_page';
-    $c->txt_no_func = $lang['msg no product group'];
+    $c->txt_no_records = $lang['msg no product group'];
     $c->txt_create = $lang['cmd create_page'];
     $c->txt_input = $lang['category'];
     $c->parent_view = 'defaultview';

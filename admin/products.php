@@ -27,7 +27,7 @@ function view_products (&$app)
     $c->ref_parent = 'id_category';
     $c->headers = Array ('&nbsp;', '&nbsp;', $lang['description'], $lang['product key'], $lang['price'] . ' Euro');
     $c->recordfunc = 'record_product';
-    $c->txt_no_func = $lang['msg no product'];
+    $c->txt_no_records = $lang['msg no product'];
     $c->txt_create = $lang['cmd create_product'];
     $c->txt_input = $lang['product group name'];
     $c->parent_view = 'view_pages';

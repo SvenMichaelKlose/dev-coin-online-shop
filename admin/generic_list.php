@@ -52,7 +52,10 @@ function _range_panel (&$app, $id, $child_view, $txt_create, $table, $have_submi
     $e = new event ('tk_range_edit_call', array ('view' => '_delete', 'argname' => 'id'));
     $e->set_next ($e_delete);
 
-    $p->cmd_create ($txt_create, $child_view, 'id');
+    $e = new event ('record_create');
+    $e->set_next ($app->event ());
+    $p->link ($txt_create, $e);
+
     if ($have_submit_button)
         $p->cmd_update ();
     $p->close_row ();
@@ -107,7 +110,7 @@ function generic_list (&$app, $c)
     echo '<BR>';
 
     # Show all objects for this group.
-    _object_box ($app, $c->table, $id, $app->args);
+    _object_box ($app, $c->table, $id, $app->args ());
 
     # Input field for group name.
     $parent_id = $db->column ($c->table, $c->ref_parent, $id);
