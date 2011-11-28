@@ -47,7 +47,7 @@ $list_sizes = array ();	# Last list sizes.
 
 # Fetch object starting at current context or position passed in
 # $l_table/$l_id. $fields limits the fields fetched from an object.
-# This is useful if you need just a mime type and not a whole file.
+# This is useful if you need just a MIME type and not a whole file.
 function cms_fetch_object ($class, $l_table = '', $l_id = '', $fields = '*')
 {
     global $dep, $db, $scanner;
@@ -274,7 +274,7 @@ function cms_listsource ()
 }
 
 # Used by <!:LIST!> tags.
-# Fetch subdirectories and create a array set for cms_process_list(),
+# Fetch subdirectories and create an array set for cms_process_list(),
 # This function also creates index numbers for the records we need to split
 # up lists..
 # TODO: Index code doesn't belong here. Use linked list support instead.
@@ -307,7 +307,6 @@ function parse_result_set ($template, $size = 0)
 }
 
 # Parse full or partial record set.
-# TODO: Support multiple directory types if directory tables are merged.
 #
 # $records	= Array of records to list.
 # $template	= Document tree of template.
