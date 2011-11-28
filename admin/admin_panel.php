@@ -12,6 +12,11 @@ class devcoin_admin_panel extends admin_panel {
     private $_is_open = false;
     private $_cursor = false;
 
+    function cursor ()
+    {
+        return $this->v->cursor;
+    }
+
     function make_event ($handler = '', $args = 0)
     {
         return $handler ? new event ($handler, $args) : $this->application->event ();
@@ -46,7 +51,9 @@ class devcoin_admin_panel extends admin_panel {
 
     function get ()
     {
-        return $this->_cursor->get ();
+        $c = $this->_cursor->get ();
+        $this->set_context ($this->_cursor);
+        return $c;
     }
 
     function open_row_and_cell ()
@@ -69,6 +76,14 @@ class devcoin_admin_panel extends admin_panel {
         $this->submit_button ($label, $e);
         $this->close_cell_and_row ();
     }
-}
 
+    function cmd_delete ($label, $handler ='', $args = 0)
+    {
+        $this->open_row_and_cell ();
+        $e = new event ('record_delete');
+        $e->set_next ($this->make_event ($handler, $args));
+        $this->submit_button ($label, $e);
+        $this->close_cell_and_row ();
+    }
+}
 ?>
