@@ -200,7 +200,7 @@ function db_consistency_check (&$app)
     while ($res && list ($id_obj) = $res->get ())
         $refs[$id_obj] = true;
     $res = $db->select ('id_obj', 'pages');
-    while ($es && list ($id_obj) = $res->get ())
+    while ($res && list ($id_obj) = $res->get ())
         $refs[$id_obj] = true;
     $res = $db->select ('id_obj', 'products');
     while ($res && list ($id_obj) = $res->get ())
