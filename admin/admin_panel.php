@@ -43,7 +43,7 @@ class devcoin_admin_panel extends admin_panel {
         $_is_open = false;
     }
 
-    function query ($where, $order)
+    function query ($where = '', $order = '')
     {
         $this->_cursor->query ($where, $order);
     }
