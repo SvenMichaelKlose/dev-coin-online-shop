@@ -113,8 +113,8 @@ function edit_data_navigator (&$app)
     $class = $app->arg ('class');
     $table = $app->arg ('table');
     $id = $app->arg ('id');
-    $otable = $app->subarg ('otable');
-    $oid = $app->subarg ('oid');
+    $otable = $app->arg ('otable');
+    $oid = $app->arg ('oid');
 
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
     show_directory_index ($app, $otable, $oid);
@@ -182,9 +182,9 @@ function edit_data (&$app)
     $p =& $app->ui;
     $db = $app->db;
     $dep = $db->def;
-    $otable = $app->subarg ('otable');
-    $oid = $app->subarg ('oid');
-    $class = $app->subarg ('class');
+    $otable = $app->arg ('otable');
+    $oid = $app->arg ('oid');
+    $class = $app->arg ('class');
     $table = $app->arg ('table');
     $id = $app->arg ('id');
     $remove_args = compact ('class', 'table', 'id');
@@ -222,9 +222,16 @@ function edit_data (&$app)
     $p->inputline ('end', 10, $lang['end time']);
 
     # Radiobox local/not local.
+    $p->open_cell ();
+    $p->label ($lang['local'] . ":");
     $p->radiobox ('is_local', $lang['yes'], $lang['no'], $lang['local'] . '<BR>');
+    $p->close_cell ();
+
     # Radiobox public/private.
+    $p->open_cell ();
+    $p->label ($lang['public'] . ":");
     $p->radiobox ('is_public', $lang['yes'], $lang['no'], $lang['public'] . '<BR>');
+    $p->close_cell ();
 
     $p->cmd_update ();
     $p->close_row ();
@@ -329,11 +336,6 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
     $p =& $app->ui;
     $db =& $app->db;
     $dep =& $app->db->def;
-    $common_args = array ('class' => $class,
-                          'table' => $table, 'id' => $id,
-                          'otable' => $table, 'oid' => $id);
-    $e_edit_data = new event ('edit_data', $common_args);
-    $e_edit_data->set_caller ($app->event ());
 
     # Save starting point so the paths can be displayed correctly by edit_data().
     $caller['otable'] = $table;
@@ -347,6 +349,10 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
     # For each class, search for an object.
     $res = $db->select ('id,name,descr', 'obj_classes', '', ' ORDER BY descr ASC');
     while ($res && list ($id_class, $class, $descr) = $res->get ()) {
+        $common_args = array ('class' => $class, 'table' => $table, 'id' => $id, 'otable' => $table, 'oid' => $id);
+        $e_edit_data = new event ('edit_data', $common_args);
+        $e_edit_data->set_caller ($app->event ());
+
         $descr = ereg_replace (' ', '&nbsp;', $descr);
         $tmp = '';
 
