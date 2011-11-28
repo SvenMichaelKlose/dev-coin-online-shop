@@ -45,7 +45,7 @@ class devcoin_admin_panel extends admin_panel {
 
     function query ($where = '', $order = '')
     {
-        $this->_cursor->query ($where, $order);
+        return $this->_cursor->query ($where, $order);
     }
 
     function get ()
