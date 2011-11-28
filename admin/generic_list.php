@@ -39,6 +39,7 @@ function _range_panel (&$app, $c)
     $m = array ('marker_field' => 'marker');
 
     # Link to creator of new record.
+    $p->v->cursor->set_key ('');
     $p->open_row ();
 
     $e = new event ('tk_range_edit_select', $m);
