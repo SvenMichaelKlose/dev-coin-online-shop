@@ -34,7 +34,6 @@ class devcoin_admin_panel extends admin_panel {
         $_is_open = true;
     }
 
-
     function close_source ()
     {
         $this->close_form ();

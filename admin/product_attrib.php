@@ -40,21 +40,23 @@ function product_attrib_mask_view (&$app, &$obj)
 
     # Open source in mask object.
     $p->open_source ('obj_data');
-    $p->get ('WHERE id=' . $obj->active['id']);
+    $p->query (sql_assignment ('id', $obj->active['id']));
+    $p->get ();
     if ($obj->active['found_local'])
-        $p->cmd_delete ('delete');
+        $p->cmd_delete ();
+
     $p->paragraph ();
+
     $p->use_field ('data');
+
     $p->open_source ('data');
     $p->stack_ssi ('php_array');
     #$p->use_filter ('form_safe');
     $p->open_row ();
 
-    if ($p->get ()) {
-        do {
-            $p->checkbox ('is_used');
-            $p->show ('name');
-        } while ($p->get_next ());
+    while ($p->get ()) {
+        $p->checkbox ('is_used');
+        $p->show ('name');
     }
     $p->close_row ();
     $p->close_source ();
@@ -63,7 +65,7 @@ function product_attrib_mask_view (&$app, &$obj)
 
 function product_attrib_mask_edit (&$app, &$obj)
 {
-    $app->call_view ('return2caller');
+    $app->call ('return2caller');
 }
 
 function product_attrib_edit (&$app, &$obj)
@@ -73,8 +75,9 @@ function product_attrib_edit (&$app, &$obj)
     $p =& $app->ui;
 
     $p->open_source ('obj_data');
-    $p->get ('WHERE id=' . $obj->active['id']);
-    $p->cmd_delete ('delete');
+    $p->query ('id=' . $obj->active['id']);
+    $p->get ();
+    $p->cmd_delete ();
     $p->paragraph ();
     $p->use_field ('data');
     $p->open_source ('data');
@@ -84,17 +87,24 @@ function product_attrib_edit (&$app, &$obj)
     if ($p->get ()) {
         do {
             $p->open_row ();
-            $p->cmd_delete ('delete');
+            $p->cmd_delete ();
             $p->inputline ('name', 60);
             $p->close_row ();
         } while ($p->get_next ());
     }
+
     $p->paragraph ();
+
     $p->open_row ();
-    $p->link ( 'Add new', '_create', $app->arg_set_next (array ('preset_values' => array ('name' => ''),
-                                                                'msg' => 'Record created.')));
-    $p->submit_button ('Ok', '_update', $app->arg_set_next ());
+
+    $e = new event ( 'record_create', array ('preset_values' => array ('name' => ''),
+                                             'msg' => 'Record created.'));
+    $e->set_next ($app->event ());
+    $p->link ( 'Add new', $e);
+
+    $p->cmd:update ();
     $p->close_row ();
+
     $p->close_source ();
     $p->close_source ();
 }

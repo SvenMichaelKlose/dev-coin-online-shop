@@ -41,10 +41,10 @@ function print_field_form (&$app, $title, $p, $stdtype, $adrtype, $data)
     }
     $p->paragraph ();
     $p->open_row ();
-    $tmp = $app->args;
-    $tmp['__next'] = $app->args['caller'];
-    $p->link ($lang['remove'], 'remove_object', $tmp);
-    $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view));
+    $e = new event ('remove_object', $app->args ());
+    $e->set_next ($app->args ('caller'));
+    $p->link ($lang['remove'], $e);
+    $p->cmd_update ();
     $p->close_row ();
     $p->close_table ();
     return array ('duty_fields' => $duty_fields, 'duty_msgs' => $duty_msgs);
@@ -92,16 +92,16 @@ function edit_user_fields (&$app, &$obj, $class)
     }
 
     # Remove a field.
-    if (isset ($app->args['removefield'])) {
-        $tmp = $app->args['removefield'];
+    if ($app->args ('removefield')) {
+        $tmp = $app->args ('removefield');
         unset ($data[$tmp]);
-        unset ($app->args['removefield']);
+        $app->event ()->remove_arg ('removefield');
     }
 
     # Create new field.
-    if ($app->args['newfield']) {
+    if ($app->args ('newfield')) {
         $data[] = array ('name' => $lang['unnamed'], 'desc' => '');
-        unset ($app->args['newfield']);
+        $app->event ()->remove_arg ('newfield');
     }
 
     $p->headline ($lang['title edit_user_fields']);
@@ -123,23 +123,33 @@ function edit_user_fields (&$app, &$obj, $class)
             $p->open_cell ();
             echo '<INPUT TYPE="TEXT" NAME="desc[]" SIZE="60" VALUE="' . $desc . '">';
             $p->close_cell ();
-            $args = $app->args;
+            $args = $app->args ();
             $args['removefield'] = $k;
-            $p->link ($lang['remove'], 'edit_data', $args);
+            $e = new event ('remove_data');
+            $e->set_next ($app->event ());
+            $p->link ($lang['remove'], $e);
             $p->close_row ();
         }
     }
 
     $p->paragraph ();
+
     $p->open_row ();
-    $tmp = $app->args;
+
+    $tmp = $app->args ();
     $tmp['class'] = $class;
-    $tmp['__next'] = $app->args['caller'];
-    $p->link ($lang['remove'], 'remove_object', $tmp);
-    $args = $app->args;
-    $args['newfield'] = true;
-    $p->link ($lang['cmd user_field_new'], 'edit_data', $args);
-    $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view));
+    $e = new event ( 'remove_object', $tmp);
+    $e->set_next ($app->args ('caller'));
+    $p->link ($lang['remove'], $e);
+
+    $tmp = $app->args ();
+    $tmp['newfield'] = true;
+    $e = new event ('edit_data', $tmp);
+    $e->set_next ($app->event ());
+    $p->link ($lang['cmd user_field_new'], $e);
+
+    $p->cmd_update ();
+
     $p->close_row ();
 
     $p->close_table ();

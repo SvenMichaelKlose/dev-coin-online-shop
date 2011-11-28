@@ -28,17 +28,33 @@ function _range_panel (&$app, $id, $child_view, $txt_create, $table, $have_submi
     # Link to creator of new record.
     $p->use_key ('');
     $p->open_row ();
-    $p->submit_button ('select range', 'tk_range_edit_select', $app->arg_set_next (0, $app->view, $app->args));
+
+    $e = new event ('tk_range_edit_select');
+    $e->set_next ($app->event ());
+    $p->submit_button ('select range', $e);
+
     $sel = tk_range_edit_all_selected ($app);
-    if ($sel == 0 || $sel == 2)
-        $p->submit_button ('select all', 'tk_range_edit_select_all', $app->arg_set_next (0, $app->view, $app->args));
-    if ($sel == 1 || $sel == 2)
-        $p->submit_button ('unselect all', 'tk_range_edit_unselect_all', $app->arg_set_next (0, $app->view, $app->args));
-    $p->submit_button ('delete', 'tk_range_edit_call', array ('view' => '_delete', 'argname' => 'id',
-                                                              'arg' => $app->arg_set_next (array ('table' => $table, '_ssi_obj' => 'dbi'), $app->view, $app->args)));
-    $p->cmd_create ($txt_create, $child_view, 'id', $id, $lang['msg record created']);
+
+    if ($sel == 0 || $sel == 2) {
+        $e = new event ('tk_range_edit_select');
+        $e->set_next ($app->event);
+        $p->submit_button ('select all', $e);
+    }
+
+    if ($sel == 1 || $sel == 2) {
+        $e = new event ('tk_range_edit_unselect');
+        $e->set_next ($app->event);
+        $p->submit_button ('select all', $e);
+    }
+
+    $e_delete = new event ('record_delete');
+    $e_delete->set_next ($app->event ());
+    $e = new event ('tk_range_edit_call', array ('view' => '_delete', 'argname' => 'id'));
+    $e->set_next ($e_delete);
+
+    $p->cmd_create ($txt_create, $child_view, 'id');
     if ($have_submit_button)
-        $p->submit_button ('Ok', '_update', $app->arg_set_next ());
+        $p->cmd_update ();
     $p->close_row ();
 }
 
@@ -64,9 +80,9 @@ function generic_list (&$app, $c)
     global $lang;
 
     $db =& $app->db;
-    $app->args['table'] = $c->table; # Needed for _object_box.
-    $id = $app->args['id'];
     $p =& $app->ui;
+    $id = $app->arg ('id');
+    $app->set_arg ('table', $c->table); # Required by _object_box().
 
     # Navigator
     $p->headline ($lang["title $app->view"]);
@@ -89,21 +105,23 @@ function generic_list (&$app, $c)
 
     # Input field for group name.
     $parent_id = $db->column ($c->table, $c->ref_parent, $id);
-    $p->open_source ($c->table, '_update', $app->arg_set_next (0, $app->view, array ('id' => $id)));
+    $p->open_source ($c->table);
+    $p->query (sql_assignment ('id', $id));
 
-    if ($p->get ("where id=$id")) {
+    if ($p->get ()) {
         $p->open_row ();
-        $p->cmd_delete ($lang['remove'], $c->parent_view, array ('id' => $parent_id));
+        $p->cmd_delete ('', $c->parent_view, array ('id' => $parent_id));
         $p->inputline ('name', 255, $c->txt_input);
-        $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view, array ('id' => $id)));
+        $p->cmd_update ();
         $p->close_row ();
     }
     $p->close_source ();
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
+    $p->query (sql_assignment ($c->ref_table, $id));
 
-    if ($p->get ("WHERE $c->ref_table=$id", true)) {
+    if ($p->get ()) {
         if ($c->headers)
             $p->table_headers ($c->headers);
         $idx = 1;
@@ -120,7 +138,5 @@ function generic_list (&$app, $c)
     }
 
     $p->close_source ();
-
-    return ''; # XXX ???
 }
 ?>

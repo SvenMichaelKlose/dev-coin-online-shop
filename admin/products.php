@@ -56,13 +56,13 @@ function edit_product (&$app)
 {
     global $lang;
 
-    $app->args['table'] = 'products';
-    $id = $app->args['id'];
+    $app->event->set_arg ('table', 'products');
+    $id = $app->arg ('id');
     $p =& $app->ui;
 
     # Navigator
     $p->headline ($lang['title edit_product']);
-    $p->link ($lang['cmd defaultview'], 'defaultview', 0);
+    $p->link ($lang['cmd defaultview'], 'defaultview');
     show_directory_index ($app, 'products', $id);
 
     # Show all objects for this product.
@@ -72,8 +72,8 @@ function edit_product (&$app)
     $pid = $db->select ('id_page', 'products', "id=$id")->get ('id_page');
 
     # Create form for product fields.
-    $p->open_source ('products', '_update', $app->arg_set_next (0, $app->view, $app->args));
-    if ($p->get ("where id=$id")) {
+    $p->open_source ('products', "id=$id");
+    if ($p->get ()) {
         $p->open_row ();
         $p->label ($lang['description']);
         $p->inputline ('name', 255);
@@ -93,7 +93,7 @@ function edit_product (&$app)
         $p->paragraph ();
         $p->open_row ();
         $p->cmd_delete ($lang['remove'], 'view_products', array ('id' => $pid));
-        $p->submit_button ('Ok', '_update', $app->arg_set_next (0, $app->view, $app->args));
+        $p->cmd_update ();
         $p->close_row ();
     }
     $p->close_source ();
@@ -102,6 +102,6 @@ function edit_product (&$app)
 function products_after_create (&$app)
 {
     $id_page = $app->db->column ('products', 'id_page', $app->arg ('id'));
-    $app->call_view ('view_products', array ('id' => $id_page));
+    $app->call ('view_products', array ('id' => $id_page));
 }
 ?>

@@ -100,7 +100,7 @@ function remove_object4real (&$app)
     $obj->remove ();
 
     $app->ui->msgbox ($lang['msg obj removed']);
-    $app->call_view ('return2caller');
+    $app->call ('return2caller');
 }  
 
 # Navigator for edit_data and related views.
@@ -146,11 +146,13 @@ function edit_data_navigator (&$app)
 	    echo '<td><b>' . $lang['current'] . ' --></b></td><td>-</td>';
         else {
             echo '<td>&nbsp;</td><td>';
-	    $p->link ($lang['copy to current'], 'copy_object', $app->arg_set_next (array ('class' => $class,
-	  	                                                                          'table' => $otable,
-	  	                                                                          'id' => $oid,
-	  	                                                                          'srctable' => $obj->active['_table'],
-	  	                                                                          'srcid' => $obj->active['_id'])));
+            $e = new event ('copy_object', array ('class' => $class,
+	  	                                  'table' => $otable,
+	  	                                  'id' => $oid,
+	  	                                  'srctable' => $obj->active['_table'],
+	  	                                  'srcid' => $obj->active['_id']));
+            $e->set_next ($app-event ());
+	    $p->link ($lang['copy to current'], $e);
 	    echo '</td>';
         }
 
@@ -185,7 +187,7 @@ function edit_data (&$app)
     $class = $app->subarg ('class');
     $table = $app->arg ('table');
     $id = $app->arg ('id');
-    $remove_args = $app->arg_set_next (compact ('class', 'table', 'id'));
+    $remove_args = compact ('class', 'table', 'id');
 
     $p->headline ($lang['title edit_data']);
 
@@ -205,9 +207,8 @@ function edit_data (&$app)
 
     # Open view on obj_data.
     $p->open_source ('obj_data');
-
-    # Fetch the row.
-    $p->get ('WHERE id=' . $obj->active['id']);
+    $p->query (sql_assignment ('id', $obj->active['id']));
+    $p->get ();
 
     # Show class name and example tag.
     $p->table_headers (array ("<B><FONT SIZE=\"+1\">$classdesc</FONT></B>"));
@@ -224,19 +225,25 @@ function edit_data (&$app)
     $p->radiobox ('is_local', $lang['yes'], $lang['no'], $lang['local'] . '<BR>');
     # Radiobox public/private.
     $p->radiobox ('is_public', $lang['yes'], $lang['no'], $lang['public'] . '<BR>');
-    $p->submit_button ('Ok', '_update', $app->arg_set_next ());
+
+    $p->cmd_update ();
     $p->close_row ();
+
     $p->paragraph ();
 
     $p->open_row ();
     $p->open_cell (array ('ALIGN' => 'CENTER'));
-    $p->link ($lang['remove'], 'remove_object', $remove_args);
+    $e = new event ('remove_object', $remove_args);
+    $e->set_next ($app->event ());
+    $p->link ($lang['remove'], $e);
     $p->close_cell ();
+
     # Mark it as inherited or local.
     if ($obj->active['_table'] == $otable && $obj->active['_id'] == $oid)
         $p->label ($lang['local']);
     else
         $p->label ($lang['inherited']);
+
     # Print size in bytes.
     if (isset ($obj->active['data']))
         $p->label (strlen ($obj->active['data']) . ' bytes');
@@ -244,6 +251,7 @@ function edit_data (&$app)
         $p->label ($lang['empty']);
     $p->label (_class2tag ($class));
     $p->close_row ();
+
     $p->paragraph ('<hr>');
 
     # Show download link, textarea or image depending on mime type.
@@ -275,7 +283,7 @@ function edit_data (&$app)
 
     $p->open_row (array ('ALIGN' => 'CENTER'));
     $p->fileform ('data', $lang['upload'], 'mime', 'filename');
-    $p->submit_button ('Ok', '_update', $app->arg_set_next ());
+    $p->cmd_update ();
     $p->close_row ();
 
     if ($mime == 'text') {
@@ -300,7 +308,7 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
 
     $p =& $app->ui;
 
-    $oargs = $app->args;
+    $oargs = $app->args ();
     $label = $oargs['display_inherited_objects'] ?
              '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
              '<B>' . $lang['cmd objectbox unhide'] . '</B>';
@@ -323,6 +331,11 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
     $p =& $app->ui;
     $db =& $app->db;
     $dep =& $app->db->def;
+    $common_args = array ('class' => $class,
+                          'table' => $table, 'id' => $id,
+                          'otable' => $table, 'oid' => $id);
+    $e_edit_data = new event ('edit_data', $common_args);
+    $e_edit_data->set_caller ($app->event);
 
     # Save starting point so the paths can be displayed correctly by edit_data().
     $caller['otable'] = $table;
@@ -344,13 +357,9 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
 
         # Link to create object if none found.
         if (!isset ($cache[$id_class][0]) && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
-            $tmp = '[' .
-                   $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , 'assoc_object',
-                                   $app->arg_set_next (array ('table' => $table, 'id' => $id, 'class' => $class),
-		                                       'edit_data',
-		                                       $app->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-		                                                                    'otable' => $table, 'oid' => $id)))) .
-                   "]\n";
+            $e = new event ('assoc_object', $common_args);
+            $e->set_next ($e_edit_data);
+            $tmp = '[' . $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , $e) . "]\n";
         } else {
             if (!isset ($cache[$id_class][0]))
 	        continue;
@@ -401,9 +410,7 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
                     $images .= '<td><table border="1" cellpadding="2" cellspacing="0">' .
 	                       '<tr><td align="center">' .
 	                       '<a href="' .
-	                       $app->link ('edit_data',
-		                           $app->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-		                                                        'otable' => $table, 'oid' => $id))) .
+	                       $app->link ($e_edit_data);
                                '"><img border="0" src="' .
 	                       $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
                                "\" alt=\"$imagename\"></a><br>" .
@@ -413,12 +420,7 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
 	            continue;
 
                 default:
-                    $tmp = '[' .
-                           $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat",
-	                                   'edit_data',
-	                                   $app->arg_set_caller (array ('table' => $table, 'id' => $id, 'class' => $class,
-	                                                                'otable' => $table, 'oid' => $id))) .
-                           "]\n";
+                    $tmp = '[' .  $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat", $e_edit_data) .  "]\n";
             }
         }
 
