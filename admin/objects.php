@@ -313,19 +313,15 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
 
     $p =& $app->ui;
 
-    $oargs = $app->args ();
-    if (!isset ($oargs['display_inherited_objects']))
-        $oargs['display_inherited_objects'] = 0;
-    $label = $oargs['display_inherited_objects'] ?
+    $do_show =  $app->arg ('display_inherited_objects', ARG_OPTIONAL);
+    $label = $do_show ?
              '<B>' . $lang['cmd objectbox hide'] . ':</B>' :
              '<B>' . $lang['cmd objectbox unhide'] . '</B>';
-    $oargs['display_inherited_objects'] ^= true;
-    $p->link ($label, new event ($app->event ()->name, $oargs));
+    $args = $app->args ();
+    $args['display_inherited_objects'] = $do_show ^ true;
+    $p->link ($label, new event ($app->event ()->name, $args));
 
-    # Describe label colors for inherited/local objects.
-    echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
-         '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
-         '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
+    return $do_show;
 }
 
 # Show inherited and/or local objects.
@@ -343,7 +339,13 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
     $caller['otable'] = $table;
     $caller['oid'] = $id;
 
-    _object_box_toggler_for_inherited_objects ($app, $only_local);
+    if (!_object_box_toggler_for_inherited_objects ($app, $only_local))
+        return;
+
+    # Describe label colors for inherited/local objects.
+    echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
+         '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
+         '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
 
     $cache = dbtree_get_objects_in_path ($db, $table, $id);
     $documents = $enumerations = $configuration = $user_defined = $images = '';
