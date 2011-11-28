@@ -39,6 +39,9 @@ require_once PATH_TO_CAROSHI . '/dbi/dbsort.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbtree.php';
 
 # Load language descriptions.
+$language = strtolower ($language);
+if (!file_exists ("../lang_$language.php"))
+    die ("Can\'t find the definition file '../language_$language.php' for language '$language' - please change the setting in file '../config.php'.");
 require "../lang_$language.php";
 
 # Include other views.
