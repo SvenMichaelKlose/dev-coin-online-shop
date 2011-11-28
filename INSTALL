@@ -1,3 +1,3 @@
 dev/coin is not yet installable! See README for details. If it was,
-you would only need to configure the file .dbiconf.php and start
-right away with the administration area in admin/.
+you would only need to configure the file config.php and upload
+the thing to your web server.
