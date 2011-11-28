@@ -16,7 +16,7 @@
 error_reporting (-1);
   
 $debug = 0;
-$language = 'de';
+$language = 'en';
 
 if (!file_exists ('../config.php'))
     die ('Can\'t find database confiuration file ../config.php - stop.');
