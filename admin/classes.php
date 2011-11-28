@@ -75,7 +75,7 @@ function _class2tag ($name)
     if (substr ($name, 0, 2) == 'd_')
         return 'Konfiguration';
     if (substr ($name, 0, 2) == 'u_')
-        return "<B>&lt;!:OBJECT&nbsp;$name!&gt;</B> <B>&lt;!:OBJECTLINK&nbsp;$name!&gt;</B> (" . $lang['user defined'] . ')';
+        return "<B>&lt;!:OBJECTLINK&nbsp;$name!&gt;</B> (" . $lang['user defined'] . ')';
     if ($name == 'l_cart')
         return '<B>&lt;!CART!&gt;</B>';
     if ($name == 'l_ecml')
