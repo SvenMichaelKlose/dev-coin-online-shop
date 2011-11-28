@@ -16,12 +16,15 @@
 error_reporting (-1);
   
 $debug = 0;
-$PATH_TO_CAROSHI = '.';
 $language = 'de';
 
-if (!file_exists ('config.php'))
-    die ('Can\'t find database confiuration file config.php - stop.');
-require_once 'config.php';
+if (!file_exists ('../config.php'))
+    die ('Can\'t find database confiuration file ../config.php - stop.');
+require_once '../config.php';
+
+if (!file_exists ('../caroshi-php/index.php'))
+    die ('Can\'t find ../caroshi-php/index.php config.php - please download <a href="https://github.com/SvenMichaelKlose/Caroshi-PHP">Caroshi-PHP</a> and extract it to the parent directory.');
+require_once '../caroshi-php/index.php';
 
 # Include libraries.
 require_once PATH_TO_CAROSHI . '/proc/application.class.php';

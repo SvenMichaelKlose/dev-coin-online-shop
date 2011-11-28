@@ -18,10 +18,15 @@ $debug = 0;
 $page_profiler = false;
 
 $PATH_TO_ADMIN = 'admin/';
+define ('PATH_TO_ADMIN', 'admin');
   
 if (!file_exists ('./config.php'))
     die ('Can\'t find database confiuration file config.php - stop.');
 include 'config.php';
+
+if (!file_exists ('caroshi-php/index.php'))
+    die ('Can\'t find caroshi-php/index.php config.php - please download <a href="https://github.com/SvenMichaelKlose/Caroshi-PHP">Caroshi-PHP</a> and extract it here.');                                                                                                                                                    
+require_once 'caroshi-php/index.php';
 
 # Get current time for profiling.
 if ($debug || $page_profiler) {
