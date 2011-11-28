@@ -41,7 +41,7 @@ function nav_linkpath (&$app, $table, $row, $arg)
     # If app is the current position, only show where we are.
     $out .= ($arg || $GLOBALS['table'] == $table && $GLOBALS['id'] == $id) ?
             "<B>$link</B>" :
-            $p->_looselink ($link, $view, $args);
+            $p->_looselink ($link, new event ($view, $args));
     return $out;
 }
 
