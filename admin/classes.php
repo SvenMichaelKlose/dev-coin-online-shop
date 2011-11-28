@@ -28,11 +28,17 @@ function view_classes (&$app)
     $p->query ('', 'ORDER BY name ASC');
     while ($p->get ()) {
         $p->open_row (array ('ALIGN' => 'LEFT'));
+
         $p->label (_class2tag ($p->value ('name')));
-        $p->link ($p->value ('name'), new event ('edit_class'));
+
+        $e = new event ('edit_class');
+        $p->link ($p->value ('name'), $e);
+
         $v = $p->value ('descr');
         if (!$v)
             $v = '[' . $lang['unnamed'] . ']';
+        $p->label ($v, $e);
+
         $p->close_row ();
     }
     $p->paragraph ();  
@@ -48,7 +54,8 @@ function edit_class (&$app)
     $p =& $app->ui;
     $p->headline ($lang['title edit_class']);
     $p->open_source ('obj_classes');
-    $p->get ('WHERE id=' . $app->args['id']);
+    $p->query ('id=' . $app->arg ('_cursor')->key ());
+    $p->get ();
     $p->open_row (array ('ALIGN' => 'LEFT'));
     $p->inputline ('name', 64, $lang['class name']);
     $p->label ('<B>' . _class2tag ($p->value ('name')) . '</B>');
@@ -58,7 +65,9 @@ function edit_class (&$app)
     $p->paragraph ();
     $p->open_row ();
     $p->cmd_delete ($lang['remove'], 'view_classes');
-    $p->submit_button ('Ok', '_update', $app->arg_set_next (0, 'view_classes'));
+    $e = new event ('record_update');
+    $e->set_next ($app->event ());
+    $p->submit_button ('Ok', $e);
     $p->close_row ();
     $p->close_source ();
 }
