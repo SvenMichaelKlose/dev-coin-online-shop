@@ -60,8 +60,8 @@ function show_directory_index (&$app, $table, $id)
         # List subcategories
         if ($res = $db->select ('name, id', 'categories', "id_parent=$id ORDER BY name ASC")) {
             echo "<P>\n<font color=\"#888888\"><B>" . $lang['subdirectories'] . ':</B></FONT>';
-	    while (list ($name, $id) = $res->fetch_array ())
-	        $p->link ($name, 'view_pages', array ('id' => $id));
+	    while (list ($name, $id) = $res->get ())
+	        $p->link ($name, new event ('view_pages', array ('id' => $id)));
         }
     }
     echo '<BR>';
