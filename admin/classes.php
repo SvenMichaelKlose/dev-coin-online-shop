@@ -64,10 +64,8 @@ function edit_class (&$app)
     $p->inputline ('descr', 64, $lang['description']);
     $p->paragraph ();
     $p->open_row ();
-    $p->cmd_delete ($lang['remove'], 'view_classes');
-    $e = new event ('record_update');
-    $e->set_next ($app->event ());
-    $p->submit_button ('Ok', $e);
+    $p->cmd_update (null, 'view_classes');
+    $p->cmd_delete (null, 'view_classes');
     $p->close_row ();
     $p->close_source ();
 }
