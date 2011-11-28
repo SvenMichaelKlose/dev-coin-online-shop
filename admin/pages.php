@@ -43,15 +43,16 @@ function record_page (&$app, $idx)
         $nam = $lang['unnamed'];
 
     $p->open_row ();
-    $p->link ("$idx $nam", 'view_products', array ('id' => $p->value ('id')));
-    $p->link ($lang['cmd view_products'], 'view_products', array ('id' => $p->value ('id')));
-    $p->close_row ();
-
-    $p->paragraph ();
-
-    $p->open_row ();
     $p->checkbox ('marker');
-    _object_box ($app, 'pages', $p->value ('id'), $app->args, true);
+    $p->link ("$idx $nam", new event ('view_products', array ('id' => $p->value ('id'))));
+    $p->link ($p->value ('bestnr'), new event ('view_products', array ('id' => $p->value ('id'))));
+    $p->link ($p->value ('price_eur'), new event ('view_products', array ('id' => $p->value ('id'))));
+    #$p->close_row ();
+
+    #$p->paragraph ();
+
+    #$p->open_row ();
+    #_object_box ($app, 'pages', $p->value ('id'), $app->args, true);
     $p->close_row ();
 
     $p->paragraph ();
