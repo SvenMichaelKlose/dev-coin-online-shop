@@ -13,7 +13,7 @@ function create_directory_type (&$db, $name)
 
 function get_directory_type_id (&$db, $name)
 {
-    $db->select ('directory_types', "name='$name'")->get ('id');
+    return $db->select ('id', 'directory_types', "name='$name'")->get ('id');
 }
 
 function create_directory_types (&$app)

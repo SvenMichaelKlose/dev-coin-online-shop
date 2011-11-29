@@ -61,7 +61,7 @@ function create_tables (&$app)
     if ($db->select ('id', 'directories', 'id=1')) {
         $p->msgbox ($lang['msg root category exists']);
     } else {
-        $db->insert ('directories', 'id=1, name=\'root\'');
+        $db->insert ('directories', 'id=1, name=\'root\', id_directory_type=' . get_directory_type_id ($db, 'category'));
         $p->msgbox ($lang['msg root category created']);
     }
 
