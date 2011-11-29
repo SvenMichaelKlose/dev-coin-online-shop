@@ -193,43 +193,34 @@ function edit_data (&$app)
 
     $p->headline ($lang['title edit_data']);
 
-    # Output standard navigator with copy options.
     edit_data_navigator ($app);
 
-    # Fetch the object we want to edit.
     $obj = new DBOBJ ($db, $class, $dep, $table, $id, true);
 
-    # Use external object editor if specified.
     if (isset ($cms_object_editors[$class]))
         return $cms_object_editors[$class] ($app, $obj, $class);
  
-    # Fetch class description.
     $res = $db->select ('descr', 'obj_classes', "name='$class'");
     list ($classdesc) = $res->get ();
 
-    # Open view on obj_data.
     $p->open_source ('obj_data');
     $p->query (sql_assignment ('id', $obj->active['id']));
     $p->get ();
 
-    # Show class name and example tag.
     $p->table_headers (array ("<B><FONT SIZE=\"+1\">$classdesc</FONT></B>"));
 
     $p->paragraph ();
 
-    # Print mime type, times and flags.
     $p->open_row ();
     $p->inputline ('mime', 16, $lang['mime type']);
     $p->inputline ('start', 10, $lang['start time']);
     $p->inputline ('end', 10, $lang['end time']);
 
-    # Radiobox local/not local.
     $p->open_cell ();
     $p->label ($lang['local'] . ":");
     $p->radiobox ('is_local', $lang['yes'], $lang['no'], $lang['local'] . '<BR>');
     $p->close_cell ();
 
-    # Radiobox public/private.
     $p->open_cell ();
     $p->label ($lang['public'] . ":");
     $p->radiobox ('is_public', $lang['yes'], $lang['no'], $lang['public'] . '<BR>');
@@ -245,13 +236,11 @@ function edit_data (&$app)
     $e->set_next ($app->event ());
     $p->link ($lang['remove'], $e);
 
-    # Mark it as inherited or local.
     if ($obj->active['_table'] == $otable && $obj->active['_id'] == $oid)
         $p->label ($lang['local']);
     else
         $p->label ($lang['inherited']);
 
-    # Print size in bytes.
     if (isset ($obj->active['data']))
         $p->label (strlen ($obj->active['data']) . ' bytes');
     else
@@ -261,7 +250,6 @@ function edit_data (&$app)
 
     $p->paragraph ('<hr>');
 
-    # Show download link, textarea or image depending on mime type.
     $p->open_row ();
     $mime = $p->value ('mime');
     $data = $p->value ('data');
@@ -325,6 +313,101 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
     return $do_show;
 }
 
+function mime_type ($x)
+{
+    return substr ($x, 0, strpos ($x, '/'));
+}
+
+function _show_existing_object_class (&$images, &$cache, &$app, $table, $id, $only_local, $id_class, $class, $descr, $e_edit_data)
+{
+    $tmp = '';
+    if (!isset ($cache[$id_class][0]))
+        return '';
+    $obj = $cache[$id_class][0];
+    $found_local = ($obj['_table'] == $table && $obj['_id'] == $id);
+
+    if ($obj['is_local'] && $found_local == false)
+        return '';
+
+    if ($only_local && !$found_local && substr ($class, 0, 2) != 'u_')
+        return '';
+
+    if (isset ($cms_object_views[$class]))
+        $objviews[$class] = array ($table, $id);
+
+    $color = $found_local ? '#0000CC' : '#009000';
+
+    $stat = '';
+    if ($obj['is_public'] || $obj['is_local']) {
+        $stat = ' (';
+        if ($obj['is_public'])
+            $stat .= '<FONT COLOR="RED">' . $lang['public'] . '</FONT>';
+        if ($obj['is_public'] && $obj['is_local'])
+            $stat .= ', ';
+        if ($obj['is_local'])
+            $stat .= $lang['local'];
+        $stat .= ')';
+    }
+
+    if (mime_type ($obj['mime']) == 'image') {
+        $imagename = $obj['filename'];
+        if ($imagename == '')
+            $imagename = $obj['mime'];
+        $images .= '<td><table border="1" cellpadding="2" cellspacing="0">' .
+                   '<tr><td align="center">' .
+                   '<a href="' .
+                   $app->url ($e_edit_data);
+                   '"><img border="0" src="' .
+                   $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
+                   "\" alt=\"$imagename\"></a><br>" .
+                   '<FONT COLOR="' . $color . '">' . $descr . ", $imagename</FONT>$stat" .
+                   '</td></tr>' .
+                   '</table></td>' . "\n";
+        return '';
+    }
+
+    return '[' . $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat", $e_edit_data) . "]\n";
+}
+
+function _show_object_class (&$documents, &$images, &$user_defined, &$configuration, &$cache, &$app, $table, $id, $only_local, $res)
+{
+    $p =& $app->ui;
+    list ($id_class, $class, $descr) = $res->get ();
+    $common_args = array ('class' => $class, 'table' => $table, 'id' => $id, 'otable' => $table, 'oid' => $id);
+    $e_edit_data = new event ('edit_data', $common_args);
+    $e_edit_data->set_caller ($app->event ());
+
+    $descr = preg_replace ('/ /', '&nbsp;', $descr);
+
+    if (!isset ($cache[$id_class][0]) && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
+        $e = new event ('assoc_object', $common_args);
+        $e->set_next ($e_edit_data);
+        $tmp = '[' . $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , $e) . "]\n";
+    } else
+        $tmp = _show_existing_object_class ($images, $cache, $app, $table, $id, $only_local, $id_class, $class, $descr, $e_edit_data);
+
+    switch (substr ($class, 0, 2)) {
+        case 'l_':
+            $documents .= $tmp;
+            break;
+
+        case 'd_':
+            $configuration .= $tmp;
+            break;
+
+        default:
+            $user_defined .= $tmp;
+    }
+}
+
+function show_directory_object_section ($section, $html)
+{
+    global $lang;
+
+    if ($html)
+        echo '<tr><td bgcolor="#dddddd"><b>' . $lang[$section] . ":</b></td></tr><tr><td>$html</td></tr>\n";
+}
+
 # Show inherited and/or local objects.
 # $table/$id specify the current directory.
 # If $only_local is true only local objects are shown.
@@ -336,14 +419,12 @@ function show_directory_objects (&$app, $table, $id, $caller, $only_local = fals
     $db =& $app->db;
     $dep =& $app->db->def;
 
-    # Save starting point so the paths can be displayed correctly by edit_data().
     $caller['otable'] = $table;
     $caller['oid'] = $id;
 
     if (!_object_box_toggler_for_inherited_objects ($app, $only_local))
         return;
 
-    # Describe label colors for inherited/local objects.
     echo ' <FONT COLOR="#0000CC">' . $lang['local'] . '</FONT> ' .
          '<FONT COLOR="#008800">' . $lang['inherited'] . '</FONT> ' .
          '<FONT COLOR="#666666">' . $lang['undefined'] . '</FONT>';
@@ -351,119 +432,19 @@ function show_directory_objects (&$app, $table, $id, $caller, $only_local = fals
     $cache = dbtree_get_objects_in_path ($db, $table, $id);
     $documents = $enumerations = $configuration = $user_defined = $images = '';
 
-    # For each class, search for an object.
     $res = $db->select ('id,name,descr', 'obj_classes', '', ' ORDER BY descr ASC');
-    while ($res && list ($id_class, $class, $descr) = $res->get ()) {
-        $common_args = array ('class' => $class, 'table' => $table, 'id' => $id, 'otable' => $table, 'oid' => $id);
-        $e_edit_data = new event ('edit_data', $common_args);
-        $e_edit_data->set_caller ($app->event ());
-
-        $descr = preg_replace ('/ /', '&nbsp;', $descr);
-        $tmp = '';
-
-        ### Simulate DBOBJ by reading objects from the cache.
-        # Check if there's any object of the current class.
-
-        # Link to create object if none found.
-        if (!isset ($cache[$id_class][0]) && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
-            $e = new event ('assoc_object', $common_args);
-            $e->set_next ($e_edit_data);
-            $tmp = '[' . $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , $e) . "]\n";
-        } else {
-            if (!isset ($cache[$id_class][0]))
-	        continue;
-            $obj = $cache[$id_class][0];
-            $found_local = ($obj['_table'] == $table && $obj['_id'] == $id);
-
-            # Skip local object not found local.
-	    if ($obj['is_local'] && $found_local == false)
-	        continue;
-
-            # Check object's mime type
-            $type = $obj['mime'];
-            $type = substr ($type, 0, strpos ($type, '/'));
-
-            # Force generation of link to create an object locally.
-            if ($only_local && !$found_local && substr ($class, 0, 2) != 'u_') {
-	        $obj = '';
-	        continue;
-	    }
-
-            # Call object-specific editor.
-	    if (isset ($cms_object_views[$class]))
-	        $objviews[$class] = array ($table, $id);
-
-            # Use different colors for class description when finding it local or
-            # not.
-            $color = $found_local ? '#0000CC' : '#009000';
-
-            # Warn if label is public.
-            if ($obj['is_public'] || $obj['is_local']) {
-                  $stat = ' (';
-	          if ($obj['is_public'])
-	              $stat .= '<FONT COLOR="RED">' . $lang['public'] . '</FONT>';
-                  if ($obj['is_public'] && $obj['is_local'])
-	              $stat .= ', ';
-	          if ($obj['is_local'])
-	              $stat .= $lang['local'];
-	          $stat .= ')';
-              } else
-	          $stat = '';
-
-      	    switch ($type) {
-	        # Print image box
-      	        case 'image':
-	            $imagename = $obj['filename'];
-	            if ($imagename == '')
-	                $imagename = $obj['mime'];
-                    $images .= '<td><table border="1" cellpadding="2" cellspacing="0">' .
-	                       '<tr><td align="center">' .
-	                       '<a href="' .
-	                       $app->url ($e_edit_data);
-                               '"><img border="0" src="' .
-	                       $p->filelink ('obj_data', 'data', $obj['mime'], $obj['id'], $obj['data']) .
-                               "\" alt=\"$imagename\"></a><br>" .
-	                       '<FONT COLOR="' . $color . '">' . $descr . ", $imagename</FONT>$stat" .
-	                       '</td></tr>' .
-	                       '</table></td>' . "\n";
-	            continue;
-
-                default:
-                    $tmp = '[' .  $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat", $e_edit_data) .  "]\n";
-            }
-        }
-
-        # Sort in generated HTML code.
-        switch (substr ($class, 0, 2)) {
-            case 'l_':
-	        $documents .= $tmp;
-	        break;
-
-	    case 'd_':
-	        $configuration .= $tmp;
-	        break;
-
-	    default:
-	        $user_defined .= $tmp;
-        }
-    }
-
-    ### Print everything ###
+    while ($res && list ($id_class, $class, $descr) = $res->get ()) 
+        _show_object_class ($documents, $images, $user_defined, $configuration, $cache, $app, $table, $id, $only_local, $res);
 
     echo '<table width="100%" bgcolor="#eeeeee" border="0">' . "\n";
-
-    # Print objects in fixed order.
     if ($images) {
         if (!$only_local)
             echo '<tr><td bgcolor="#dddddd"><b>' . $lang['images'] . ':</b></td></tr>'. "\n";
         echo '<tr><td align="center"><table border="0"><tr>' . $images . '</tr></table></td></tr>'. "\n";
     }
-    if ($documents)
-        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['documents'] . ":</b></td></tr><tr><td>$documents</td></tr>\n";
-    if ($user_defined)
-        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['user defined classes'] . ":</b></td></tr><tr><td>$user_defined</td></tr>\n";
-    if ($configuration)
-        echo '<tr><td bgcolor="#dddddd"><b>' . $lang['configuration'] . ":</b></td></tr><tr><td>$configuration</td></tr>\n";
+    show_directory_object_section ('documents', $documents);
+    show_directory_object_section ('user defined classes', $user_defined);
+    show_directory_object_section ('configuration', $configuration);
     echo '</table>';
 
     if (!isset ($objviews))
@@ -472,10 +453,7 @@ function show_directory_objects (&$app, $table, $id, $caller, $only_local = fals
     echo '<table>';
     foreach ($objviews as $class => $ti) {
         list ($table, $id) = $ti;
-
-        # Fetch the object we want to edit.
         $obj = new DBOBJ ($app->db, $class, $dep, $table, $id, true);
-
         $cms_object_views[$class] ($app, $obj);
     }
     echo '</table>';
