@@ -74,6 +74,7 @@ $lang['title billto'] = 'Rechnungsadresse';
 
 # Commands
 $lang['cmd defaultview'] = '&Uuml;bersicht der Kategorien';
+$lang['cmd back'] = 'zur&uuml;ck';
 $lang['cmd back/quit'] = 'zur&uuml;ck/verwerfen';
 $lang['cmd create'] = 'erstellen';
 $lang['cmd delete'] = 'l&ouml;schen';

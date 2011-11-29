@@ -1,11 +1,11 @@
-<?
+<?php
+
 # Generic directory lister.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
 # Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
 # Licensed under the MIT, BSD and GPL licenses.
-
 
 function _get_index (&$app, $parent, $ref_parent, $table, $id)
 {
@@ -38,6 +38,8 @@ function _range_panel (&$app, $c)
     $def =& $app->db->def;
     $m = array ('marker_field' => 'marker');
 
+    $p->paragraph ();
+
     # Link to creator of new record.
     $p->v->cursor->set_key ('');
     $p->open_row ();
@@ -65,28 +67,33 @@ function _range_panel (&$app, $c)
     $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id', 'marker_fiel' => 'marker'));
 
     generic_create ($app, $c);
+
     if ($c->have_submit_button)
         $p->cmd_update ();
+
     $p->close_row ();
+
+    $p->paragraph ();
 }
 
 class generic_list_conf {
-    public $table;
     public $parent_table;
-    public $child_table;
-    public $ref_table;
+    public $parent_view;
+
+    public $table;
     public $ref_parent;
+
+    public $child_table;
+    public $child_ref_parent;
+    public $child_view_list;
+    public $child_view;
     public $headers;
-    public $recordfunc;
     public $txt_no_func;
     public $txt_create;
     public $txt_input;
-    public $parent_view;
-    public $child_view;
     public $have_submit_button = false;
 };
 
-# View products within a product group.
 function generic_list (&$app, $c)
 {
     global $lang;
@@ -138,7 +145,7 @@ function generic_list (&$app, $c)
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
-    $res = $p->query (sql_assignment ($c->ref_table, $id));
+    $res = $p->query (sql_assignment ($c->child_ref_parent, $id));
 
     if ($res) {
         if ($c->headers)
@@ -146,14 +153,12 @@ function generic_list (&$app, $c)
 
         $idx = 1;
         while ($p->get ()) {
-	    $fun = $c->recordfunc;
+	    $fun = $c->child_view_list;
 	    $fun ($app, $idx);
 	    $idx++;
         }
 
-        $p->paragraph ();
         _range_panel ($app, $c);
-        $p->paragraph ();
     } else {
         $p->label ($c->txt_no_records);
         generic_create ($app, $c);
@@ -161,4 +166,5 @@ function generic_list (&$app, $c)
 
     $p->close_source ();
 }
+
 ?>

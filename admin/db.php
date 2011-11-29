@@ -1,4 +1,5 @@
-<?
+<?php
+
 # Miscellaneous database stuff.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
@@ -16,109 +17,21 @@ function db_init (&$app)
 }
 
 # Create a directory type $name and return its id.
-function create_dirtype (&$db, $name)
+function create_directory_type (&$db, $name)
 {
     # Create a directory type of $name.
-    $res =& $db->insert ('dirtypes', "name='$name'");
+    $res =& $db->insert ('directory_types', "name='$name'");
     return $db->insert_id ();
 }
 
-function copy_o2ndir (&$app, $name, $id_type, &$dir_array)
-{
-    $db =& $app->db;
-    $c = 0;
-    $dep = $db->def;
-    $res = $db->select ('*', $name);
-    while ($res && $row = $res->get ()) {
-        if ($c++ % 100 == 0) 
- 	    echo "$c directories copied...<br>", flush ();
-        $tmp = $db->insert ( 'directories', 'id_obj=' . $row['id_obj'] . ', name="' . addslashes ($row['name']) . '"');
-        $row['id_type'] = $id_type;
-        $row['id_new'] = $id_new = $db->insert_id ();
-        $dir_array ['new'][$id_new] = $row;
-        $dir_array ['old'][$id_type][$row['id']] = $id_new;
-
-        if ($name == 'products') {
-            $obj = new DBOBJ ($db, 'u_price', $dep, 0, 0);
-            @$obj->active['data'] = array ('val' => $row['price_dm'], 'name' => 'dm');
-            $obj->active['mime'] = 'text/plain';
-	    $obj->assoc ($name, $row['id']);
-        }
-    }
-}
-
-# Merge all directories into a single table 'directories'.
-# Table 'xref' contains Links between directories and allows
-# n:n relationships.
-function merge_directories ($app)
-{
-    $db =& $app->db;
-
-    # Create directory types.
-    $tcategories = create_dirtype ($db, 'categories');
-    $tpages = create_dirtype ($db, 'pages');
-    $tproducts = create_dirtype ($db, 'products');
-
-    # Copy directories into the directory table and remind the new
-    # primary keys and directory type ids.
-    $app->ui->msgbox ('Copying directories...');
-    flush ();
-
-    $dirs ='';
-    copy_o2ndir ($app, 'categories', $tcategories, $dirs);
-    copy_o2ndir ($app, 'pages', $tpages, $dirs);
-    copy_o2ndir ($app, 'products', $tproducts, $dirs);
-
-    $rc[$tcategories] = 'id_parent';
-    $rc[$tpages] = 'id_category';
-    $rc[$tproducts] = 'id_page';
-    $dt[$tcategories] = $tcategories;
-    $dt[$tpages] = $tcategories;
-    $dt[$tproducts] = $tpages;
-
-    # Create xrefs from id arrays.
-    $app->ui->msgbox ('Creating directory links...');
-    flush ();
-
-    foreach ($dirs['new'] as $id_child => $row) {
-        $id_type = $row['id_type'];
-        if (isset ($dirs['old'][$dt[$id_type]][$row[$rc[$id_type]]])) {
-            $id_parent = $dirs['old'][$dt[$id_type]][$row[$rc[$id_type]]];
-            $type_parent = $dirs['new'][$id_parent]['id_type'];
-        } else
-	    $id_parent = $type_parent = 0;
-        $type_child = $row['id_type'];
-        #echo "$id_type, $id_parent, $id_child, $type_parent, $type_child, " . $row[$rc[$id_type]] . "<br>";
-        $db->insert ('xrefs', "id_parent=$id_parent, id_child=$id_child, type_parent=$type_parent, type_child=$type_child");
-    }
-}
-
-function create_tables (&$app)
+function create_object_classes (&$app)
 {
     global $lang, $debug;
 
     $p =& $app->ui;
     $db =& $app->db;
-    $TABLE_PREFIX = isset ($app->args['__TABLE_PREFIX']) ? $app->args['__TABLE_PREFIX'] : '';
 
-    echo "<HR>\n";
-
-    $tmp = $debug;
-    $debug = true;
-    $db->create_tables ($TABLE_PREFIX);
-    $debug = $tmp;
-
-    echo '<FONT COLOR=GREEN>' . $lang['msg tables created'] . '</FONT><BR>';
-
-    if ($db->select ('id', 'categories', 'id=1')) {
-        echo '<FONT COLOR=RED>' . $lang['msg root category exists'] . '</FONT><BR>';
-    } else {
-        $db->insert ('categories', 'id=1, name=\'root\'');
-        echo '<FONT COLOR=GREEN>' . $lang['msg root category created'] . '</FONT><BR>';
-    }
-
-    # Create default classes.
-    $tmp = array (
+    $object_classes = array (
         'l_index', 'l_category', 'l_page', 'l_product',
         'l_cart', 'l_empty_cart',
         'l_order', 'l_order_email', 'l_order_confirm',
@@ -128,9 +41,8 @@ function create_tables (&$app)
         'd_order_email_subject',
         'u_attribs', 'u_attrib_mask'
     );
-
-    foreach ($tmp as $v)
-        $class[] = Array ($v, $lang["class $v"]);
+    foreach ($object_classes as $v)
+        $class[] = array ($v, $lang["class $v"]);
 
     for ($i = 0; $i < sizeof ($class); $i++) {
         echo 'Klasse ' . $class[$i][0] . ' (' . $class[$i][1] . ') ';
@@ -147,27 +59,30 @@ function create_tables (&$app)
         $db->insert ('obj_classes', 'name=\'' . $class[$i][0] . '\', descr=\'' . $class[$i][1] . '\'');
         echo "<FONT COLOR=GREEN>erstellt.</FONT><BR>\n";
     }
-
-    #merge_directories ($app);
-    return 'defaultview';
 }
 
-# Menu of database operations.
-function database_menu (&$app)
+function create_tables (&$app)
 {
-    global $lang;
+    global $lang, $debug;
 
     $p =& $app->ui;
-    $p->headline ($lang['title database_menu']);
+    $db =& $app->db;
 
-    $p->link ($lang['cmd defaultview'], 'defaultview', 0);
-    echo '<UL><LI>';
-    $p->link ($lang['cmd create_tables'], 'create_tables', 0);
-    echo '</LI><LI>';
-    $p->link ($lang['cmd db_consistency_check'], 'db_consistency_check', 0);
-    echo '</LI><LI>';
-    $p->link ($lang['cmd db_sort'], 'db_sort_directories', 0);
-    echo '</LI></UL>';
+    echo "<HR>\n";
+
+    $db->create_tables ();
+    echo '<FONT COLOR=GREEN>' . $lang['msg tables created'] . '</FONT><BR>';
+
+    create_object_classes ($app);
+
+    if ($db->select ('id', 'directories', 'id=1')) {
+        echo '<FONT COLOR=RED>' . $lang['msg root category exists'] . '</FONT><BR>';
+    } else {
+        $db->insert ('directories', 'id=1, name=\'root\'');
+        echo '<FONT COLOR=GREEN>' . $lang['msg root category created'] . '</FONT><BR>';
+    }
+    #merge_directories ($app);
+    $p->link ($lang['cmd back'], 'defaultview');
 }
 
 # Remove invalid object reference from directory type.
@@ -183,7 +98,6 @@ function dbchkdir (&$app, &$objs, $dirname)
     echo "$cnt invalid object pointers removed from $dirname.<br>";
 }
 
-# TODO: Make database description fit for a general consistency check.
 function db_consistency_check (&$app)
 {
     global $lang;
@@ -195,14 +109,9 @@ function db_consistency_check (&$app)
  
     echo 'Removing free objects...<br>';
     flush ();
+
     # Get all object id in directories.
-    $res = $db->select ('id_obj', 'categories');
-    while ($res && list ($id_obj) = $res->get ())
-        $refs[$id_obj] = true;
-    $res = $db->select ('id_obj', 'pages');
-    while ($res && list ($id_obj) = $res->get ())
-        $refs[$id_obj] = true;
-    $res = $db->select ('id_obj', 'products');
+    $res = $db->select ('id_obj', 'directories');
     while ($res && list ($id_obj) = $res->get ())
         $refs[$id_obj] = true;
 
@@ -244,9 +153,9 @@ function db_consistency_check (&$app)
     $res = $db->select ('id', 'objects');
     while ($res && $row = $res->get ())
         $obj[$row['id']] = true;
-    $changes += dbchkdir ($app, $obj, 'categories');
-    $changes += dbchkdir ($app, $obj, 'pages');
-    $changes += dbchkdir ($app, $obj, 'products');
+    $changes += dbchkdir ($app, $obj, 'directories');
+
+    $p->msgbox ("$changes changes.");
 
     echo 'Removing old tokens...<br>';
     flush ();
@@ -254,20 +163,12 @@ function db_consistency_check (&$app)
 
     echo 'Optimizing tables...<br>';
     flush ();
-    $db->query ('OPTIMIZE TABLE categories');
-    $db->query ('OPTIMIZE TABLE pages');
-    $db->query ('OPTIMIZE TABLE products');
-    $db->query ('OPTIMIZE TABLE objects');
-    $db->query ('OPTIMIZE TABLE obj_data');
-    $db->query ('OPTIMIZE TABLE cart');
-    $db->query ('OPTIMIZE TABLE sessions');
-    $db->query ('OPTIMIZE TABLE tokens');
+    foreach ($db->def->table_names () as $table)
+        $db->query ("OPTIMIZE TABLE $table");
 
-    $p->msgbox ("$changes changes.");
     $p->link ('back', 'defaultview');
 }
 
-# TODO: Make database description fit for a general consistency check.
 function db_sort_directories (&$app)
 {
     global $lang;
@@ -275,8 +176,23 @@ function db_sort_directories (&$app)
     $p =& $app->ui;
     $p->msgbox ('Sorting directories - please wait...', 'yellow');
     flush ();
-    sort_linked_list ($p->db, 'categories', '1', 'ORDER BY name ASC' , -1);
+    sort_linked_list ($p->db, 'directories', '1', 'ORDER BY name ASC' , -1);
     $p->msgbox ('Directories sorted.');
     $p->link ('back', 'defaultview');
 }
+
+# Menu of database operations.
+function database_menu (&$app)
+{
+    global $lang;
+
+    $p =& $app->ui;
+    $p->headline ($lang['title database_menu']);
+
+    $p->link ($lang['cmd defaultview'], 'defaultview', 0);
+    $p->link ($lang['cmd create_tables'], 'create_tables', 0);
+    $p->link ($lang['cmd db_consistency_check'], 'db_consistency_check', 0);
+    $p->link ($lang['cmd db_sort'], 'db_sort_directories', 0);
+}
+
 ?>

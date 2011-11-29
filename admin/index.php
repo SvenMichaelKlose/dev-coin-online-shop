@@ -1,4 +1,5 @@
-<?
+<?php
+
 # dev/con modular shop administration interface
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
@@ -52,12 +53,9 @@ require 'cms-config.php';
 require 'db.php';
 require 'generic_list.php';
 require 'navigator.php';
-require 'obj_order_fields.php';
 require 'objects.php';
 require 'orders.php';
 require 'pages.php';
-require 'products.php';
-#require 'product_attrib.php';
 require 'tables.php';
   
 class shop_admin extends application {
@@ -75,11 +73,15 @@ class shop_admin extends application {
         $p =& $this->ui;
  
         $treeargs = array (
-            'source' => 'categories',
+            'source' => 'directories',
             'id' => '1',
-            'treeview' => $this->event (), 'nodeview' => 'view_pages',
-	    'nodecreator' => 'create_category', 'rootname' => 'shop',
-	    'table' => 'categories', 'name' => 'name', 'id' => 'id',
+            'treeview' => $this->event (),
+            'nodeview' => 'view_pages',
+	    'nodecreator' => 'create_category',
+            'rootname' => 'shop',
+	    'table' => 'directories',
+            'name' => 'name',
+            'id' => 'id',
             'txt_select_node' => $lang['msg choose category to move'],
             'txt_select_dest' => $lang['msg choose dest category'],
             'txt_moved' => $lang['msg category moved'],
@@ -92,14 +94,19 @@ class shop_admin extends application {
         $p->headline ($lang['title defaultview']);
   
         # Main menu
-        $p->link ($lang['cmd move_category'], new event ('tree_edit_move', array ('source' => 'categories',
-                                                                                  'id' => 'id',
-                                                                                  'name' => 'name',
-                                                                                  'txt_back' => 'back',
-                                                                                  'txt_select_node' => 'select node',
-                                                                                  'txt_select_dest' => 'select destination')));
+        $e = new event ('tree_edit_move', array ('source' => 'directories',
+                                                 'id' => 'id',
+                                                 'name' => 'name',
+                                                 'txt_back' => 'back',
+                                                 'txt_select_node' => 'select node',
+                                                 'txt_select_dest' => 'select destination'));
+        $e->set_caller ($this->event ());
+        $p->link ($lang['cmd move_category'], $e);
+
         $p->link ($lang['cmd view_classes'], 'view_classes');
+
         $p->link ($lang['cmd database_menu'], 'database_menu');
+
         # TODO: Statistics, last orders.
         #$p->link ('Bestellungen', 'view_orders', 0);
 
@@ -129,8 +136,6 @@ class shop_admin extends application {
         # Initialise other modules.
         category_init ($this);
         page_init ($this);
-        product_init ($this);
-#        product_attrib_init ($this);
         object_init ($this);
         class_init ($this);
         db_init ($this);
@@ -146,4 +151,5 @@ class shop_admin extends application {
 $app =& new shop_admin;
 $app->debug = $debug;
 $app->run ();
+
 ?>

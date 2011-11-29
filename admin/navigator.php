@@ -1,4 +1,5 @@
-<?
+<?php
+
 # Navigator used in directory listings.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
@@ -18,23 +19,9 @@ function nav_linkpath (&$app, $table, $row, $arg)
     $id = $row['id'];
     $out = '';
 
-    # Every table needs another view.
-    switch ($table) {
-        case 'categories':
-	    $out .= '/';
-	    $link = $id == 1 ? $lang['root category'] : $name;
-	    $view = 'view_pages';
-	    break;
-        case 'pages':
-	    $out .= ' ' . $lang['product group'] . '&nbsp;';
-	    $link = "&quot;$name&quot;";
-	    $view = 'view_products';
-	    break;
-        case 'products':
-	    $out .= ' ';
-	    $link = $lang['product'] . "&nbsp;&quot;$name&quot;";
-	    break;
-    }
+    $out .= '/';
+    $link = $id == 1 ? $lang['root category'] : $name;
+    $view = 'view_pages';
 
     $args['id'] = $id;
 
@@ -56,9 +43,9 @@ function show_directory_index (&$app, $table, $id)
     $GLOBALS['id'] = $id;
     echo $db->traverse_refs_from ($app, $table, $id, 'nav_linkpath', 0, false);
 
-    if ($table == 'categories') {
+    if ($table == 'directories') {
         # List subcategories
-        if ($res = $db->select ('name, id', 'categories', "id_parent=$id ORDER BY name ASC")) {
+        if ($res = $db->select ('name, id', 'directories', "id_parent=$id ORDER BY name ASC")) {
             echo "<P>\n<font color=\"#888888\"><B>" . $lang['subdirectories'] . ':</B></FONT>';
 	    while (list ($name, $id) = $res->get ())
 	        $p->link ($name, new event ('view_pages', array ('id' => $id)));
@@ -66,3 +53,5 @@ function show_directory_index (&$app, $table, $id)
     }
     echo '<BR>';
 }
+
+?>

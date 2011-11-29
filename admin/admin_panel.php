@@ -7,7 +7,6 @@
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
-
 class devcoin_admin_panel extends admin_panel {
     private $_is_open = false;
     private $_cursor = false;
@@ -96,4 +95,5 @@ class devcoin_admin_panel extends admin_panel {
         $this->_make_cmd ('update', $label, $handler, $args);
     }
 }
+
 ?>

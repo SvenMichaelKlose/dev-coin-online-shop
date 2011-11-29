@@ -74,6 +74,7 @@ $lang['title billto'] = 'Bill-to-adress';
 
 # Commands
 $lang['cmd defaultview'] = 'Index of categories';
+$lang['cmd back'] = 'back';
 $lang['cmd back/quit'] = 'back/quit';
 $lang['cmd create'] = 'new';
 $lang['cmd delete'] = 'delete';

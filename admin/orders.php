@@ -1,4 +1,5 @@
-<?
+<?php
+
 # List of orders.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
@@ -47,4 +48,5 @@ function view_orders (&$app)
         $p->label ('Noch keine Bestellungen erfolgt.');
     $p->close_source ();
 }
+
 ?>

@@ -1,4 +1,5 @@
-<?
+<?php
+
 # Global CMS configuration.
 #
 # Copyright (c) 2001 dev/consulting GmbH
@@ -7,7 +8,7 @@
 # Licensed under the MIT, BSD and GPL licenses.
 
 
-$cms_root_table = 'categories';
+$cms_root_table = 'directories';
 $cms_root_id = 1;
 
 # Default document templates.
@@ -43,4 +44,5 @@ $vdir_name = array ('Warenkorb' => 'CART', 'Bestellung' => 'ORDER');
 $vdir_alias = array ('CART' => 'Warenkorb', 'ORDER' => 'Bestellung');
 $vdir_name['Suche'] = 'SEARCH';
 $vdir_alias['SEARCH'] = 'Suche';
+
 ?>

@@ -1,6 +1,5 @@
-<?
-# Database table definitions
-#
+<?php
+
 # Copyright (c) 2000-2001 dev/consulting GmbH
 # Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
 #
@@ -13,53 +12,8 @@ function tables_define (&$app)
 
     dbobj::define_tables ($def);
 
-    # Database table definitions.
-/*$this->db->query ('drop table directories');
-$this->db->query ('drop table dirtypes');
-$this->db->query ('drop table xrefs');
-      $def->define_table (
-  	  'directories',
-  	  'id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,' .
-  	  'id_obj INT NOT NULL,' .
-  	  'id_parent INT NOT NULL,' .
-  	  'id_last INT NOT NULL,' .
-  	  'id_next INT NOT NULL,' .
-  	  'name VARCHAR (255) NOT NULL,' .
-  	  'key (id_obj),' .
-  	  'key (id_last),' .
-  	  'key (id_next),' .
-  	  'key (id_parent),' .
-  	  'key (name)'
-      );
-      $def->set_primary ('directories', 'id');
-      $def->set_listref ('directories', 'id_last', 'id_next');
-
-      $def->define_table (
-	'xrefs',
-  	'id_parent INT NOT NULL,' .
-  	'id_child INT NOT NULL,' .
-  	'type_parent INT NOT NULL,' .
-  	'type_child INT NOT NULL,' .
-  	'key (id_parent),' .
-  	'key (id_child),' .
-  	'key (type_parent),' .
-  	'key (type_child)'
-      );
-
-      $def->define_table (
-  	  'dirtypes',
-  	  'id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,' .
-  	  'name VARCHAR (255) NOT NULL,' .
-  	  'key (name)'
-      );*/
-
-####################################
-### This is going to be removed! ###
-####################################
-
-    # Category table.
     $def->define_table (
-  	'categories',
+  	'directories',
         array (
           array ('n' => 'id',
                  't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
@@ -86,59 +40,33 @@ $this->db->query ('drop table xrefs');
                  'd' => 'Category name')
 	)
     );
-    $def->set_primary ('categories', 'id');
-    $def->set_ref ('categories', 'categories', 'id_parent');
-    $def->set_ref ('categories', 'pages', 'id_category');
-    $def->set_listref ('categories', 'id_last', 'id_next');
+    $def->set_primary ('directories', 'id');
+    $def->set_ref ('directories', 'directories', 'id_parent');
+    $def->set_listref ('directories', 'id_last', 'id_next');
 
-    # Product group table.
     $def->define_table (
-  	'pages',
+  	'directory_types',
         array (
           array ('n' => 'id',
                  't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
                  'd' => 'primary key'),
-          array ('n' => 'id_obj',
-                 't' => 'INT NOT NULL',
-		 'i' => true,
-                 'd' => 'Object reference'),
-          array ('n' => 'id_category',
-                 't' => 'INT NOT NULL',
-		 'i' => true,
-                 'd' => 'Reference to category'),
-          array ('n' => 'id_last',
-                 't' => 'INT NOT NULL',
-		 'i' => true,
-                 'd' => 'Reference to previous sibling'),
-          array ('n' => 'id_next',
-                 't' => 'INT NOT NULL',
-		 'i' => true,
-                 'd' => 'Reference to next sibling'),
           array ('n' => 'name',
                  't' => 'VARCHAR(255) NOT NULL',
 		 'i' => true,
-                 'd' => 'Product group name')
+                 'd' => 'Name')
 	)
     );
-    $def->set_primary ('pages', 'id');
-    $def->set_ref ('pages', 'products', 'id_page');
-    $def->set_listref ('pages', 'id_last', 'id_next');
  
-    # Product table.
     $def->define_table (
-  	'products',
+  	'product_variants',
         array (
           array ('n' => 'id',
                  't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
                  'd' => 'primary key'),
-          array ('n' => 'id_obj',
+          array ('n' => 'id_directory',
                  't' => 'INT NOT NULL',
 		 'i' => true,
-                 'd' => 'Object reference'),
-          array ('n' => 'id_page',
-                 't' => 'INT NOT NULL',
-		 'i' => true,
-                 'd' => 'Reference to product group'),
+                 'd' => 'Directory reference'),
           array ('n' => 'id_last',
                  't' => 'INT NOT NULL',
 		 'i' => true,
@@ -150,29 +78,22 @@ $this->db->query ('drop table xrefs');
           array ('n' => 'name',
                  't' => 'VARCHAR(255) NOT NULL',
 		 'i' => true,
-                 'd' => 'Product name'),
-          array ('n' => 'bestnr',
+                 'd' => 'Description'),
+          array ('n' => 'code',
                  't' => 'VARCHAR(255) NOT NULL',
 		 'i' => true,
                  'd' => 'Product code'),
-          array ('n' => 'price_dm',
+          array ('n' => 'price',
                  't' => 'DECIMAL(14,2) NOT NULL',
 		 'i' => true,
-                 'd' => 'Price (DM)'),
-          array ('n' => 'price_eur',
-                 't' => 'DECIMAL(14,2) NOT NULL',
-		 'i' => true,
-                 'd' => 'Price (Euro)')
+                 'd' => 'Price')
 	)
     );
-    $def->set_primary ('products', 'id');
-    $def->set_ref ('products', 'cart', 'id_product');
-    $def->set_listref ('products', 'id_last', 'id_next');
+    $def->set_primary ('product_variants', 'id');
+    $def->set_ref ('directories', 'product_variants', 'id_directory');
+    $def->set_ref ('product_variants', 'cart', 'id_product_variant');
+    $def->set_listref ('product_variants', 'id_last', 'id_next');
   
-############################################################################
-
-    # Cart item table.
-    # TODO: Copy products into own cart set.
     $def->define_table (
   	'cart',
         array (
@@ -183,7 +104,7 @@ $this->db->query ('drop table xrefs');
                  't' => 'INT NOT NULL',
 		 'i' => true,
                  'd' => 'Reference to session'),
-          array ('n' => 'id_product',
+          array ('n' => 'id_product_variant',
                  't' => 'INT NOT NULL',
 		 'i' => true,
                  'd' => 'Reference to product'),
@@ -199,9 +120,8 @@ $this->db->query ('drop table xrefs');
     );
     $def->set_primary ('cart', 'id');
 
-    # ECML adresses
     $def->define_table (
-  	'address',
+  	'addresses',
         array (
           array ('n' => 'id',
                  't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
@@ -253,11 +173,10 @@ $this->db->query ('drop table xrefs');
                  'd' => '')
 	)
     );
-    $def->set_primary ('address', 'id');
+    $def->set_primary ('addresses', 'id');
   
-    # Order table.
     $def->define_table (
-  	'ecml_order',
+  	'orders',
         array (
           array ('n' => 'id',
                  't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
@@ -282,6 +201,7 @@ $this->db->query ('drop table xrefs');
                  'd' => 'ECML wallet id (unused)')
 	)
     );
-    $def->set_primary ('ecml_order', 'id');
+    $def->set_primary ('orders', 'id');
 }
+
 ?>

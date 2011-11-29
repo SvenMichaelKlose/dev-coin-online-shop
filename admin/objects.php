@@ -1,4 +1,5 @@
-<?
+<?php
+
 # Object editor.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
@@ -479,4 +480,5 @@ function _object_box (&$app, $table, $id, $caller, $only_local = false)
     }
     echo '</table>';
 }
+
 ?>

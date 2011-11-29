@@ -1,4 +1,5 @@
-<?
+<?php
+
 # Object classes.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
@@ -6,15 +7,12 @@
 #
 # Licensed under the MIT, BSD and GPL licenses.
   
-
 function class_init (&$app)
 {
     $app->add_function ('view_classes');
     $app->add_function ('edit_class');
 }
 
-# View classes.
-# No arguments.
 function view_classes (&$app)
 {
     global $lang;
@@ -45,7 +43,6 @@ function view_classes (&$app)
 }
 
 # Edit class name.
-# id = Key of class in table obj_classes.
 function edit_class (&$app)
 {
     global $lang;
@@ -66,8 +63,12 @@ function edit_class (&$app)
     $p->close_source ();
 }
 
+function tag ($content)
+{
+    return "<B>@@$content@@</B>";
+}
+
 # Return tag that uses a particular object class.
-# $name = Class name.
 function _class2tag ($name)
 {
     global $lang;
@@ -75,13 +76,13 @@ function _class2tag ($name)
     if (substr ($name, 0, 2) == 'd_')
         return 'Konfiguration';
     if (substr ($name, 0, 2) == 'u_')
-        return "<B>&lt;!:OBJECTLINK&nbsp;$name!&gt;</B> (" . $lang['user defined'] . ')';
+        return tag (":OBJECTLINK&nbsp;$name") . ' (' . $lang['user defined'] . ')';
     if ($name == 'l_cart')
-        return '<B>&lt;!CART!&gt;</B>';
+        return tag ('CART');
     if ($name == 'l_ecml')
-        return '<B>&lt;!ORDER!&gt;</B>';
+        return tag ('ORDER');
     if ($name == 'l_order')
-        return '<B>&lt;!ORDER!&gt;</B>';
+        return tag ('ORDER');
     if ($name == 'l_order_email' || $name == 'l_order_confirm' || substr ($name, 0, 2) == 'd_' || $name == 'l_index')
         return '-';
     if (substr ($name, 0, 2) == 'l_') {
@@ -91,7 +92,7 @@ function _class2tag ($name)
         } else
             if ($name == 'l_empty_cart')
 	        $name = 'l_cart';
-        return '<b>&lt;!' . strtoupper (substr ($name, 2)) . ":LINK$arg!&gt;</b>";
+        return tag (strtoupper (substr ($name, 2)) . ":LINK$arg");
     } else if (substr ($name, 0, 3) == 'll_') {
         if ($name == 'll_pages')
             $arg = " $name";
@@ -101,11 +102,13 @@ function _class2tag ($name)
 	        $name = 'll_page';
             } else
                 if ($name == 'll_category_group')
-                    return '<B>&lt;!CATEGORY:LIST-GROUP!&gt;</B>';
+                    return tag ('CATEGORY:LIST-GROUP');
                 else
                     if ($name == 'll_order_email' || $name == 'll_order_confirm')
                         $name = 'll_order';
-        return '<b>&lt;!' . strtoupper (substr ($name, 3)) . ":LIST$arg!&gt;</b>";
+        return tag (strtoupper (substr ($name, 3)) . ":LIST$arg");
     }
     return $name . ' <FONT COLOR="RED">(' . $lang['illegal name'] . ')</FONT>';
 }
+
+?>
