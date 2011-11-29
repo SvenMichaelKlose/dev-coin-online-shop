@@ -125,14 +125,12 @@ function generic_list (&$app, $c)
         $p->link ($lang['next'], $e);
     }
 
-    # Show all objects for this group.
-    _object_box ($app, $c->table, $id, $app->args ());
+    show_directory_objects ($app, $c->table, $id, $app->args ());
 
     # Input field for group name.
     $parent_id = $db->column ($c->table, $c->ref_parent, $id);
     $p->open_source ($c->table);
     $p->query (sql_assignment ('id', $id));
-
     if ($p->get ()) {
         $p->open_row ();
         $p->cmd_delete ('', $c->parent_view, array ('id' => $parent_id));

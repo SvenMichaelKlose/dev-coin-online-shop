@@ -328,7 +328,7 @@ function _object_box_toggler_for_inherited_objects (&$app, $only_local)
 # Show inherited and/or local objects.
 # $table/$id specify the current directory.
 # If $only_local is true only local objects are shown.
-function _object_box (&$app, $table, $id, $caller, $only_local = false)
+function show_directory_objects (&$app, $table, $id, $caller, $only_local = false)
 {
     global $lang, $cms_object_views;
 
