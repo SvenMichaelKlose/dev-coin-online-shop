@@ -72,28 +72,8 @@ class shop_admin extends application {
 
         $p =& $this->ui;
  
-        $treeargs = array (
-            'source' => 'directories',
-            'id' => '1',
-            'treeview' => $this->event (),
-            'nodeview' => 'view_pages',
-	    'nodecreator' => 'create_category',
-            'rootname' => 'shop',
-	    'table' => 'directories',
-            'name' => 'name',
-            'id' => 'id',
-            'txt_select_node' => $lang['msg choose category to move'],
-            'txt_select_dest' => $lang['msg choose dest category'],
-            'txt_moved' => $lang['msg category moved'],
-            'txt_not_moved' => $lang['err category not moved'],
-            'txt_move_again' => $lang['cmd move further'],
-            'txt_back' => $lang['cmd back/quit'],
-	    'txt_unnamed' => $lang['unnamed']
-        );
-
         $p->headline ($lang['title defaultview']);
   
-        # Main menu
         $e = new event ('tree_edit_move', array ('source' => 'directories',
                                                  'id' => 'id',
                                                  'name' => 'name',
@@ -107,11 +87,7 @@ class shop_admin extends application {
 
         $p->link ($lang['cmd database_menu'], 'database_menu');
 
-        # TODO: Statistics, last orders.
-        #$p->link ('Bestellungen', 'view_orders', 0);
-
-        # Display category tree.
-        tree_edit ($this, $treeargs);
+        category_overview ($this);
     }
 
     ###################
