@@ -7,7 +7,6 @@
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
-
 function db_init (&$app)
 {
     $app->add_function ('create_tables');
@@ -26,12 +25,11 @@ function create_directory_type (&$db, $name)
 
 function create_object_classes (&$app)
 {
-    global $lang, $debug;
+    global $lang;
 
-    $p =& $app->ui;
     $db =& $app->db;
 
-    $object_classes = array (
+    $classes = array (
         'l_index', 'l_category', 'l_page', 'l_product',
         'l_cart', 'l_empty_cart',
         'l_order', 'l_order_email', 'l_order_confirm',
@@ -41,29 +39,21 @@ function create_object_classes (&$app)
         'd_order_email_subject',
         'u_attribs', 'u_attrib_mask'
     );
-    foreach ($object_classes as $v)
-        $class[] = array ($v, $lang["class $v"]);
+    foreach ($classes as $class) {
+        $descr = $lang["class $class"];
 
-    for ($i = 0; $i < sizeof ($class); $i++) {
-        echo 'Klasse ' . $class[$i][0] . ' (' . $class[$i][1] . ') ';
-
-        # Rename already existing classes.
-        if ($tmp = $db->select ('*', 'obj_classes', 'name=\'' . $class[$i][0] . '\'')) {
-            $res = $tmp->get ();
-            $db->update ('obj_classes', 'descr="' . $class[$i][1] . '"', 'id=' . $res['id']);
-            echo "<FONT COLOR=GREEN>updated.</FONT><BR>\n";
+        if ($res = $db->select ('*', 'obj_classes', "name='$class'")) {
+            $db->update ('obj_classes', "descr='$descr'", 'id=' . $res->get ('id'));
 	    continue;
         }
 
-        # Create new class.
-        $db->insert ('obj_classes', 'name=\'' . $class[$i][0] . '\', descr=\'' . $class[$i][1] . '\'');
-        echo "<FONT COLOR=GREEN>erstellt.</FONT><BR>\n";
+        $db->insert ('obj_classes', "name='$class', descr='$descr'");
     }
 }
 
 function create_tables (&$app)
 {
-    global $lang, $debug;
+    global $lang;
 
     $p =& $app->ui;
     $db =& $app->db;
@@ -71,31 +61,33 @@ function create_tables (&$app)
     echo "<HR>\n";
 
     $db->create_tables ();
-    echo '<FONT COLOR=GREEN>' . $lang['msg tables created'] . '</FONT><BR>';
+    $p->msgbox ($lang['msg tables created']);
 
     create_object_classes ($app);
 
     if ($db->select ('id', 'directories', 'id=1')) {
-        echo '<FONT COLOR=RED>' . $lang['msg root category exists'] . '</FONT><BR>';
+        $p->msgbox ($lang['msg root category exists']);
     } else {
         $db->insert ('directories', 'id=1, name=\'root\'');
-        echo '<FONT COLOR=GREEN>' . $lang['msg root category created'] . '</FONT><BR>';
+        $p->msgbox ($lang['msg root category created']);
     }
-    #merge_directories ($app);
-    $p->link ($lang['cmd back'], 'defaultview');
+
+    $app->call (new event ('database_menu'));
 }
 
 # Remove invalid object reference from directory type.
 function dbchkdir (&$app, &$objs, $dirname)
 {
     $cnt = '0';
+
     $res = $app->db->select ('id,id_obj', $dirname, 'id_obj!=0');
     while ($res && $row = $res->get ())
         if (isset ($objs[$row['id_obj']]) == false) {
 	    $app->db->update ($dirname, 'id_obj=0', 'id="' . $row['id'] . '"');
 	    $cnt++;
         }
-    echo "$cnt invalid object pointers removed from $dirname.<br>";
+
+    $app->ui->msgbox ("$cnt invalid object pointers removed from $dirname.");
 }
 
 function db_consistency_check (&$app)
@@ -105,9 +97,8 @@ function db_consistency_check (&$app)
     $db =& $app->db;
     $p =& $app->ui;
     $p->msgbox ('Please wait...', 'yellow');
-    $changes = 0;
  
-    echo 'Removing free objects...<br>';
+    $p->msgbox ('Removing free objects...', 'yellow');
     flush ();
 
     # Get all object id in directories.
@@ -123,16 +114,15 @@ function db_consistency_check (&$app)
             $db->delete ('objects', "id=$id");
         }
 
-    echo 'Removing empty objects...<br>';
+    $p->msgbox ('Removing empty objects...', 'yellow');
     flush ();
     $res = $db->select ('id, id_obj', 'obj_data', 'data=\'\'');
     while ($res && $row = $res->get ())
 	$db->delete ('obj_data', 'id=' . $row['id']);
     $num_rows = ($res ? $res->num_rows () : 0);
-    echo "$num_rows empty objects removed.<br>";
-    $changes += $num_rows;
+    $p->msgbox ("$num_rows empty objects removed.");
 
-    echo 'Removing hanging xrefs...<br>';
+    $p->msgbox ('Removing dangling references...', 'yellow');
     flush ();
     $res = $db->select ('id_obj', 'obj_data');
     while ($res && list ($id_obj) = $res->get ())
@@ -145,28 +135,27 @@ function db_consistency_check (&$app)
 	    $n++;
 	    $changes++;
         }
-    echo "$n xrefs removed.<br>";
+    $p->msgbox ("$n references removed.");
 
     # Remove dangling object ids in directories.
-    echo 'Removing dangling object ids in directories...<br>';
+    $p->msgbox ('Removing dangling object IDs in directories...', 'yellow');
     flush ();
     $res = $db->select ('id', 'objects');
     while ($res && $row = $res->get ())
         $obj[$row['id']] = true;
-    $changes += dbchkdir ($app, $obj, 'directories');
+    dbchkdir ($app, $obj, 'directories');
 
-    $p->msgbox ("$changes changes.");
-
-    echo 'Removing old tokens...<br>';
+    $p->msgbox ('Removing old tokens...', 'yellow');
     flush ();
     $db->delete ('tokens');
 
-    echo 'Optimizing tables...<br>';
+    $p->msgbox ('Optimizing tables...', 'yellow');
     flush ();
     foreach ($db->def->table_names () as $table)
         $db->query ("OPTIMIZE TABLE $table");
 
-    $p->link ('back', 'defaultview');
+    $p->msgbox ('O.K. Done.');
+    $app->call (new event ('database_menu'));
 }
 
 function db_sort_directories (&$app)
@@ -178,7 +167,7 @@ function db_sort_directories (&$app)
     flush ();
     sort_linked_list ($p->db, 'directories', '1', 'ORDER BY name ASC' , -1);
     $p->msgbox ('Directories sorted.');
-    $p->link ('back', 'defaultview');
+    $app->call (new event ('database_menu'));
 }
 
 # Menu of database operations.
