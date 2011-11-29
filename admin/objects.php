@@ -275,7 +275,7 @@ function edit_data (&$app)
         else {
             $lines += 3;
 	    if ($lines > 50)
-                $lines = 50
+                $lines = 50;
         }
         $p->textarea ('data', 80, $lines);
     } else {
