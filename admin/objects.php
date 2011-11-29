@@ -117,7 +117,7 @@ function edit_data_navigator (&$app)
     $otable = $app->arg ('otable');
     $oid = $app->arg ('oid');
 
-    $p->link ($lang['cmd defaultview'], 'defaultview', 0);
+    $p->link ($lang['cmd defaultview'], 'defaultview');
     show_directory_index ($app, $otable, $oid);
     # Link back to originating view.
     $p->link ($lang['cmd back/quit'], 'return2caller');
@@ -159,7 +159,8 @@ function edit_data_navigator (&$app)
 
         # Print the path to the directory.
         echo '<td>';
-        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', 1, false), 'edit_data', array ('table' => $t, 'id' => $i, 'class' => $class));
+        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', 1, false),
+                  new event ('edit_data', array ('table' => $t, 'id' => $i, 'class' => $class)));
         echo '</td></tr>';
 
         # Fetch parent directory's position and break if there is none.
@@ -273,8 +274,8 @@ function edit_data (&$app)
             $lines = 5;
         else {
             $lines += 3;
-	    if ($lines > 25)
-                $lines = 25;
+	    if ($lines > 50)
+                $lines = 50
         }
         $p->textarea ('data', 80, $lines);
     } else {
@@ -294,7 +295,6 @@ function edit_data (&$app)
 
     if ($mime == 'text') {
         $p->paragraph ('<hr>');
-        $p->label ('php syntax:');
         $p->open_row ();
         $p->open_cell ();
         highlight_string ($p->value ('data'));
