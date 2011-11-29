@@ -30,7 +30,6 @@ require_once '../caroshi-php/index.php';
 # Include libraries.
 require_once PATH_TO_CAROSHI . '/proc/application.class.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/admin_panel.class.php';
-#require PATH_TO_CAROSHI . '/admin_panel/ssi/php_array.class.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/range_edit/range_edit.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/tree_edit.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/treeview.class.php';
@@ -49,6 +48,7 @@ require "../lang_$language.php";
 require 'admin_panel.php';
 require 'categories.php';
 require 'classes.php';
+require 'directory_type.php';
 require 'cms-config.php';
 require 'db.php';
 require 'generic_list.php';

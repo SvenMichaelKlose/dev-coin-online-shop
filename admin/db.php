@@ -15,26 +15,6 @@ function db_init (&$app)
     $app->add_function ('db_sort_directories');
 }
 
-# Create a directory type $name and return its id.
-function create_directory_type (&$db, $name)
-{
-    # Create a directory type of $name.
-    $res =& $db->insert ('directory_types', "name='$name'");
-    return $db->insert_id ();
-}
-
-function create_directory_types (&$app)
-{
-    global $lang;
-
-    $db =& $app->db;
-
-    $types = array ('category', 'product', 'product_variant');
-    foreach ($types as $type) 
-        if (!$res = $db->select ('*', 'directory_types', "name='$type'"))
-            $db->insert ('directory_types', "name='$type'");
-}
-
 function create_object_classes (&$app)
 {
     global $lang;
