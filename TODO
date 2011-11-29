@@ -1,10 +1,14 @@
 Current TODO
 ============
 
-    - move it from PHP4 to PHP5
-    - update it for use with the newest version of "Caroshi PHP"
-    - apply CSS where appropriate
-    - cleanup code and indentation
+Replace inlined HTML styles in admin area by class names.
+
+The big merger
+--------------
+
+There should be a single table for directories and _directories_
+should have classes instead of files (which we call objects).
+Then we can place templates in freely nameable files.
 
 
 Ancient TODO (2001)
