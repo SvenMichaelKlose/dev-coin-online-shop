@@ -124,7 +124,6 @@ function generic_list (&$app, $c)
         $e->set_arg ('id', $id_next);
         $p->link ($lang['next'], $e);
     }
-    echo '<BR>';
 
     # Show all objects for this group.
     _object_box ($app, $c->table, $id, $app->args ());
