@@ -46,6 +46,7 @@ function view_pages (&$app)
     $c->child_ref_parent = 'id_parent';
     $c->child_view_list = 'record_page';
     $c->child_view = 'view_pages';
+    $c->child_values = array ('id_directory_type' => get_directory_type_id ($app->db, 'product'));
 
     $c->txt_no_records = $lang['msg no product group'];
     $c->txt_create = $lang['cmd create_page'];

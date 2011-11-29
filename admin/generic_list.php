@@ -25,7 +25,7 @@ function generic_create (&$app, $c)
 
     if ($def->is_list ($c->child_table))
         $pre[$def->ref_id ($c->child_table)] = $app->arg ('id');
-    $e = new event ('record_create', array ('preset_values' => $pre));
+    $e = new event ('record_create', array ('preset_values' => array_merge ($c->child_values, $pre)));
     $e->set_next ($app->event ());
     $app->ui->submit_button ($c->txt_create, $e);
 }
@@ -87,6 +87,7 @@ class generic_list_conf {
     public $child_ref_parent;
     public $child_view_list;
     public $child_view;
+    public $child_values;
     public $headers;
     public $txt_no_func;
     public $txt_create;
@@ -94,22 +95,14 @@ class generic_list_conf {
     public $have_submit_button = false;
 };
 
-function generic_list (&$app, $c)
+function generic_list_siblings (&$app, $c)
 {
     global $lang;
 
     $db =& $app->db;
-    $def =& $db->def;
     $p =& $app->ui;
     $id = $app->arg ('id');
-    $app->event ()->set_arg ('table', $c->table); # Required by _object_box().
 
-    # Navigator
-    $p->headline ($lang["title " . $app->event ()->name]);
-    $p->link ($lang['cmd defaultview'], 'defaultview', 0);
-    show_directory_index ($app, $c->table, $id);
-
-    # Link to next/last product group.
     $id_last = $db->column ($c->table, 'id_last', $id);
     $id_next = $db->column ($c->table, 'id_next', $id);
     list ($thisindex, $last) = _get_index ($app, $c->parent_table, $c->ref_parent, $c->table, $id);
@@ -124,13 +117,19 @@ function generic_list (&$app, $c)
         $e->set_arg ('id', $id_next);
         $p->link ($lang['next'], $e);
     }
+}
 
-    show_directory_objects ($app, $c->table, $id, $app->args ());
+function generic_list_editor (&$app, $c)
+{
+    global $lang;
 
-    # Input field for group name.
+    $db =& $app->db;
+    $p =& $app->ui;
+    $id = $app->arg ('id');
+
     $parent_id = $db->column ($c->table, $c->ref_parent, $id);
     $p->open_source ($c->table);
-    $p->query (sql_assignment ('id', $id));
+    $p->query (sql_assignments (array_merge ($c->child_values, array ('id' => $id)), ' AND '));
     if ($p->get ()) {
         $p->open_row ();
         $p->cmd_delete ('', $c->parent_view, array ('id' => $parent_id));
@@ -139,6 +138,15 @@ function generic_list (&$app, $c)
         $p->close_row ();
     }
     $p->close_source ();
+}
+
+function generic_list_children (&$app, $c)
+{
+    global $lang;
+
+    $db =& $app->db;
+    $p =& $app->ui;
+    $id = $app->arg ('id');
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
@@ -164,4 +172,25 @@ function generic_list (&$app, $c)
     $p->close_source ();
 }
 
+function generic_list (&$app, $c)
+{
+    global $lang;
+
+    $db =& $app->db;
+    $def =& $db->def;
+    $p =& $app->ui;
+    $id = $app->arg ('id');
+    $app->event ()->set_arg ('table', $c->table); # Required by _object_box().
+
+    $p->headline ($lang["title " . $app->event ()->name]);
+    $p->link ($lang['cmd defaultview'], 'defaultview', 0);
+
+    show_directory_index ($app, $c->table, $id);
+    generic_list_siblings ($app, $c);
+    show_directory_objects ($app, $c->table, $id, $app->args ());
+    generic_list_editor ($app, $c);
+    generic_list_children ($app, $c);
+}
+
 ?>
+
