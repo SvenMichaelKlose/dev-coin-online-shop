@@ -23,6 +23,18 @@ function create_directory_type (&$db, $name)
     return $db->insert_id ();
 }
 
+function create_directory_types (&$app)
+{
+    global $lang;
+
+    $db =& $app->db;
+
+    $types = array ('category', 'product', 'product_variant');
+    foreach ($types as $type) 
+        if (!$res = $db->select ('*', 'directory_types', "name='$type'"))
+            $db->insert ('directory_types', "name='$type'");
+}
+
 function create_object_classes (&$app)
 {
     global $lang;
@@ -63,6 +75,7 @@ function create_tables (&$app)
     $db->create_tables ();
     $p->msgbox ($lang['msg tables created']);
 
+    create_directory_types ($app);
     create_object_classes ($app);
 
     if ($db->select ('id', 'directories', 'id=1')) {
