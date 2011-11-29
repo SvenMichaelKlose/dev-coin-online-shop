@@ -10,7 +10,7 @@
 
 # Create a link if $table/$row[$app->db->primaries[$table]] is not the
 # cursor position.
-function nav_linkpath (&$app, $table, $row, $arg)
+function nav_linkpath (&$app, $table, $row, $args)
 {
     global $lang;
 
@@ -26,7 +26,7 @@ function nav_linkpath (&$app, $table, $row, $arg)
     $args['id'] = $id;
 
     # If app is the current position, only show where we are.
-    $out .= ($arg || $GLOBALS['table'] == $table && $GLOBALS['id'] == $id) ?
+    $out .= ($GLOBALS['table'] == $table && $GLOBALS['id'] == $id) ?
             "<B>$link</B>" :
             $p->_looselink ($link, new event ($view, $args));
     return $out;
@@ -41,7 +41,7 @@ function show_directory_index (&$app, $table, $id)
     $p =& $app->ui;
     $GLOBALS['table'] = $table;
     $GLOBALS['id'] = $id;
-    echo $db->traverse_refs_from ($app, $table, $id, 'nav_linkpath', 0, false);
+    echo $db->traverse_refs_from ($app, $table, $id, 'nav_linkpath', null, false);
 
     if ($table == 'directories') {
         # List subcategories
