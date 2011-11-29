@@ -48,9 +48,6 @@ function view_pages (&$app)
     $c->child_view = 'view_pages';
     $c->child_values = array ('id_directory_type' => get_directory_type_id ($app->db, 'product'));
 
-    $c->txt_no_records = $lang['msg no product group'];
-    $c->txt_create = $lang['cmd create_page'];
-    $c->txt_input = $lang['category'];
     $c->have_submit_button = true;
 
     generic_list ($app, $c);

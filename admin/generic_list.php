@@ -21,13 +21,15 @@ function _get_index (&$app, $parent, $ref_parent, $table, $id)
 
 function generic_create (&$app, $c)
 {
+    global $lang;
+
     $def =& $app->db->def;
 
     if ($def->is_list ($c->child_table))
         $pre[$def->ref_id ($c->child_table)] = $app->arg ('id');
     $e = new event ('record_create', array ('preset_values' => array_merge ($c->child_values, $pre)));
     $e->set_next ($app->event ());
-    $app->ui->submit_button ($c->txt_create, $e);
+    $app->ui->submit_button ($lang['cmd create'], $e);
 }
 
 function _range_panel (&$app, $c)
@@ -89,9 +91,6 @@ class generic_list_conf {
     public $child_view;
     public $child_values;
     public $headers;
-    public $txt_no_func;
-    public $txt_create;
-    public $txt_input;
     public $have_submit_button = false;
 };
 
@@ -133,7 +132,7 @@ function generic_list_editor (&$app, $c)
     if ($p->get ()) {
         $p->open_row ();
         $p->cmd_delete ('', $c->parent_view, array ('id' => $parent_id));
-        $p->inputline ('name', 255, $c->txt_input);
+        $p->inputline ('name', 255);
         $p->cmd_update ();
         $p->close_row ();
     }
@@ -164,10 +163,8 @@ function generic_list_children (&$app, $c)
         }
 
         _range_panel ($app, $c);
-    } else {
-        $p->label ($c->txt_no_records);
+    } else
         generic_create ($app, $c);
-    }
 
     $p->close_source ();
 }
