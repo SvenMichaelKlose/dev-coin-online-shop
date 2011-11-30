@@ -131,7 +131,7 @@ function generic_list_editor (&$app, $c)
     $p->query (sql_assignments (array_merge ($c->child_values, array ('id' => $id)), ' AND '));
     if ($p->get ()) {
         $p->open_row ();
-        $p->cmd_delete ('', $c->parent_view, array ('id' => $id));
+        $p->cmd_delete ('', $c->parent_view, array ('id' => $parent_id));
         $p->inputline ('name', 255);
         $p->cmd_update ();
         $p->close_row ();
