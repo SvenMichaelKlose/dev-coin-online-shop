@@ -17,33 +17,37 @@ function tables_define (&$app)
         array (
           array ('n' => 'id',
                  't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
-                 'd' => 'primary key'),
+                 'd' => 'primary key',
+                 'tk_autoform' => 'hide'),
           array ('n' => 'id_directory_type',
                  't' => 'INT NOT NULL',
 		 'i' => true,
-                 'd' => 'Directory type'),
+                 'd' => 'Directory type',
+                 'tk_autoform' => 'hide'),
           array ('n' => 'id_obj',
                  't' => 'INT NOT NULL',
 		 'i' => true,
-                 'd' => 'Object reference'),
+                 'd' => 'Object reference',
+                 'tk_autoform' => 'hide'),
           array ('n' => 'id_parent',
                  't' => 'INT NOT NULL',
 		 'i' => true,
-                 'd' => 'Reference to parent'),
+                 'd' => 'Reference to parent',
+                 'tk_autoform' => 'hide'),
           array ('n' => 'id_last',
                  't' => 'INT NOT NULL',
 		 'i' => true,
-                 'd' => 'Reference to previous sibling'),
+                 'd' => 'Reference to previous sibling',
+                 'tk_autoform' => 'hide'),
           array ('n' => 'id_next',
                  't' => 'INT NOT NULL',
 		 'i' => true,
-                 'd' => 'Reference to next sibling'),
+                 'd' => 'Reference to next sibling',
+                 'tk_autoform' => 'hide'),
           array ('n' => 'name',
                  't' => 'VARCHAR(255) NOT NULL',
 		 'i' => true,
-                 'd' => 'Category name')
-	)
-    );
+                 'd' => 'Category name')));
     $def->set_primary ('directories', 'id');
     $def->set_ref ('directories', 'directories', 'id_parent');
     $def->set_listref ('directories', 'id_last', 'id_next');
