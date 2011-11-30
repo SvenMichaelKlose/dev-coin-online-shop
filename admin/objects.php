@@ -159,7 +159,7 @@ function edit_data_navigator (&$app)
 
         # Print the path to the directory.
         echo '<td>';
-        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', 1, false),
+        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', null, false),
                   new event ('edit_data', array ('table' => $t, 'id' => $i, 'class' => $class)));
         echo '</td></tr>';
 
@@ -320,6 +320,8 @@ function mime_type ($x)
 
 function _show_existing_object_class (&$images, &$cache, &$app, $table, $id, $only_local, $id_class, $class, $descr, $e_edit_data)
 {
+    $p =& $app->ui;
+
     $tmp = '';
     if (!isset ($cache[$id_class][0]))
         return '';
