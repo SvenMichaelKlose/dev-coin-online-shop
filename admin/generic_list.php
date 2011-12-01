@@ -66,7 +66,7 @@ function _range_panel (&$app, $c)
 
     $e_delete = new event ('record_delete');
     $e_delete->set_next ($app->event ());
-    $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id', 'marker_fiel' => 'marker'));
+    $e = new event ('tk_range_edit_call', array ('view' => $e_delete, 'argname' => 'id', 'marker_field' => 'marker'));
 
     generic_create ($app, $c);
 
@@ -154,17 +154,15 @@ function generic_list_children (&$app, $c)
     if ($res) {
         if ($c->headers)
             $p->table_headers ($c->headers);
-
-        $idx = 1;
-        while ($p->get ()) {
-	    $fun = $c->child_view_list;
-	    $fun ($app, $idx);
-	    $idx++;
-        }
-
+        $conf = new tk_auto_list_conf;
+        $conf->record_view = $c->child_view;
+        $conf->record_view_arg = 'id';
+        $conf->txt_empty = $lang['empty'];
+        $cur = $p->cursor ();
+        tk_autoform_list_cursor ($app, $cur, $conf);
         _range_panel ($app, $c);
-    } else
-        generic_create ($app, $c);
+    }
+    generic_create ($app, $c);
 
     $p->close_source ();
 }

@@ -25,8 +25,6 @@ function record_page (&$app, $idx)
     $p->open_row ();
     $p->checkbox ('marker');
     $p->link ("$idx $name", new event ('view_pages', array ('id' => $p->value ('id'))));
-    $p->link ($p->value ('bestnr'), new event ('view_pages', array ('id' => $p->value ('id'))));
-    $p->link ($p->value ('price'), new event ('view_pages', array ('id' => $p->value ('id'))));
     $p->close_row ();
 }
 

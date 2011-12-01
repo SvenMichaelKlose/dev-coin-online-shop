@@ -23,10 +23,10 @@ class devcoin_admin_panel extends admin_panel {
 
     function open_source ($table, $handler = '', $args = 0)
     {
-        $this->_cursor = new cursor_sql ($table);
-        $this->_cursor->set_source ($table);
+        $c = new cursor_sql ($table);
+        $c->set_source ($table);
 
-        $this->open_context ($this->_cursor);
+        $this->open_context ($c);
         $this->open_form ($this->make_event ($handler, $args));
         $this->open_table ();
 
@@ -44,14 +44,12 @@ class devcoin_admin_panel extends admin_panel {
 
     function query ($where = '', $order = '')
     {
-        return $this->_cursor->query ($where, $order);
+        return $this->cursor ()->query ($where, $order);
     }
 
     function get ()
     {
-        $c = $this->_cursor->get ();
-        $this->set_context ($this->_cursor);
-        return $c;
+        return $this->cursor ()->get ();
     }
 
     function open_row_and_cell ()

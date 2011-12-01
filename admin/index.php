@@ -33,6 +33,7 @@ require_once PATH_TO_CAROSHI . '/admin_panel/admin_panel.class.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/range_edit/range_edit.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/tree_edit.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/treeview.class.php';
+require_once PATH_TO_CAROSHI . '/admin_panel/tk/autoform/autoform.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbsession.class.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbobj.class.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbsort.php';
@@ -107,6 +108,7 @@ class shop_admin extends application {
 
         # Initialise toolkits
         tk_range_edit_init ($this);
+        tk_autoform_init ($this);
         tree_edit_register ($this);
 
         # Initialise other modules.
