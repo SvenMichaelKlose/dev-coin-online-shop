@@ -118,7 +118,7 @@ function edit_data_navigator (&$app)
     $oid = $app->arg ('oid');
 
     $p->link ($lang['cmd defaultview'], 'defaultview');
-    show_directory_index ($app, $otable, $oid);
+    show_directory_index ($app, $otable, $oid, true);
     # Link back to originating view.
     $p->link ($lang['cmd back/quit'], 'return2caller');
 
@@ -159,8 +159,9 @@ function edit_data_navigator (&$app)
 
         # Print the path to the directory.
         echo '<td>';
-        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', null, false),
-                  new event ('edit_data', array ('table' => $t, 'id' => $i, 'class' => $class)));
+        $p->link ($app->db->traverse_refs_from ($app, $t, $i, 'nav_linkpath', false, false),
+                  new event ('edit_data', array ('table' => $t, 'id' => $i, 'class' => $class,
+                                                 'otable' => $otable, 'oid' => $oid)));
         echo '</td></tr>';
 
         # Fetch parent directory's position and break if there is none.

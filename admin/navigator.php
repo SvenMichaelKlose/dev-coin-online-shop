@@ -10,30 +10,26 @@
 
 # Create a link if $table/$row[$app->db->primaries[$table]] is not the
 # cursor position.
-function nav_linkpath (&$app, $table, $row, $args)
+function nav_linkpath (&$app, $table, $row, $do_link_current)
 {
     global $lang;
 
     $p =& $app->ui;
     $name = '<I>' . preg_replace ('/ +/', '&nbsp;', $row['name']) . '</I>';
     $id = $row['id'];
-    $out = '';
 
-    $out .= '/';
     $link = $id == 1 ? $lang['root category'] : $name;
     $view = 'view_pages';
-
     $args['id'] = $id;
 
     # If app is the current position, only show where we are.
-    $out .= ($GLOBALS['table'] == $table && $GLOBALS['id'] == $id) ?
-            "<B>$link</B>" :
-            $p->_looselink ($link, new event ($view, $args));
-    return $out;
+    return '/' . ((!$do_link_current && $GLOBALS['table'] == $table && $GLOBALS['id'] == $id) ?
+                  "<B>$link</B>" :
+                  $p->_looselink ($link, new event ($view, $args)));
 }
 
 # Set our database cursor $table/$id and invoke the walk to the category root.
-function show_directory_index (&$app, $table, $id)
+function show_directory_index (&$app, $table, $id, $do_link_current)
 {
     global $lang;
 
@@ -41,7 +37,7 @@ function show_directory_index (&$app, $table, $id)
     $p =& $app->ui;
     $GLOBALS['table'] = $table;
     $GLOBALS['id'] = $id;
-    echo $db->traverse_refs_from ($app, $table, $id, 'nav_linkpath', null, false);
+    echo $db->traverse_refs_from ($app, $table, $id, 'nav_linkpath', $do_link_current, false);
 
     if ($table == 'directories') {
         # List subcategories
