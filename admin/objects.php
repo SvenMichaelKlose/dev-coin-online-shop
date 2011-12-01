@@ -28,7 +28,7 @@ function assoc_object (&$app)
     $id = $app->arg ('id');
 
     $obj = new DBOBJ ($app->db, $class, $app->db->def);
-    $obj->active['mime'] = 'text/plain';
+    $obj->data['mime'] = 'text/plain';
     $obj->assoc ($table, $id);
 
     $app->ui->msgbox (sprintf ($lang['msg obj assoced'], $class));
@@ -47,22 +47,22 @@ function copy_object (&$app)
     $srcid = $app->arg ('srcid');
 
     $obj = new DBOBJ ($app->db, $class, $hier, $table, $id);
-    if ($obj->active['_table'] == $table && $obj->active['_id'] == $id) {
+    if ($obj->data['_table'] == $table && $obj->data['_id'] == $id) {
         $app->ui->msgbox ($lang['msg obj already exists'], "red");
         return;
     }
 
     # Fetch data of source object.
     $obj = new DBOBJ ($app->db, $class, $hier, $srctable, $srcid);
-    $data['data'] = $obj->active['data'];
-    $data['mime'] = $obj->active['mime'];
-    $data['start'] = $obj->active['start'];
-    $data['is_local'] = $obj->active['is_local'];
-    $data['is_public'] = $obj->active['is_public'];
+    $data['data'] = $obj->data['data'];
+    $data['mime'] = $obj->data['mime'];
+    $data['start'] = $obj->data['start'];
+    $data['is_local'] = $obj->data['is_local'];
+    $data['is_public'] = $obj->data['is_public'];
 
     # Create a new object and copy the source data to it.
     $obj = new DBOBJ ($app->db, $class, $hier);
-    $obj->active = $data;
+    $obj->data = $data;
 
     # Associate object with source directory.
     $obj->assoc ($table, $id);
@@ -135,12 +135,12 @@ function edit_data_navigator (&$app)
         $obj = new DBOBJ ($app->db, $class, $dep, $xtable, $xid);
 
         # If there's none, stop right here.
-        if (!isset ($obj->active))
+        if (!isset ($obj->data))
             break;
 
         # Get source directory of the found object.
-        $t = $obj->active['_table'];
-        $i = $obj->active['_id'];
+        $t = $obj->data['_table'];
+        $i = $obj->data['_id'];
 
         # Mark the path if the object is currently displayed.
         if ($t == $table && $i == $id)
@@ -150,8 +150,8 @@ function edit_data_navigator (&$app)
             $e = new event ('copy_object', array ('class' => $class,
 	  	                                  'table' => $otable,
 	  	                                  'id' => $oid,
-	  	                                  'srctable' => $obj->active['_table'],
-	  	                                  'srcid' => $obj->active['_id']));
+	  	                                  'srctable' => $obj->data['_table'],
+	  	                                  'srcid' => $obj->data['_id']));
             $e->set_next ($app-event ());
 	    $p->link ($lang['copy to current'], $e);
 	    echo '</td>';
@@ -205,7 +205,7 @@ function edit_data (&$app)
     list ($classdesc) = $res->get ();
 
     $p->open_source ('obj_data');
-    $p->query (sql_assignment ('id', $obj->active['id']));
+    $p->query (sql_assignment ('id', $obj->data['id']));
     $p->get ();
 
     $p->table_headers (array ("<B><FONT SIZE=\"+1\">$classdesc</FONT></B>"));
@@ -237,13 +237,13 @@ function edit_data (&$app)
     $e->set_next ($app->event ());
     $p->link ($lang['remove'], $e);
 
-    if ($obj->active['_table'] == $otable && $obj->active['_id'] == $oid)
+    if ($obj->data['_table'] == $otable && $obj->data['_id'] == $oid)
         $p->label ($lang['local']);
     else
         $p->label ($lang['inherited']);
 
-    if (isset ($obj->active['data']))
-        $p->label (strlen ($obj->active['data']) . ' bytes');
+    if (isset ($obj->data['data']))
+        $p->label (strlen ($obj->data['data']) . ' bytes');
     else
         $p->label ($lang['empty']);
     $p->label (_class2tag ($class));
