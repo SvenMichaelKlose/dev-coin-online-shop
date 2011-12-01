@@ -19,8 +19,6 @@ function create_object_classes (&$app)
 {
     global $lang;
 
-    $db =& $app->db;
-
     $classes = array (
         'l_index', 'l_category', 'l_page', 'l_product',
         'l_cart', 'l_empty_cart',
@@ -31,16 +29,7 @@ function create_object_classes (&$app)
         'd_order_email_subject',
         'u_attribs', 'u_attrib_mask'
     );
-    foreach ($classes as $class) {
-        $descr = $lang["class $class"];
-
-        if ($res = $db->select ('*', 'obj_classes', "name='$class'")) {
-            $db->update ('obj_classes', "descr='$descr'", 'id=' . $res->get ('id'));
-	    continue;
-        }
-
-        $db->insert ('obj_classes', "name='$class', descr='$descr'");
-    }
+    dbobj_create_classes ($app->db, $classes, $lang);
 }
 
 function create_tables (&$app)

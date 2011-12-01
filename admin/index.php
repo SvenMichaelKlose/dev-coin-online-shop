@@ -36,6 +36,7 @@ require_once PATH_TO_CAROSHI . '/admin_panel/tk/treeview.class.php';
 require_once PATH_TO_CAROSHI . '/admin_panel/tk/autoform/autoform.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbsession.class.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbobj.class.php';
+require_once PATH_TO_CAROSHI . '/dbi/dbobj.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbsort.php';
 require_once PATH_TO_CAROSHI . '/dbi/dbtree.php';
 
