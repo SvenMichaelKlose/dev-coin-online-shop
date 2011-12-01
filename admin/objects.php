@@ -104,7 +104,6 @@ function remove_object4real (&$app)
     $app->call ('return2caller');
 }  
 
-# Navigator for edit_data and related views.
 function edit_data_navigator (&$app)
 {
     global $lang;
@@ -119,22 +118,15 @@ function edit_data_navigator (&$app)
 
     $p->link ($lang['cmd defaultview'], 'defaultview');
     show_directory_index ($app, $otable, $oid, true);
-    # Link back to originating view.
     $p->link ($lang['cmd back/quit'], 'return2caller');
-
-    # Print paths of all available objects in the current path.
     $p->headline ($lang['available objects']);
 
-    # Start with the caller's directory.
     $xtable = $otable;
     $xid = $oid;
-
     echo '<table border="0">';
-    while (1) {
-        # Fetch the object.
+    do {
         $obj = new DBOBJ ($app->db, $class, $dep, $xtable, $xid);
 
-        # If there's none, stop right here.
         if (!isset ($obj->data))
             break;
 
@@ -144,7 +136,7 @@ function edit_data_navigator (&$app)
 
         # Mark the path if the object is currently displayed.
         if ($t == $table && $i == $id)
-	    echo '<td><b>' . $lang['current'] . ' --></b></td><td>-</td>';
+	    echo '<td><b>' . $lang['current'] . '</b></td><td>-</td>';
         else {
             echo '<td>&nbsp;</td><td>';
             $e = new event ('copy_object', array ('class' => $class,
@@ -152,7 +144,7 @@ function edit_data_navigator (&$app)
 	  	                                  'id' => $oid,
 	  	                                  'srctable' => $obj->data['_table'],
 	  	                                  'srcid' => $obj->data['_id']));
-            $e->set_next ($app-event ());
+            $e->set_next ($app->event ());
 	    $p->link ($lang['copy to current'], $e);
 	    echo '</td>';
         }
@@ -168,10 +160,7 @@ function edit_data_navigator (&$app)
         $xtable = $t;
         $xid = $i;
         dbitree_get_parent ($app->db, $xtable, $xid);
-        if (!$xid)
-            break;
-        echo '<BR>';
-    }
+    } while ($xid);
     echo '</table>';
 }
 
@@ -372,17 +361,17 @@ function _show_existing_object_class (&$images, &$cache, &$app, $table, $id, $on
     return '[' . $p->_looselink ("<FONT COLOR=\"$color\">$descr</FONT>$stat", $e_edit_data) . "]\n";
 }
 
-function _show_object_class (&$documents, &$images, &$user_defined, &$configuration, &$cache, &$app, $table, $id, $only_local, $res)
+function _show_object_class (&$documents, &$images, &$user_defined, &$configuration, &$cache, &$app, $table, $id, $only_local, $id_class, $class, $descr)
 {
     $p =& $app->ui;
-    list ($id_class, $class, $descr) = $res->get ();
     $common_args = array ('class' => $class, 'table' => $table, 'id' => $id, 'otable' => $table, 'oid' => $id);
     $e_edit_data = new event ('edit_data', $common_args);
     $e_edit_data->set_caller ($app->event ());
 
     $descr = preg_replace ('/ /', '&nbsp;', $descr);
 
-    if (!isset ($cache[$id_class][0]) && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
+echo "$id_class ";
+    if (!isset ($cache[$id_class])) {# && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
         $e = new event ('assoc_object', $common_args);
         $e->set_next ($e_edit_data);
         $tmp = '[' . $p->_looselink ("<FONT COLOR=\"BLACK\">$descr</FONT>" , $e) . "]\n";
@@ -435,9 +424,9 @@ function show_directory_objects (&$app, $table, $id, $caller, $only_local = fals
     $cache = dbtree_get_objects_in_path ($db, $table, $id);
     $documents = $enumerations = $configuration = $user_defined = $images = '';
 
-    $res = $db->select ('id,name,descr', 'obj_classes', '', ' ORDER BY descr ASC');
+    $res = $db->select ('id,name,descr', 'obj_classes');
     while ($res && list ($id_class, $class, $descr) = $res->get ()) 
-        _show_object_class ($documents, $images, $user_defined, $configuration, $cache, $app, $table, $id, $only_local, $res);
+        _show_object_class ($documents, $images, $user_defined, $configuration, $cache, $app, $table, $id, $only_local, $id_class, $class, $descr);
 
     echo '<table width="100%" bgcolor="#eeeeee" border="0">' . "\n";
     if ($images) {
