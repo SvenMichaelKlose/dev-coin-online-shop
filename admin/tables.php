@@ -51,6 +51,7 @@ function tables_define (&$app)
     $def->set_primary ('directories', 'id');
     $def->set_ref ('directories', 'directories', 'id_parent');
     $def->set_listref ('directories', 'id_last', 'id_next');
+    $def->set_obj_id ('directories', 'id_obj');
 
     $def->define_table (
   	'directory_types',
