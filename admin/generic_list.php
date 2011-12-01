@@ -182,8 +182,8 @@ function generic_list (&$app, $conf)
 
     show_directory_index ($app, $conf->table, $id, false);
     generic_list_siblings ($app, $conf);
-    show_directory_objects ($app, $conf->table, $id, $app->args ());
     generic_list_editor ($app, $conf);
+    show_directory_objects ($app, $conf->table, $id, $app->args ());
     generic_list_children ($app, $conf);
 }
 
