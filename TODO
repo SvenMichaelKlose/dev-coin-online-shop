@@ -1,18 +1,18 @@
-Current TODO
-============
+Inheritance of objects into subdirectories is key of this
+software's design.  Classes of objects are key to a user- friendly
+editor.  Regular files are required to store complex templates.
+
+We'll use the object mechanism to store product information, but
+we'll place templates into "template directories" that can be
+filled with freely baptizeable files.
+
+Make it look nice
+=================
 
 Replace inlined HTML styles in admin area by class names.
 
-The big merger
---------------
-
-There should be a single table for directories and _directories_
-should have classes instead of files (which we call objects).
-Then we can place templates in freely nameable files.
-
-
-Ancient TODO (2001)
-===================
+Nice to have
+============
 
     Directory objects:
 
@@ -27,8 +27,7 @@ Ancient TODO (2001)
 
 	- Let user move records in a list and across lists.
 	- Syntax highlighting for tags.
-	- Fulltext search over objects.
-	- Usermanagement
+	- Text search
 
     Configuration:
 
