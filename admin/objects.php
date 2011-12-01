@@ -370,7 +370,6 @@ function _show_object_class (&$documents, &$images, &$user_defined, &$configurat
 
     $descr = preg_replace ('/ /', '&nbsp;', $descr);
 
-echo "$id_class ";
     if (!isset ($cache[$id_class])) {# && ((!$only_local) || ($only_local && substr ($class, 0, 2) == 'u_'))) {
         $e = new event ('assoc_object', $common_args);
         $e->set_next ($e_edit_data);
