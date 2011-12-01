@@ -31,9 +31,9 @@ You can edit the design template as HTML online for each category
 or product.  No programming experience is required and you don't
 need to tweak any files on the web server once the shop has been
 configured and uploaded.  Every configuration item, like design
-templares or the e-mail address orders are sent to can be changed
-for every category or product, so you can share the shop with
-others.
+templates, or the e-mail address orders are sent to, can be
+changed for every category or product, so you can share a single
+installation with others.
 
 Professional support is available.
 
@@ -57,10 +57,9 @@ How do I install it?
 ====================
 
 
-Change the MySQL database account information in file
-'config.php' to fit your web server.  Upload it onto your web
-server and open directory 'admin' in your web browser.  The shop
-should be up and running with a default design.
+Fix the MySQL database account information in file 'config.php',
+upload it to your web server and open directory 'admin' in your
+browser.  The shop should be up and running with a default design.
 
 
 History
@@ -71,8 +70,8 @@ dev/coin has been developed from 2000 til 2002 by Sven Michael
 Klose at dev/consulting GmbH (Bielefeld, Germany) and it has
 been released under the GNU Public License in 2001.  When
 dev/consulting GmbH was sold, dev/coin has been wiped off the
-servers and was believed to be gone forever.  In November 2011
-it has been rediscovered.
+servers and was believed to have been gone forever.  In November
+2011 it has been rediscovered.
 
 
 Future
