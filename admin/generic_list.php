@@ -26,7 +26,7 @@ function generic_create (&$app, $c)
     $def =& $app->db->def;
 
     if ($def->is_list ($c->child_table))
-        $pre[$def->ref_id ($c->child_table)] = $app->arg ('id');
+        $pre[$def->parent_id ($c->child_table)] = $app->arg ('id');
     $e = new event ('record_create', array ('preset_values' => array_merge ($c->child_values, $pre)));
     $e->set_next ($app->event ());
     $app->ui->submit_button ($lang['cmd create'], $e);
