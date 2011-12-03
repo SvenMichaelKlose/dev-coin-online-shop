@@ -11,12 +11,12 @@ function _get_index (&$app, $parent, $ref_parent, $table, $id)
 {
     $id_parent = $app->db->column ($table, $ref_parent, $id);
     $res = $app->db->select ('id, id_last, id_next', $table, "$ref_parent=$id_parent");
-    while ($res && $row = $res->get ())
-        $tmp[$row['id_last']] = $row;
-    for ($row = reset ($tmp), $i = 1; $row; $row = next ($tmp), $i++)
+    $i = 1;
+    while ($res && $row = $res->get ()) {
         if ($row['id'] == $id)
-            $thisindex = $i;
-    return array ($thisindex, $i - 1);
+            return array ($i, $res->num_rows ());
+        $i++;
+    }
 }
 
 function generic_create (&$app, $c)
@@ -26,7 +26,7 @@ function generic_create (&$app, $c)
     $def =& $app->db->def;
 
     if ($def->is_list ($c->child_table))
-        $pre[$def->parent_id ($c->child_table)] = $app->arg ('id');
+        $pre[$def->id_parent ($c->child_table)] = $app->arg ('id');
     $e = new event ('record_create', array ('preset_values' => array_merge ($c->child_values, $pre)));
     $e->set_next ($app->event ());
     $app->ui->submit_button ($lang['cmd create'], $e);
