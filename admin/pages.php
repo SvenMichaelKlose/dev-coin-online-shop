@@ -39,6 +39,7 @@ function view_pages (&$app)
 
     $c->table = 'directories';
     $c->ref_parent = 'id_parent';
+    $c->values = array ('id_directory_type' => get_directory_type_id ($app->db, 'category'));
 
     $c->child_table = 'directories';
     $c->child_ref_parent = 'id_parent';

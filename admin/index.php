@@ -71,24 +71,11 @@ class shop_admin extends application {
     function defaultview ()
     {
         global $lang;
-
         $p =& $this->ui;
  
         $p->headline ($lang['title defaultview']);
-  
-        $e = new event ('tree_edit_move', array ('source' => 'directories',
-                                                 'id' => 'id',
-                                                 'name' => 'name',
-                                                 'txt_back' => 'back',
-                                                 'txt_select_node' => 'select node',
-                                                 'txt_select_dest' => 'select destination'));
-        $e->set_caller ($this->event ());
-        $p->link ($lang['cmd move_category'], $e);
-
         $p->link ($lang['cmd view_classes'], 'view_classes');
-
         $p->link ($lang['cmd database_menu'], 'database_menu');
-
         category_overview ($this);
     }
 
@@ -98,8 +85,6 @@ class shop_admin extends application {
 
     function init ()
     {
-        global $lang, $SERVER_NAME;
-
         $def =& $this->db->def;
 
         tables_define ($this);

@@ -84,6 +84,7 @@ class generic_list_conf {
 
     public $table;
     public $ref_parent;
+    public $values;
 
     public $child_table;
     public $child_ref_parent;

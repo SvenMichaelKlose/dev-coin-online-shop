@@ -20,7 +20,7 @@ function create_category (&$app)
     $ui = & $app->ui;
 
     # XXX reference to parent should be set via hash of preset values.
-    $nid = $app->db->append_new ('directories', $app->arg ('id'));
+    $nid = $app->db->append_new ('directories', $app->args ('pre'));
     $ui->mark_id = "directories$nid";
     $ui->color_highlight = '#00FF00';
     $ui->msgbox ($lang['msg category created']);
@@ -33,26 +33,29 @@ function category_overview (&$app)
 
     $p =& $app->ui;
 
-    $treeargs = array (
-        'source' => 'directories',
-        'id' => '1',
-        'treeview' => $app->event (),
-        'nodeview' => 'view_pages',
-        'nodecreator' => 'create_category',
-        'rootname' => 'shop',
-        'table' => 'directories',
-        'name' => 'name',
-        'id' => 'id',
-        'txt_select_node' => $lang['msg choose category to move'],
-        'txt_select_dest' => $lang['msg choose dest category'],
-        'txt_moved' => $lang['msg category moved'],
-        'txt_not_moved' => $lang['err category not moved'],
-        'txt_move_again' => $lang['cmd move further'],
-        'txt_back' => $lang['cmd back/quit'],
-        'txt_unnamed' => $lang['unnamed']
-    );
+    $conf = new tree_edit_conf;
+    $conf->source = 'directories';
+    $conf->id = '1';
+    $conf->treeview = $app->event ();
+    $conf->nodeview = 'view_pages';
+    $conf->nodecreator = 'create_category';
+    $conf->rootname = 'shop';
+    $conf->table = 'directories';
+    $conf->name = 'name';
+    $conf->id = 'id';
+    $conf->preset_values = array ('id_directory_type' => get_directory_type_id ($app->db, 'category'));
+    $conf->txt_select_node = $lang['msg choose category to move'];
+    $conf->txt_select_dest = $lang['msg choose dest category'];
+    $conf->txt_moved = $lang['msg category moved'];
+    $conf->txt_not_moved = $lang['err category not moved'];
+    $conf->txt_move_again = $lang['cmd move further'];
+    $conf->txt_back = $lang['cmd back/quit'];
+    $conf->txt_unnamed = $lang['unnamed'];
 
-    tree_edit ($app, $treeargs);
+    $e = new event ('tree_edit_move', array ('conf' => $conf));
+    $e->set_caller ($app->event ());
+    $p->link ($lang['cmd move_category'], $e);
+    tree_edit ($app, $conf);
 }
 
 ?>
