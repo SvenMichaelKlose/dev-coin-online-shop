@@ -85,11 +85,9 @@ class generic_list_conf {
     public $parent_view;
 
     public $table;
-    public $ref_parent;
     public $values;
 
     public $child_table;
-    public $child_ref_parent;
     public $child_view_list;
     public $child_view;
     public $child_values;
@@ -102,12 +100,13 @@ function generic_list_siblings (&$app, $c)
     global $lang;
 
     $db =& $app->db;
+    $def =& $db->def;
     $p =& $app->ui;
     $id = $app->arg ('id');
 
     $id_last = $db->column ($c->table, 'id_last', $id);
     $id_next = $db->column ($c->table, 'id_next', $id);
-    list ($thisindex, $last) = _get_index ($app, $c->parent_table, $c->ref_parent, $c->table, $id);
+    list ($thisindex, $last) = _get_index ($app, $c->table, $def->id_parent ($c->table), $c->table, $id);
     if ($id_last) {
         $e = $app->event ()->copy ();
         $e->set_arg ('id', $id_last);
@@ -126,10 +125,11 @@ function generic_list_editor (&$app, $c)
     global $lang;
 
     $db =& $app->db;
+    $def =& $db->def;
     $p =& $app->ui;
     $id = $app->arg ('id');
 
-    $parent_id = $db->column ($c->table, $c->ref_parent, $id);
+    $parent_id = $db->column ($c->table, $def->id_parent ($c->table), $id);
     $p->open_source ($c->table);
     $p->query (sql_selection_assignments (array_merge ($c->child_values, array ('id' => $id))));
     if ($p->get ()) {
@@ -147,12 +147,13 @@ function generic_list_children (&$app, $c)
     global $lang;
 
     $db =& $app->db;
+    $def =& $db->def;
     $p =& $app->ui;
     $id = $app->arg ('id');
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
-    $p->cursor ()->set_preset_values (array_merge ($c->child_values, array ($c->child_ref_parent => $id)));
+    $p->cursor ()->set_preset_values (array_merge ($c->child_values, array ($def->id_parent ($c->child_table) => $id)));
     $res = $p->query ();
     if ($res) {
         if ($c->headers)

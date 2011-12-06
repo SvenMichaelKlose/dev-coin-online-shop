@@ -12,22 +12,6 @@ function page_init (&$app)
     $app->add_function ('view_pages');
 }
 
-function record_page (&$app, $idx)
-{
-    global $lang;
-
-    $p =& $app->ui;
-
-    $name = trim ($p->value ('name'));
-    if ($name == '')
-        $name = $lang['unnamed'];
-
-    $p->open_row ();
-    $p->checkbox ('marker');
-    $p->link ("$idx $name", new event ('view_pages', array ('id' => $p->value ('id'))));
-    $p->close_row ();
-}
-
 function view_pages (&$app)
 {
     global $lang;
@@ -38,12 +22,9 @@ function view_pages (&$app)
     $c->parent_view = 'view_pages';
 
     $c->table = 'directories';
-    $c->ref_parent = 'id_parent';
     $c->values = array ('id_directory_type' => get_directory_type_id ($app->db, 'category'));
 
     $c->child_table = 'directories';
-    $c->child_ref_parent = 'id_parent';
-    $c->child_view_list = 'record_page';
     $c->child_view = 'view_pages';
     $c->child_values = array ('id_directory_type' => get_directory_type_id ($app->db, 'product'));
 
