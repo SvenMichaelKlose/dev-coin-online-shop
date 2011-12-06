@@ -183,10 +183,12 @@ function generic_list (&$app, $conf)
     $p->headline ($lang["title " . $app->event ()->name]);
     $p->link ($lang['cmd defaultview'], 'defaultview', 0);
 
-    show_directory_index ($app, $conf->table, $id, false);
-    generic_list_siblings ($app, $conf);
-    generic_list_editor ($app, $conf);
-    show_directory_objects ($app, $conf->table, $id, $app->args ());
+    if ($conf->table) {
+        show_directory_index ($app, $conf->table, $id, false);
+        generic_list_siblings ($app, $conf);
+        generic_list_editor ($app, $conf);
+        show_directory_objects ($app, $conf->table, $id, $app->args ());
+    }
     generic_list_children ($app, $conf);
 }
 
