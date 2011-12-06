@@ -55,16 +55,14 @@ function tables_define (&$app)
 
     $def->define_table (
   	'directory_types',
-        array (
-          array ('n' => 'id',
-                 't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
-                 'd' => 'primary key'),
-          array ('n' => 'name',
-                 't' => 'VARCHAR(255) NOT NULL',
-		 'i' => true,
-                 'd' => 'Name')
-	)
-    );
+        array (array ('n' => 'id',
+                      't' => 'INT NOT NULL AUTO_INCREMENT PRIMARY KEY',
+                      'd' => 'primary key'),
+              array ('n' => 'name',
+                      't' => 'VARCHAR(255) NOT NULL',
+		      'i' => true,
+                      'd' => 'Name')));
+    $def->set_primary ('directory_types', 'id');
  
     $def->define_table (
   	'product_variants',
