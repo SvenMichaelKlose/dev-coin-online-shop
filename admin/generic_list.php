@@ -152,8 +152,8 @@ function generic_list_children (&$app, $c)
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
-    $p->cursor ()->set_preset_values ($c->child_values);
-    $res = $p->query ("$c->child_ref_parent=$id");
+    $p->cursor ()->set_preset_values (array_merge ($c->child_values, array ($c->child_ref_parent => $id)));
+    $res = $p->query ();
     if ($res) {
         if ($c->headers)
             $p->table_headers ($c->headers);
