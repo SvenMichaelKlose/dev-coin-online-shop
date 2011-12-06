@@ -131,7 +131,7 @@ function generic_list_editor (&$app, $c)
 
     $parent_id = $db->column ($c->table, $c->ref_parent, $id);
     $p->open_source ($c->table);
-    $p->query (sql_assignments (array_merge ($c->child_values, array ('id' => $id)), ' AND '));
+    $p->query (sql_selection_assignments (array_merge ($c->child_values, array ('id' => $id))));
     if ($p->get ()) {
         $p->open_row ();
         $p->cmd_delete ('', $c->parent_view, array ('id' => $parent_id));
@@ -152,8 +152,8 @@ function generic_list_children (&$app, $c)
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
-    $res = $p->query (sql_assignment ($c->child_ref_parent, $id));
-
+    $p->cursor ()->set_preset_values ($c->child_values);
+    $res = $p->query ("$c->child_ref_parent=$id");
     if ($res) {
         if ($c->headers)
             $p->table_headers ($c->headers);
@@ -161,7 +161,7 @@ function generic_list_children (&$app, $c)
         $conf->record_view = $c->child_view;
         $conf->record_view_arg = 'id';
         $conf->txt_empty = $lang['empty'];
-        $cur = $p->cursor ();
+        $cur = $p->cursor (); # Workaround strict rules.
         tk_autoform_list_cursor ($app, $cur, $conf);
         _range_panel ($app, $c);
     }
