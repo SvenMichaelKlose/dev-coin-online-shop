@@ -10,11 +10,13 @@
 function _get_index (&$app, $parent, $ref_parent, $table, $id)
 {
     $id_parent = $app->db->column ($table, $ref_parent, $id);
-    $res = $app->db->select ('id, id_last, id_next', $table, "$ref_parent=$id_parent");
+    $c = new cursor_sql ();
+    $c->set_source ($table);
+    $c->query ("$ref_parent=$id_parent");
     $i = 1;
-    while ($res && $row = $res->get ()) {
+    while ($row = $c->get ()) {
         if ($row['id'] == $id)
-            return array ($i, $res->num_rows ());
+            return array ($i, $c->size ());
         $i++;
     }
 }
