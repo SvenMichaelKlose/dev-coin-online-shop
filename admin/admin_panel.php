@@ -7,8 +7,14 @@
 #
 # Licensed under the MIT, BSD and GPL licenses.
 
+
 class devcoin_admin_panel extends admin_panel {
     private $_is_open = false;
+
+    function devcoin_admin_panel ($application)
+    {
+        $this->admin_panel ($application, new widget_set);
+    }
 
     function make_event ($handler = '', $args = 0)
     {

@@ -90,7 +90,7 @@ class shop_admin extends application {
         tables_define ($this);
 
         # Init user interface.
-        $this->ui = new devcoin_admin_panel ($this, new widget_set);
+        $this->ui = new devcoin_admin_panel ($this);
 
         # Initialise toolkits
         tk_range_edit_init ($this);
