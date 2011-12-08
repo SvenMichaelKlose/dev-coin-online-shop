@@ -9,11 +9,15 @@
 
 class devcoin_admin_panel extends admin_panel {
     private $_is_open = false;
-    private $_cursor = false;
 
     function cursor ()
     {
         return $this->v->cursor;
+    }
+
+    function set_cursor (&$x)
+    {
+        return $this->v->cursor =& $x;
     }
 
     function make_event ($handler = '', $args = 0)
