@@ -10,57 +10,7 @@
 function class_init (&$app)
 {
     $app->add_function ('view_classes');
-    $app->add_function ('edit_class');
-}
-
-function view_classes (&$app)
-{
-    global $lang;
-
-    $p =& $app->ui;
-    $p->headline ($lang['title view_classes']);
-    $p->link ($lang['title defaultview'], 'defaultview', 0);
-    $p->no_update = true;
-    $p->open_source ('obj_classes');
-    $p->table_headers (Array ('Syntax', $lang['class'], $lang['description']));
-    $p->query ('', 'ORDER BY name ASC');
-    while ($p->get ()) {
-        $p->open_row ();
-        $p->label (_class2tag ($p->value ('name')));
-
-        $e = new event ('edit_class');
-        $p->link ($p->value ('name'), $e);
-
-        $v = $p->value ('descr');
-        if (!$v)
-            $v = '[' . $lang['unnamed'] . ']';
-        $p->link ($v, $e);
-        $p->close_row ();
-    }
-    $p->paragraph ();  
-    $p->cmd_create ($lang['cmd create class'], 'view_classes');  
-    $p->close_source ();
-}
-
-# Edit class name.
-function edit_class (&$app)
-{
-    global $lang;
-    $p =& $app->ui;
-    $p->headline ($lang['title edit_class']);
-    $p->open_source ('obj_classes');
-    $p->query ('id=' . $app->arg ('_cursor')->key ());
-    $p->get ();
-    $p->inputline ('name', 64, $lang['class name']);
-    $p->label ('<B>' . _class2tag ($p->value ('name')) . '</B>');
-    $p->paragraph ();
-    $p->inputline ('descr', 64, $lang['description']);
-    $p->paragraph ();
-    $p->open_row ();
-    $p->cmd_update (null, 'view_classes');
-    $p->cmd_delete (null, 'view_classes');
-    $p->close_row ();
-    $p->close_source ();
+    $app->add_function ('view_class');
 }
 
 function tag ($content)
@@ -109,6 +59,26 @@ function _class2tag ($name)
         return tag (strtoupper (substr ($name, 3)) . ":LIST$arg");
     }
     return $name . ' <FONT COLOR="RED">(' . $lang['illegal name'] . ')</FONT>';
+}
+
+function view_class (&$app)
+{
+    global $lang;
+    $p =& $app->ui;
+    $c = $app->arg ("_cursor");
+    $p->set_cursor ($c);
+
+    $p->headline ($lang['title view_class']);
+    tk_autoform_create_form ($app, $app->arg ("_cursor"));
+}
+
+function view_classes (&$app)
+{
+    $c = new generic_list_conf;
+    $c->child_table = 'obj_classes';
+    $c->child_view = 'view_class';
+    $c->have_submit_button = true;
+    generic_list ($app, $c);
 }
 
 ?>

@@ -64,6 +64,7 @@ $lang['title edit_page'] = 'Edit product group';
 $lang['title view_products'] = 'List of products';
 $lang['title edit_product'] = 'Edit product';
 $lang['title view_objects'] = 'Object associations';
+$lang['title view_class'] = 'Edit object class';
 $lang['title view_classes'] = 'List of object classes';
 $lang['title database_menu'] = 'Database settings';
 $lang['title edit_duty_fields'] = 'Order form duty fields';

@@ -29,6 +29,8 @@ function generic_create (&$app, $c)
 
     if ($def->is_list ($c->child_table))
         $pre[$def->id_parent ($c->child_table)] = $app->arg ('id');
+    else
+        $pre = array ();
     $e = new event ('record_create', array ('preset_values' => array_merge ($c->child_values, $pre)));
     $e->set_next ($app->event ());
     $app->ui->submit_button ($lang['cmd create'], $e);
@@ -85,12 +87,12 @@ class generic_list_conf {
     public $parent_view;
 
     public $table;
-    public $values;
+    public $values = array ();
 
     public $child_table;
     public $child_view_list;
     public $child_view;
-    public $child_values;
+    public $child_values = array ();
     public $headers;
     public $have_submit_button = false;
 };
@@ -149,11 +151,13 @@ function generic_list_children (&$app, $c)
     $db =& $app->db;
     $def =& $db->def;
     $p =& $app->ui;
-    $id = $app->arg ('id');
+    $id = $app->arg ('id', ARG_OPTIONAL);
 
     $p->open_source ($c->child_table);
     $p->use_filter ('form_safe');
-    $p->cursor ()->set_preset_values (array_merge ($c->child_values, array ($def->id_parent ($c->child_table) => $id)));
+    $p->cursor ()->set_preset_values ($id ?
+                                      array_merge ($c->child_values, array ($def->id_parent ($c->child_table) => $id)) :
+                                      $c->child_values);
     $res = $p->query ();
     if ($res) {
         if ($c->headers)
@@ -178,7 +182,7 @@ function generic_list (&$app, $conf)
     $db =& $app->db;
     $def =& $db->def;
     $p =& $app->ui;
-    $id = $app->arg ('id');
+    $id = $app->arg ('id', ARG_OPTIONAL);
     $app->event ()->set_arg ('table', $conf->table); # Required by _object_box().
 
     $p->headline ($lang["title " . $app->event ()->name]);

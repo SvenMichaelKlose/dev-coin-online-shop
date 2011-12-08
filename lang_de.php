@@ -64,6 +64,7 @@ $lang['title edit_page'] = 'Produktgruppe bearbeiten';
 $lang['title view_products'] = '&Uuml;bersicht Produkte';
 $lang['title edit_product'] = 'Produkt bearbeiten';
 $lang['title view_objects'] = 'Objektzuweisungen';
+$lang['title view_class'] = 'Objektklasse bearbeiten';
 $lang['title view_classes'] = '&Uuml;bersicht der Objektklassen';
 $lang['title database_menu'] = 'Datenbankoptionen';
 $lang['title edit_duty_fields'] = 'Pflichtfelder im Bestellformular';
