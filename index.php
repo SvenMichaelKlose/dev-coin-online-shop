@@ -2,9 +2,7 @@
 # This is the main file of the public script.
 #
 # Copyright (c) 2000-2001 dev/consulting GmbH
-# Copyright (c) 2011 Sven Michael Klose <pixel@copei.de>
-#
-# Licensed under the MIT, BSD and GPL licenses.
+# Copyright (c) 2011,2014 Sven Michael Klose <pixel@hugbox.org>
 
 
 # We want it strict.
@@ -21,7 +19,7 @@ $PATH_TO_ADMIN = 'admin/';
 define ('PATH_TO_ADMIN', 'admin');
   
 if (!file_exists ('./config.php'))
-    die ('Can\'t find database confiuration file config.php - stop.');
+    die ('Can\'t find database configuration file config.php - stop.');
 include 'config.php';
 
 if (!file_exists ('caroshi-php/index.php'))
@@ -49,7 +47,7 @@ include PATH_TO_CAROSHI . '/dbi/dbctrl.class.php'; # Basic database access.
 include PATH_TO_CAROSHI . '/dbi/dbdepend.class.php'; # Database table relations.
 include PATH_TO_CAROSHI . '/dbi/dbobj.class.php'; # Inheritable objects in the directory.
 include PATH_TO_CAROSHI . '/dbi/dbtree.php'; # Directory utilities.
-include PATH_TO_CAROSHI . '/dbi/dbsession.class.php'; # Sessions management.
+include PATH_TO_CAROSHI . '/dbi/dbsession.class.php'; # Session management.
 
 
 ##############################
@@ -85,7 +83,6 @@ if (isset ($SESSION_KEY))
 
 require PATH_TO_ADMIN . '/cms-config.php';
 
-# Shop-indepented part.
 require 'attic.php'; # Outdated features scheduled for removal but left in for temporary backwards compatibility.
 require 'cms.php'; # Data management system, e.g. context creation and general tag handlers.
 require 'document.php'; # Analyses the URL, picks a template and processes it.
